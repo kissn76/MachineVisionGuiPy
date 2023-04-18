@@ -77,13 +77,33 @@ class ThresholdGui(tk.Frame):
 
 
 class ResizeGui(tk.Frame):
-    def __init__(self, master):
+    def __init__(self, master, parameters):
         super().__init__(master)
 
         self.dsize = (0, 0)
         self.fx = 0.1
         self.fy = 0.1
         self.interpolation = cv2.INTER_NEAREST
+
+        try:
+            self.dsize = parameters["dsize"]
+        except:
+            pass
+
+        try:
+            self.fx = parameters["fx"]
+        except:
+            pass
+
+        try:
+            self.fy = parameters["fy"]
+        except:
+            pass
+
+        try:
+            self.interpolation = parameters["interpolation"]
+        except:
+            pass
 
         self.var_dsize_width = tk.IntVar()
         scl_dsize_width = tk.Scale(self, variable=self.var_dsize_width, from_=0, to=255, orient=tk.HORIZONTAL, command=self.resetFactor)
@@ -104,7 +124,7 @@ class ResizeGui(tk.Frame):
         self.var_interpolation = tk.StringVar()
         self.cbx_interpolation = ttk.Combobox(self, textvariable=self.var_interpolation)
         self.cbx_interpolation.config(values=tuple(enumInterpolationFlags.keys()))
-        self.cbx_interpolation.current(newindex=0)
+        self.cbx_interpolation.current(newindex=tuple(enumInterpolationFlags.values()).index(self.interpolation))
         self.cbx_interpolation.config(state="readonly")
 
         scl_dsize_width.grid(row=0, column=0)

@@ -48,6 +48,8 @@ class Mainwindow(tk.Tk):
 
             if command.startswith("opencv_threshold"):
                 commandGuiList[command] = ThresholdGui(self.frm_methodes, parmeters)
+            elif command.startswith("opencv_resize"):
+                commandGuiList[command] = ResizeGui(self.frm_methodes, parmeters)
 
             commandGuiList[command].pack()
 
@@ -57,25 +59,33 @@ class Mainwindow(tk.Tk):
         images["original_rgb"] = cv2.cvtColor(images["original"], cv2.COLOR_BGR2RGB)
         images["original_gray"] = cv2.cvtColor(images["original_rgb"], cv2.COLOR_RGB2GRAY)
 
-        # self.ocvresize.getValues()
-
         for command in commandList:
+            commandGuiList[command].getValues()
+
             if command.startswith("opencv_threshold"):
-                commandGuiList[command].getValues()
-                _, images["threshold"] = cv2.threshold(images["original_gray"], commandGuiList[command].threshold_value, commandGuiList[command].max_value, commandGuiList[command].type)
-                images["threshold_rgb"] = cv2.cvtColor(images["threshold"], cv2.COLOR_GRAY2RGB)
+                try:
+                    commandParameters[command]["threshold"] = commandGuiList[command].threshold_value
+                    commandParameters[command]["maxval"] = commandGuiList[command].max_value
+                    commandParameters[command]["type"] = commandGuiList[command].type
+                    _, image = cv2.threshold(images["original_gray"], commandParameters[command]["threshold"], commandParameters[command]["maxval"], commandParameters[command]["type"])
+                    images["original_gray"] = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
+                except:
+                    pass
+            elif command.startswith("opencv_resize"):
+                try:
+                    commandParameters[command]["dsize"] = commandGuiList[command].dsize
+                    commandParameters[command]["fx"] = commandGuiList[command].fx
+                    commandParameters[command]["fy"] = commandGuiList[command].fy
+                    commandParameters[command]["interpolation"] = commandGuiList[command].interpolation
+                    images["original_gray"] = cv2.resize(images["original_gray"], dsize=commandParameters[command]["dsize"], fx=commandParameters[command]["fx"], fy=commandParameters[command]["fy"], interpolation=commandParameters[command]["interpolation"])
+                except:
+                    pass
 
-        # try:
-        #     img = cv2.resize(images["threshold_rgb"], dsize=self.ocvresize.dsize, fx=self.ocvresize.fx, fy=self.ocvresize.fy, interpolation=self.ocvresize.interpolation)
-        # except:
-        #     pass
 
-
-        im = Image.fromarray(images["threshold_rgb"])
+        im = Image.fromarray(images["original_gray"])
         imgtk = ImageTk.PhotoImage(image=im)
         self.lbl_image.configure(image=imgtk)
         self.lbl_image.image = imgtk
-        # self.update()
         self.after(100, self.nextImage)
 
     def onExit(self):
@@ -84,7 +94,9 @@ class Mainwindow(tk.Tk):
 
 def main():
     commandList.append("opencv_threshold.1")
-    commandParameters.update({"opencv_threshold.1": {"threshold": 10, "maxval": 250, "type": cv2.THRESH_TOZERO}})
+    commandParameters.update({"opencv_threshold.1": {"threshold": 100, "maxval": 255, "type": cv2.THRESH_BINARY}})
+    commandList.append("opencv_resize.1")
+    commandParameters.update({"opencv_resize.1": {"dsize": (0, 0), "fx": 0.4, "fy": 0.4, "interpolation": cv2.INTER_AREA}})
     Mainwindow()
 
 
