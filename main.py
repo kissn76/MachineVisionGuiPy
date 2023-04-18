@@ -67,8 +67,8 @@ class Mainwindow(tk.Tk):
                     commandParameters[command]["threshold"] = commandGuiList[command].threshold_value
                     commandParameters[command]["maxval"] = commandGuiList[command].max_value
                     commandParameters[command]["type"] = commandGuiList[command].type
-                    _, image = cv2.threshold(images["original_gray"], commandParameters[command]["threshold"], commandParameters[command]["maxval"], commandParameters[command]["type"])
-                    images["original_gray"] = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
+                    _, image = cv2.threshold(images[commandParameters[command]["src"]], commandParameters[command]["threshold"], commandParameters[command]["maxval"], commandParameters[command]["type"])
+                    images[commandParameters[command]["dst"]] = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
                 except:
                     pass
             elif command.startswith("opencv_resize"):
@@ -77,12 +77,12 @@ class Mainwindow(tk.Tk):
                     commandParameters[command]["fx"] = commandGuiList[command].fx
                     commandParameters[command]["fy"] = commandGuiList[command].fy
                     commandParameters[command]["interpolation"] = commandGuiList[command].interpolation
-                    images["original_gray"] = cv2.resize(images["original_gray"], dsize=commandParameters[command]["dsize"], fx=commandParameters[command]["fx"], fy=commandParameters[command]["fy"], interpolation=commandParameters[command]["interpolation"])
+                    images[commandParameters[command]["dst"]] = cv2.resize(images[commandParameters[command]["src"]], dsize=commandParameters[command]["dsize"], fx=commandParameters[command]["fx"], fy=commandParameters[command]["fy"], interpolation=commandParameters[command]["interpolation"])
                 except:
                     pass
 
 
-        im = Image.fromarray(images["original_gray"])
+        im = Image.fromarray(images["opencv_resize.1.dst"])
         imgtk = ImageTk.PhotoImage(image=im)
         self.lbl_image.configure(image=imgtk)
         self.lbl_image.image = imgtk
@@ -94,9 +94,9 @@ class Mainwindow(tk.Tk):
 
 def main():
     commandList.append("opencv_threshold.1")
-    commandParameters.update({"opencv_threshold.1": {"threshold": 100, "maxval": 255, "type": cv2.THRESH_BINARY}})
+    commandParameters.update({"opencv_threshold.1": {"src": "original_gray", "dst": "opencv_threshold.1.dst", "threshold": 100, "maxval": 255, "type": cv2.THRESH_BINARY}})
     commandList.append("opencv_resize.1")
-    commandParameters.update({"opencv_resize.1": {"dsize": (0, 0), "fx": 0.4, "fy": 0.4, "interpolation": cv2.INTER_AREA}})
+    commandParameters.update({"opencv_resize.1": {"src": "opencv_threshold.1.dst", "dst": "opencv_resize.1.dst", "dsize": (0, 0), "fx": 0.4, "fy": 0.4, "interpolation": cv2.INTER_AREA}})
     Mainwindow()
 
 
