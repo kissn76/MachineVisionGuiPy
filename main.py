@@ -7,6 +7,12 @@ from opencvgui import *
 import tkinter as tk
 
 
+commandList = []
+commandParameters = {}
+commandGuiList = {}
+images = {}
+
+
 class Mainwindow(tk.Tk):
 
     def __init__(self):
@@ -17,10 +23,8 @@ class Mainwindow(tk.Tk):
         self.lbl_image.pack()
 
         self.frm_methodes = tk.Frame(self)
-        self.ocvresize = ResizeGui(self.frm_methodes)
-        self.ocvth = ThresholdGui(self.frm_methodes)
-        self.ocvresize.pack()
-        self.ocvth.pack()
+        # self.ocvresize = ResizeGui(self.frm_methodes)
+        # self.ocvresize.pack()
 
         # btn_next = tk.Button(self, text="Next", command=self.nextImage)
 
@@ -28,26 +32,46 @@ class Mainwindow(tk.Tk):
         self.frm_methodes.grid(row=0, column=1)
         # btn_next.pack()
 
+        self.setUI()
         self.nextImage()
 
         self.mainloop()
 
+
+    def setUI(self):
+        for command in commandList:
+            parmeters = {}
+            try:
+                parmeters = commandParameters[command]
+            except:
+                pass
+
+            if command.startswith("opencv_threshold"):
+                commandGuiList[command] = ThresholdGui(self.frm_methodes, parmeters)
+
+            commandGuiList[command].pack()
+
+
     def nextImage(self):
-        self.ocvresize.getValues()
-        self.ocvth.getValues()
-        img = cv2.imread('/home/nn/Képek/ocv.jpg')
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        images["original"] = cv2.imread('/home/nn/Képek/ocv.jpg')
+        images["original_rgb"] = cv2.cvtColor(images["original"], cv2.COLOR_BGR2RGB)
+        images["original_gray"] = cv2.cvtColor(images["original_rgb"], cv2.COLOR_RGB2GRAY)
 
-        try:
-            img = cv2.resize(img, dsize=self.ocvresize.dsize, fx=self.ocvresize.fx, fy=self.ocvresize.fy, interpolation=self.ocvresize.interpolation)
-        except:
-            pass
+        # self.ocvresize.getValues()
 
-        img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-        _, img = cv2.threshold(img, self.ocvth.threshold_value, self.ocvth.max_value, self.ocvth.type)
-        img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
+        for command in commandList:
+            if command.startswith("opencv_threshold"):
+                commandGuiList[command].getValues()
+                _, images["threshold"] = cv2.threshold(images["original_gray"], commandGuiList[command].threshold_value, commandGuiList[command].max_value, commandGuiList[command].type)
+                images["threshold_rgb"] = cv2.cvtColor(images["threshold"], cv2.COLOR_GRAY2RGB)
 
-        im = Image.fromarray(img)
+        # try:
+        #     img = cv2.resize(images["threshold_rgb"], dsize=self.ocvresize.dsize, fx=self.ocvresize.fx, fy=self.ocvresize.fy, interpolation=self.ocvresize.interpolation)
+        # except:
+        #     pass
+
+
+        im = Image.fromarray(images["threshold_rgb"])
         imgtk = ImageTk.PhotoImage(image=im)
         self.lbl_image.configure(image=imgtk)
         self.lbl_image.image = imgtk
@@ -59,6 +83,8 @@ class Mainwindow(tk.Tk):
 
 
 def main():
+    commandList.append("opencv_threshold.1")
+    commandParameters.update({"opencv_threshold.1": {"threshold": 10, "maxval": 250, "type": cv2.THRESH_TOZERO}})
     Mainwindow()
 
 

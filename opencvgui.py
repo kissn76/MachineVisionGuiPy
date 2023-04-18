@@ -29,12 +29,27 @@ enumInterpolationFlags = {
 
 
 class ThresholdGui(tk.Frame):
-    def __init__(self, master):
+    def __init__(self, master, parameters):
         super().__init__(master)
 
         self.threshold_value = 0.0
         self.max_value = 255.0
         self.type = cv2.THRESH_BINARY
+
+        try:
+            self.threshold_value = parameters["threshold"]
+        except:
+            pass
+
+        try:
+            self.max_value = parameters["maxval"]
+        except:
+            pass
+
+        try:
+            self.type = parameters["type"]
+        except:
+            pass
 
         self.var_thval = tk.DoubleVar()
         scl_thval = tk.Scale(self, variable=self.var_thval, from_=0, to=255, orient=tk.HORIZONTAL)
@@ -47,7 +62,7 @@ class ThresholdGui(tk.Frame):
         self.var_type = tk.StringVar()
         self.cbx_type = ttk.Combobox(self, textvariable=self.var_type)
         self.cbx_type.config(values=tuple(enumThresholdTypes.keys()))
-        self.cbx_type.current(newindex=0)
+        self.cbx_type.current(newindex=tuple(enumThresholdTypes.values()).index(self.type))
         self.cbx_type.config(state="readonly")
 
         scl_thval.grid(row=0, column=0)
