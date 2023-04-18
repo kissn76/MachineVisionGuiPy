@@ -1,77 +1,52 @@
 from PIL import Image, ImageTk
 import cv2
 from numpy import size
-from tkinter import LEFT, TOP, X, FLAT, RAISED, N, S, E, W
-from tkinter import Tk, Frame, Menu, Button, PhotoImage, Label
 
 import numpy as np
+from ocvthreshold import OcvThreshold
+import tkinter as tk
 
 
-class Mainwindow():
+class Mainwindow(tk.Tk):
 
     def __init__(self):
-        self.root = Tk()
-        self.root.geometry("500x500")
-        self.menubar = None
-        self.toolbar = None
+        super().__init__()
+        self.frm_image = tk.Frame(self)
 
-        self.init_ui()
+        self.lbl_image = tk.Label(self.frm_image)
 
-        self.root.mainloop()
+        self.ocvth = OcvThreshold(self)
 
-    def init_ui(self):
-        self.root.title("Toolbar")
-        self.init_menubar()
-        self.root.config(menu=self.menubar)
+        btn_next = tk.Button(self, text="Next", command=self.nextImage)
 
-        self.init_toolbar()
-        self.toolbar.grid(row=0, column=0, sticky=(E, W))
+        self.frm_image.pack()
+        self.lbl_image.pack()
+        self.ocvth.pack()
+        btn_next.pack()
 
-        self.mainbar = Frame(self.root, bd=6, relief=RAISED)
-        self.mainbar.grid(row=1, column=0, sticky=(N, S, E, W))
-        namelbl = Label(self.mainbar, text="Name")
-        namelbl.grid(row=0, column=0)
+        self.mainloop()
 
-        # self.pack()
+    def nextImage(self):
+        self.ocvth.printvalues()
+        img = cv2.imread('/home/nn/Képek/ocv.jpg')
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-    def init_menubar(self):
-        self.menubar = Menu(self.root)
-        self.fileMenu = Menu(self.root, tearoff=0)
-        self.fileMenu.add_command(label="Exit", command=self.onExit)
-        self.menubar.add_cascade(label="File", menu=self.fileMenu)
+        img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+        t, img = cv2.threshold(img, self.ocvth.threshold_value, self.ocvth.max_value, self.ocvth.type[0])
+        img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
 
-    def init_toolbar(self):
-        self.toolbar = Frame(self.root, bd=6, relief=RAISED)
-
-        icon_exit = ImageTk.PhotoImage(Image.open("resources/icons/exit.png"))
-        btn_exit = Button(self.toolbar, image=icon_exit, width=64, height=64, command=self.onExit)
-        btn_exit.image = icon_exit
-        btn_exit.grid(row=0, column=0)
-
-        btn_exit_2 = Button(self.toolbar, image=icon_exit, width=64, height=64, command=self.onExit)
-        btn_exit_2.image = icon_exit
-        btn_exit_2.grid(row=0, column=1)
+        im = Image.fromarray(img)
+        imgtk = ImageTk.PhotoImage(image=im)
+        self.lbl_image.configure(image=imgtk)
+        self.lbl_image.image = imgtk
+        # self.update()
 
     def onExit(self):
-        self.root.quit()
+        self.quit()
 
 
 def main():
-    # # Load the image
-    # img = cv2.imread('/home/nn/Képek/ocv.jpg')
-    #
-    # # Rearrange colors
-    # blue, green, red = cv2.split(img)
-    # img = cv2.merge((red, green, blue))
-    # im = Image.fromarray(img)
-    #
-    # win = Tk()
-    # # win.geometry("700x550")
-    # imgtk = ImageTk.PhotoImage(image=im)
-    # Label(win, image=imgtk).pack()
-    # win.mainloop()
-
-    app = Mainwindow()
+    Mainwindow()
 
 
 if __name__ == '__main__':
