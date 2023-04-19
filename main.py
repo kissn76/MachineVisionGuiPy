@@ -10,8 +10,24 @@ import tkinter as tk
 commandList = []
 commandParameters = {}
 commandGuiList = {}
+usedCommands = {}
 images = {}
 imagesShow = []
+
+
+class CommandRow(tk.Frame):
+    def __init__(self, master, command):
+        super().__init__(master)
+
+        lbl_command = ttk.Label(self, text=command, cursor= "hand2")
+        lbl_command.pack()
+        lbl_command.bind("<Button-1>", lambda e: self.setRow(command))
+
+    def setRow(self, command):
+        for c in commandList:
+            commandGuiList[c].pack_forget()
+
+        commandGuiList[command].pack()
 
 
 class Mainwindow(tk.Tk):
@@ -20,16 +36,27 @@ class Mainwindow(tk.Tk):
         super().__init__()
 
         # self.attributes("-fullscreen", True)
-        self.attributes("-zoomed", True)
+        # self.attributes("-zoomed", True)
 
         self.frm_image = tk.Frame(self)
-        self.lbl_image = tk.Label(self.frm_image)
+        self.lbl_image = ttk.Label(self.frm_image)
         self.lbl_image.pack()
 
-        self.frm_methodes = tk.Frame(self)
+        self.frm_config = tk.Frame(self)
+        self.frm_available_commands = tk.Frame(self.frm_config, bg="green")
+        self.frm_commands = tk.Frame(self.frm_config)
+        self.frm_setting = tk.Frame(self.frm_config)
 
-        self.frm_methodes.grid(row=0, column=0, sticky=(tk.N, tk.W))
-        self.frm_image.grid(row=0, column=1)
+        ttk.Label(self.frm_available_commands, text="Available commands").pack()
+        ttk.Label(self.frm_commands, text="Used commands").pack()
+        ttk.Label(self.frm_setting, text="Command setting").pack()
+
+        self.frm_available_commands.grid(row=0, column=0, sticky="n, s, w, e")
+        self.frm_commands.grid(row=0, column=1)
+        self.frm_setting.grid(row=1, column=1)
+
+        self.frm_config.grid(row=0, column=0, sticky="n, s, w, e")
+        self.frm_image.grid(row=0, column=1, sticky="n, s, w, e")
 
         self.setUI()
         self.nextImage()
@@ -46,13 +73,15 @@ class Mainwindow(tk.Tk):
                 pass
 
             if command.startswith("opencv_imread"):
-                commandGuiList[command] = ImreadGui(self.frm_methodes, parmeters)
+                commandGuiList[command] = ImreadGui(self.frm_setting, parmeters)
             elif command.startswith("opencv_threshold"):
-                commandGuiList[command] = ThresholdGui(self.frm_methodes, parmeters)
+                commandGuiList[command] = ThresholdGui(self.frm_setting, parmeters)
             elif command.startswith("opencv_resize"):
-                commandGuiList[command] = ResizeGui(self.frm_methodes, parmeters)
+                commandGuiList[command] = ResizeGui(self.frm_setting, parmeters)
 
-            commandGuiList[command].pack()
+            # commandGuiList[command].pack()
+
+            CommandRow(self.frm_commands, command).pack()
 
 
     def nextImage(self):
