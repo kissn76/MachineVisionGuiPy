@@ -81,7 +81,6 @@ class ImreadGui(tk.Frame):
         dst = None
         try:
             dst = cv2.imread(self.filename, self.flags)
-            dst = cv2.cvtColor(dst, cv2.COLOR_GRAY2RGB)
         except:
             pass
 

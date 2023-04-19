@@ -15,6 +15,18 @@ images = {}
 imagesShow = []
 
 
+class AvailableCommandRow(tk.Frame):
+    def __init__(self, master, command):
+        super().__init__(master)
+
+        lbl_command = ttk.Label(self, text=command, cursor= "hand2")
+        lbl_command.pack()
+        lbl_command.bind("<Double-Button-1>", lambda e: self.addRow(command))
+
+    def addRow(self, command):
+        print(command)
+
+
 class CommandRow(tk.Frame):
     def __init__(self, master, command):
         super().__init__(master)
@@ -43,7 +55,7 @@ class Mainwindow(tk.Tk):
         self.lbl_image.pack()
 
         self.frm_config = tk.Frame(self)
-        self.frm_available_commands = tk.Frame(self.frm_config, bg="green")
+        self.frm_available_commands = tk.Frame(self.frm_config)
         self.frm_commands = tk.Frame(self.frm_config)
         self.frm_setting = tk.Frame(self.frm_config)
 
@@ -65,6 +77,10 @@ class Mainwindow(tk.Tk):
 
 
     def setUI(self):
+        availableCommands = ["opencv_imread", "opencv_threshold", "opencv_resize"]
+        for a in availableCommands:
+            AvailableCommandRow(self.frm_available_commands, a).pack()
+
         for command in commandList:
             parmeters = {}
             try:
