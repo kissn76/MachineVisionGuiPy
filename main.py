@@ -11,6 +11,7 @@ commandList = []
 commandParameters = {}
 commandGuiList = {}
 images = {}
+imagesShow = []
 
 
 class Mainwindow(tk.Tk):
@@ -18,19 +19,17 @@ class Mainwindow(tk.Tk):
     def __init__(self):
         super().__init__()
 
+        # self.attributes("-fullscreen", True)
+        self.attributes("-zoomed", True)
+
         self.frm_image = tk.Frame(self)
         self.lbl_image = tk.Label(self.frm_image)
         self.lbl_image.pack()
 
         self.frm_methodes = tk.Frame(self)
-        # self.ocvresize = ResizeGui(self.frm_methodes)
-        # self.ocvresize.pack()
 
-        # btn_next = tk.Button(self, text="Next", command=self.nextImage)
-
-        self.frm_image.grid(row=0, column=0)
-        self.frm_methodes.grid(row=0, column=1)
-        # btn_next.pack()
+        self.frm_methodes.grid(row=0, column=0, sticky=(tk.N, tk.W))
+        self.frm_image.grid(row=0, column=1)
 
         self.setUI()
         self.nextImage()
@@ -46,7 +45,9 @@ class Mainwindow(tk.Tk):
             except:
                 pass
 
-            if command.startswith("opencv_threshold"):
+            if command.startswith("opencv_imread"):
+                commandGuiList[command] = ImreadGui(self.frm_methodes, parmeters)
+            elif command.startswith("opencv_threshold"):
                 commandGuiList[command] = ThresholdGui(self.frm_methodes, parmeters)
             elif command.startswith("opencv_resize"):
                 commandGuiList[command] = ResizeGui(self.frm_methodes, parmeters)
@@ -55,37 +56,28 @@ class Mainwindow(tk.Tk):
 
 
     def nextImage(self):
-        images["original"] = cv2.imread('/home/nn/Képek/ocv.jpg')
-        images["original_rgb"] = cv2.cvtColor(images["original"], cv2.COLOR_BGR2RGB)
-        images["original_gray"] = cv2.cvtColor(images["original_rgb"], cv2.COLOR_RGB2GRAY)
-
         for command in commandList:
-            commandGuiList[command].getValues()
+            if command.startswith("opencv_imread"):
+                images[commandParameters[command]["dst"]] = commandGuiList[command].runProcess()
+            else:
+                images[commandParameters[command]["dst"]] = commandGuiList[command].runProcess(src=images[commandParameters[command]["src"]])
 
-            if command.startswith("opencv_threshold"):
-                try:
-                    commandParameters[command]["threshold"] = commandGuiList[command].threshold_value
-                    commandParameters[command]["maxval"] = commandGuiList[command].max_value
-                    commandParameters[command]["type"] = commandGuiList[command].type
-                    _, image = cv2.threshold(images[commandParameters[command]["src"]], commandParameters[command]["threshold"], commandParameters[command]["maxval"], commandParameters[command]["type"])
-                    images[commandParameters[command]["dst"]] = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
-                except:
-                    pass
-            elif command.startswith("opencv_resize"):
-                try:
-                    commandParameters[command]["dsize"] = commandGuiList[command].dsize
-                    commandParameters[command]["fx"] = commandGuiList[command].fx
-                    commandParameters[command]["fy"] = commandGuiList[command].fy
-                    commandParameters[command]["interpolation"] = commandGuiList[command].interpolation
-                    images[commandParameters[command]["dst"]] = cv2.resize(images[commandParameters[command]["src"]], dsize=commandParameters[command]["dsize"], fx=commandParameters[command]["fx"], fy=commandParameters[command]["fy"], interpolation=commandParameters[command]["interpolation"])
-                except:
-                    pass
+            try:
+                if commandParameters[command]["imshow"]:
+                    imagesShow.append(images[commandParameters[command]["dst"]].copy())
+            except:
+                pass
 
-
-        im = Image.fromarray(images["opencv_resize.1.dst"])
-        imgtk = ImageTk.PhotoImage(image=im)
-        self.lbl_image.configure(image=imgtk)
-        self.lbl_image.image = imgtk
+        try:
+            # TODO
+            # Összefűzni a képeket az imagesShow listből
+            im = Image.fromarray(imagesShow[0])
+            imgtk = ImageTk.PhotoImage(image=im)
+            self.lbl_image.configure(image=imgtk)
+            self.lbl_image.image = imgtk
+            imagesShow.clear()
+        except:
+            pass
         self.after(100, self.nextImage)
 
     def onExit(self):
@@ -93,10 +85,12 @@ class Mainwindow(tk.Tk):
 
 
 def main():
-    commandList.append("opencv_threshold.1")
-    commandParameters.update({"opencv_threshold.1": {"src": "original_gray", "dst": "opencv_threshold.1.dst", "threshold": 100, "maxval": 255, "type": cv2.THRESH_BINARY}})
-    commandList.append("opencv_resize.1")
-    commandParameters.update({"opencv_resize.1": {"src": "opencv_threshold.1.dst", "dst": "opencv_resize.1.dst", "dsize": (0, 0), "fx": 0.4, "fy": 0.4, "interpolation": cv2.INTER_AREA}})
+    commandParameters.update({"opencv_imread.1": {"dst": "opencv_imread.1.dst", "filename": "/home/nn/Képek/ocv.jpg", "flags": cv2.IMREAD_GRAYSCALE}})
+    commandParameters.update({"opencv_threshold.1": {"src": "opencv_imread.1.dst", "dst": "opencv_threshold.1.dst", "threshold": 100, "maxval": 255, "type": cv2.THRESH_BINARY}})
+    commandParameters.update({"opencv_resize.1": {"imshow": True, "src": "opencv_threshold.1.dst", "dst": "opencv_resize.1.dst", "dsize": (0, 0), "fx": 0.4, "fy": 0.4, "interpolation": cv2.INTER_AREA}})
+
+    global commandList
+    commandList = list(commandParameters.keys())
     Mainwindow()
 
 
