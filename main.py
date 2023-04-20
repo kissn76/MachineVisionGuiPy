@@ -11,6 +11,7 @@ command_counter = 0         # a parancs nevéhez egy counter, hogy ne legyen ké
 command_list = []           # végrehajtási sor. A végrehajtandó parancsokat tartalmazza
 command_object_list = {}    # a végrehajtandó parancsok object-jeit tartalmazza
 image_list = {}             # a parancsok outputjaként létrehozott image-eket tartalmazza
+image_show = None
 
 available_commands = ["opencv_imread", "opencv_threshold", "opencv_resize"]
 
@@ -21,6 +22,7 @@ class Mainwindow(tk.Tk):
         super().__init__()
 
         self.command_row_list = {}  # CommandRow objektumokat (végrehajtandó parancsok) tartalmazza
+        self.image_row_list = {}
 
         self.title("Machine Vision GUI")
         self.geometry("1280x700")
@@ -28,8 +30,10 @@ class Mainwindow(tk.Tk):
         # self.attributes("-zoomed", True)
 
         self.frm_image = tk.Frame(self)
+        self.frm_image_list = tk.Frame(self.frm_image)
         self.lbl_image = ttk.Label(self.frm_image)
-        self.lbl_image.pack()
+        self.frm_image_list.grid(row=0, column=0, sticky="n, s, w, e")
+        self.lbl_image.grid(row=0, column=1, sticky="n, s, w, e")
 
         self.frm_config = tk.Frame(self)
         self.frm_available_commands = tk.Frame(self.frm_config)
@@ -73,10 +77,9 @@ class Mainwindow(tk.Tk):
         frm_row = tk.Frame(self.frm_commands)
         lbl_command = ttk.Label(frm_row, text=command_name, cursor= "hand2")
         lbl_command.pack()
-        lbl_command.bind("<Button-1>", lambda e: self.show_command_setting_form(command_name))
+        lbl_command.bind("<Button-1>", lambda event: self.show_command_setting_form(command_name))
 
         self.command_row_list.update({command_name: frm_row})
-        # self.command_row_list[command_name].pack()
 
         # hozzáadás a végrehajtási listához
         command_list.append(command_name)
@@ -94,8 +97,8 @@ class Mainwindow(tk.Tk):
 
     def show_command_setting_form(self, command):
         # az összes beállítás eltüntetése
-        for c in command_list:
-            command_object_list[c].pack_forget()
+        for obj in command_object_list.values():
+            obj.pack_forget()
 
         # a szükséges (amelyikre kattintottunk) beállítás megjelenítése
         command_object_list[command].pack()
@@ -103,24 +106,47 @@ class Mainwindow(tk.Tk):
 
 
     def set_command_row_list_frame(self):
-        for c in self.command_row_list.values():
-            c.pack_forget()
+        for obj in self.command_row_list.values():
+            obj.pack_forget()
 
-        for c in command_list:
-            self.command_row_list[c].pack()
+        for str in command_list:
+            self.command_row_list[str].pack()
+
+
+    def set_image_list_frame(self):
+        for image_name in image_list.keys():
+            if not image_name in self.image_row_list.keys():
+                frm_row = tk.Frame(self.frm_image_list)
+                lbl_command = ttk.Label(frm_row, text=image_name, cursor= "hand2")
+                lbl_command.pack()
+                lbl_command.bind("<Button-1>", lambda event: self.set_image_show(image_name))
+                frm_row.pack()
+
+                self.image_row_list.update({image_name: frm_row})
+
+
+    def set_image_show(self, image_name):
+        global image_show
+        image_show = image_name
 
 
     def next_image(self):
-        image = None
+        image_list.clear()
 
         for command in command_list:
             command_object_list[command].run_process(image_list)
 
+        self.set_image_list_frame()
+
         try:
-            # TODO
-            # Összefűzni a képeket az imagesShow listből
-            # im = Image.fromarray(list(image_list.values())[-1])
-            image = list(image_list.values())[-1]
+            image = None
+            if image_show is None:
+                image = list(image_list.values())[-1]
+            else:
+                image = image_list[image_show]
+
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
             im = Image.fromarray(image)
             imgtk = ImageTk.PhotoImage(image=im)
             self.lbl_image.configure(image=imgtk)
