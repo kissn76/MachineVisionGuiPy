@@ -7,40 +7,12 @@ from opencvgui import *
 import tkinter as tk
 
 
-commandCounter = 0
-commandList = []
-commandGuiList = {}
-images = {}
-imagesShow = []
+command_counter = 0         # a parancs nevéhez egy counter, hogy ne legyen két egyforma nevű parancs
+command_list = []           # végrehajtási sor. A végrehajtandó parancsokat tartalmazza
+command_object_list = {}    # a végrehajtandó parancsok object-jeit tartalmazza
+image_list = {}             # a parancsok outputjaként létrehozott image-eket tartalmazza
 
-
-class AvailableCommandRow(tk.Frame):
-    def __init__(self, master, command):
-        super().__init__(master)
-
-        lbl_command = ttk.Label(self, text=command, cursor= "hand2")
-        lbl_command.pack()
-        lbl_command.bind("<Double-Button-1>", lambda e: self.addRow(command))
-
-    def addRow(self, command):
-        global commandCounter
-        commandList.append(f"{command}.{commandCounter}")
-        commandCounter += 1
-
-
-class CommandRow(tk.Frame):
-    def __init__(self, master, command):
-        super().__init__(master)
-
-        lbl_command = ttk.Label(self, text=command, cursor= "hand2")
-        lbl_command.pack()
-        lbl_command.bind("<Button-1>", lambda e: self.setRow(command))
-
-    def setRow(self, command):
-        for c in commandList:
-            commandGuiList[c].pack_forget()
-
-        commandGuiList[command].pack()
+available_commands = ["opencv_imread", "opencv_threshold", "opencv_resize"]
 
 
 class Mainwindow(tk.Tk):
@@ -48,8 +20,10 @@ class Mainwindow(tk.Tk):
     def __init__(self):
         super().__init__()
 
-        self.commandRows = {}
+        self.command_row_list = {}  # CommandRow objektumokat (végrehajtandó parancsok) tartalmazza
 
+        self.title("Machine Vision GUI")
+        self.geometry("1280x700")
         # self.attributes("-fullscreen", True)
         # self.attributes("-zoomed", True)
 
@@ -73,51 +47,87 @@ class Mainwindow(tk.Tk):
         self.frm_config.grid(row=0, column=0, sticky="n, s, w, e")
         self.frm_image.grid(row=0, column=1, sticky="n, s, w, e")
 
-        availableCommands = ["opencv_imread", "opencv_threshold", "opencv_resize"]
-        for a in availableCommands:
-            AvailableCommandRow(self.frm_available_commands, a).pack()
+        # elérhető parancsok gui frame feltöltése
+        for a in available_commands:
+            self.add_available_command_row(a)
 
-        self.nextImage()
+        self.next_image()
 
         self.mainloop()
 
 
-    def nextImage(self):
-        for command in commandGuiList.keys():
-            if command not in commandList:
-                commandGuiList.pop(command)
-                self.commandRows[command].pack_forget()
-                self.commandRows[command].destroy()
-                self.commandRows.pop(command)
+    def add_available_command_row(self, command):
+        frm_row = tk.Frame(self.frm_available_commands)
+        lbl_command = ttk.Label(frm_row, text=command, cursor= "hand2")
+        lbl_command.pack()
+        lbl_command.bind("<Double-Button-1>", lambda event: self.add_command_row(command))
+        frm_row.pack()
 
-        for command in commandList:
-            if command not in commandGuiList:
-                if command.startswith("opencv_imread"):
-                    commandGuiList[command] = ImreadGui(self.frm_setting, command)
-                elif command.startswith("opencv_threshold"):
-                    commandGuiList[command] = ThresholdGui(self.frm_setting, command)
-                elif command.startswith("opencv_resize"):
-                    commandGuiList[command] = ResizeGui(self.frm_setting, command)
 
-                self.commandRows.update({command: CommandRow(self.frm_commands, command)})
-                self.commandRows[command].pack()
+    def add_command_row(self, command):
+        global command_counter
+        command_name = f"{command}.{command_counter}"
+        command_counter += 1
 
-            commandGuiList[command].runProcess(images)
+        # hozzáadás a gui-hoz
+        frm_row = tk.Frame(self.frm_commands)
+        lbl_command = ttk.Label(frm_row, text=command_name, cursor= "hand2")
+        lbl_command.pack()
+        lbl_command.bind("<Button-1>", lambda e: self.show_command_setting_form(command_name))
+
+        self.command_row_list.update({command_name: frm_row})
+        # self.command_row_list[command_name].pack()
+
+        # hozzáadás a végrehajtási listához
+        command_list.append(command_name)
+
+        if command_name.startswith("opencv_imread"):
+            command_object_list[command_name] = ImreadGui(self.frm_setting, command_name)
+        elif command_name.startswith("opencv_threshold"):
+            command_object_list[command_name] = ThresholdGui(self.frm_setting, command_name)
+        elif command_name.startswith("opencv_resize"):
+            command_object_list[command_name] = ResizeGui(self.frm_setting, command_name)
+
+        command_object_list[command_name].set_src_list(image_list)
+        self.set_command_row_list_frame()
+
+
+    def show_command_setting_form(self, command):
+        # az összes beállítás eltüntetése
+        for c in command_list:
+            command_object_list[c].pack_forget()
+
+        # a szükséges (amelyikre kattintottunk) beállítás megjelenítése
+        command_object_list[command].pack()
+        command_object_list[command].set_src_list(image_list)
+
+
+    def set_command_row_list_frame(self):
+        for c in self.command_row_list.values():
+            c.pack_forget()
+
+        for c in command_list:
+            self.command_row_list[c].pack()
+
+
+    def next_image(self):
+        image = None
+
+        for command in command_list:
+            command_object_list[command].run_process(image_list)
 
         try:
             # TODO
             # Összefűzni a képeket az imagesShow listből
-            im = Image.fromarray(list(images.values())[-1])
+            # im = Image.fromarray(list(image_list.values())[-1])
+            image = list(image_list.values())[-1]
+            im = Image.fromarray(image)
             imgtk = ImageTk.PhotoImage(image=im)
             self.lbl_image.configure(image=imgtk)
             self.lbl_image.image = imgtk
-            imagesShow.clear()
         except:
             pass
-        self.after(100, self.nextImage)
-
-    def onExit(self):
-        self.quit()
+        self.after(100, self.next_image)
 
 
 def main():
@@ -125,8 +135,6 @@ def main():
     # commandParameters.update({"opencv_threshold.1": {"src": "opencv_imread.1.dst", "dst": "opencv_threshold.1.dst", "threshold": 100, "maxval": 255, "type": cv2.THRESH_BINARY}})
     # commandParameters.update({"opencv_resize.1": {"imshow": True, "src": "opencv_threshold.1.dst", "dst": "opencv_resize.1.dst", "dsize": (0, 0), "fx": 0.4, "fy": 0.4, "interpolation": cv2.INTER_AREA}})
 
-    # global commandList
-    # commandList = list(commandParameters.keys())
     Mainwindow()
 
 
