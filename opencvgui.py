@@ -50,7 +50,7 @@ class ImreadGui(tk.Frame):
         super().__init__(master)
 
         self.filename = None
-        self.filename = "/home/nn/Képek/ocv.jpg"
+        self.filename = "resources/example/ocv_1.jpg"
         # self.flags = cv2.IMREAD_COLOR
         self.flags = cv2.IMREAD_GRAYSCALE
         self.output_name = None
@@ -73,6 +73,23 @@ class ImreadGui(tk.Frame):
         self.ent_output_name.grid(row=2, column=0)
 
 
+    def set_setting(self, setting):
+        if bool(setting):
+            self.set_variables(setting["filename"], setting["flags"], setting["output_name"])
+
+
+    def get_setting(self):
+        setting = {}
+
+        self.set_values()
+
+        setting.update({"filename": self.filename})
+        setting.update({"flags": self.flags})
+        setting.update({"output_name": self.output_name})
+
+        return setting
+
+
     def set_src_list(self, image_list):
         pass
 
@@ -80,6 +97,7 @@ class ImreadGui(tk.Frame):
     def set_variables(self, filename, flags, output_name):
         self.var_filename.set(filename)
         self.var_flags.set(flags)
+        self.cbx_flags.current(newindex=tuple(ENUM_IMREAD_MODES.values()).index(flags))
         self.var_output_name.set(output_name)
         self.set_values()
 
@@ -139,6 +157,25 @@ class ThresholdGui(tk.Frame):
         self.ent_dst.grid(row=3, column=0)
 
 
+    def set_setting(self, setting):
+        if bool(setting):
+            self.set_variables(setting["src"], setting["dst"], setting["thresh"], setting["maxval"], setting["type"])
+
+
+    def get_setting(self):
+        setting = {}
+
+        self.set_values()
+
+        setting.update({"src": self.src})
+        setting.update({"dst": self.dst})
+        setting.update({"thresh": self.thresh})
+        setting.update({"maxval": self.maxval})
+        setting.update({"type": self.type})
+
+        return setting
+
+
     def set_src_list(self, image_list):
         srcs = list(image_list.keys())
         try:
@@ -155,6 +192,7 @@ class ThresholdGui(tk.Frame):
         self.var_thresh.set(thresh)
         self.var_maxval.set(maxval)
         self.var_type.set(type)
+        self.cbx_type.current(newindex=tuple(ENUM_THRESHOLD_TYPES.values()).index(type))
         self.var_src.set(src)
         self.var_dst.set(dst)
         self.set_values()
@@ -245,6 +283,26 @@ class ResizeGui(tk.Frame):
         self.var_dsize_height.set(0)
 
 
+    def set_setting(self, setting):
+        if bool(setting):
+            self.set_variables(setting["src"], setting["dst"], setting["dsize"], setting["fx"], setting["fy"], setting["interpolation"])
+
+
+    def get_setting(self):
+        setting = {}
+
+        self.set_values()
+
+        setting.update({"src": self.src})
+        setting.update({"dst": self.dst})
+        setting.update({"dsize": self.dsize})
+        setting.update({"fx": self.fx})
+        setting.update({"fy": self.fy})
+        setting.update({"interpolation": self.interpolation})
+
+        return setting
+
+
     def set_src_list(self, image_list):
         srcs = list(image_list.keys())
         try:
@@ -263,6 +321,7 @@ class ResizeGui(tk.Frame):
         self.var_fx.set(fx)
         self.var_fy.set(fy)
         self.var_interpolation.set(interpolation)
+        self.cbx_interpolation.current(newindex=tuple(ENUM_INTERPOLATION_FLAGS.values()).index(interpolation))
         self.var_src.set(src)
         self.var_dst.set(dst)
         self.set_values()
