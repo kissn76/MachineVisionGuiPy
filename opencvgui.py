@@ -75,7 +75,12 @@ class ImreadGui(tk.Frame):
 
     def set_setting(self, setting):
         if bool(setting):
-            self.set_variables(setting["filename"], setting["flags"], setting["output_name"])
+            self.var_filename.set(setting["filename"])
+            self.var_flags.set(setting["flags"])
+            self.cbx_flags.current(newindex=tuple(ENUM_IMREAD_MODES.values()).index(setting["flags"]))
+            self.var_output_name.set(setting["output_name"])
+
+            self.set_values()
 
 
     def get_setting(self):
@@ -94,12 +99,8 @@ class ImreadGui(tk.Frame):
         pass
 
 
-    def set_variables(self, filename, flags, output_name):
-        self.var_filename.set(filename)
-        self.var_flags.set(flags)
-        self.cbx_flags.current(newindex=tuple(ENUM_IMREAD_MODES.values()).index(flags))
-        self.var_output_name.set(output_name)
-        self.set_values()
+    def get_output(self):
+        return self.output_name
 
 
     def run_process(self, images):
@@ -159,7 +160,14 @@ class ThresholdGui(tk.Frame):
 
     def set_setting(self, setting):
         if bool(setting):
-            self.set_variables(setting["src"], setting["dst"], setting["thresh"], setting["maxval"], setting["type"])
+            self.var_thresh.set(setting["thresh"])
+            self.var_maxval.set(setting["maxval"])
+            self.var_type.set(setting["type"])
+            self.cbx_type.current(newindex=tuple(ENUM_THRESHOLD_TYPES.values()).index(setting["type"]))
+            self.var_src.set(setting["src"])
+            self.var_dst.set(setting["dst"])
+
+            self.set_values()
 
 
     def get_setting(self):
@@ -176,6 +184,10 @@ class ThresholdGui(tk.Frame):
         return setting
 
 
+    def get_output(self):
+        return self.dst
+
+
     def set_src_list(self, image_list):
         srcs = list(image_list.keys())
         try:
@@ -188,23 +200,7 @@ class ThresholdGui(tk.Frame):
             self.cbx_src.current(newindex=(len(image_list) - 1))
 
 
-    def set_variables(self, src, dst, thresh, maxval, type):
-        self.var_thresh.set(thresh)
-        self.var_maxval.set(maxval)
-        self.var_type.set(type)
-        self.cbx_type.current(newindex=tuple(ENUM_THRESHOLD_TYPES.values()).index(type))
-        self.var_src.set(src)
-        self.var_dst.set(dst)
-        self.set_values()
-
-
     def run_process(self, images):
-        srcs = list(images.keys())
-        try:
-            srcs.remove(self.dst)
-        except:
-            pass
-        self.cbx_src.config(values=srcs)
         self.set_values()
 
         image = None
@@ -285,7 +281,16 @@ class ResizeGui(tk.Frame):
 
     def set_setting(self, setting):
         if bool(setting):
-            self.set_variables(setting["src"], setting["dst"], setting["dsize"], setting["fx"], setting["fy"], setting["interpolation"])
+            self.var_dsize_width.set(setting["dsize"][0])
+            self.var_dsize_height.set(setting["dsize"][1])
+            self.var_fx.set(setting["fx"])
+            self.var_fy.set(setting["fy"])
+            self.var_interpolation.set(setting["interpolation"])
+            self.cbx_interpolation.current(newindex=tuple(ENUM_INTERPOLATION_FLAGS.values()).index(setting["interpolation"]))
+            self.var_src.set(setting["src"])
+            self.var_dst.set(setting["dst"])
+
+            self.set_values()
 
 
     def get_setting(self):
@@ -303,6 +308,10 @@ class ResizeGui(tk.Frame):
         return setting
 
 
+    def get_output(self):
+        return self.dst
+
+
     def set_src_list(self, image_list):
         srcs = list(image_list.keys())
         try:
@@ -313,18 +322,6 @@ class ResizeGui(tk.Frame):
 
         if not bool(self.var_src.get()) and bool(image_list):
             self.cbx_src.current(newindex=(len(image_list) - 1))
-
-
-    def set_variables(self, src, dst, dsize, fx, fy, interpolation):
-        self.var_dsize_width.set(dsize[0])
-        self.var_dsize_height.set(dsize[1])
-        self.var_fx.set(fx)
-        self.var_fy.set(fy)
-        self.var_interpolation.set(interpolation)
-        self.cbx_interpolation.current(newindex=tuple(ENUM_INTERPOLATION_FLAGS.values()).index(interpolation))
-        self.var_src.set(src)
-        self.var_dst.set(dst)
-        self.set_values()
 
 
     def run_process(self, image_list):
