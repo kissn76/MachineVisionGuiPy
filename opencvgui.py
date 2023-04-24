@@ -72,6 +72,8 @@ class ImreadGui(tk.Frame):
         self.cbx_flags.grid(row=1, column=0)
         self.ent_output_name.grid(row=2, column=0)
 
+        self.set_values()
+
 
     def set_setting(self, setting):
         if bool(setting):
@@ -95,12 +97,8 @@ class ImreadGui(tk.Frame):
         return setting
 
 
-    def set_src_list(self, image_list):
-        pass
-
-
     def get_output(self):
-        return self.output_name
+        return [self.output_name]
 
 
     def run_process(self, images):
@@ -139,9 +137,6 @@ class ThresholdGui(tk.Frame):
         scl_maxval = tk.Scale(self, variable=self.var_maxval, from_=0, to=255, orient=tk.HORIZONTAL)
         scl_maxval.set(self.maxval)
 
-        self.var_src = tk.StringVar()
-        self.cbx_src = ttk.Combobox(self, textvariable=self.var_src, state="readonly")
-
         self.var_type = tk.StringVar()
         self.cbx_type = ttk.Combobox(self, textvariable=self.var_type, state="readonly")
         self.cbx_type.config(values=tuple(ENUM_THRESHOLD_TYPES.keys()))
@@ -154,8 +149,9 @@ class ThresholdGui(tk.Frame):
         scl_thresh.grid(row=0, column=0)
         scl_maxval.grid(row=0, column=1)
         self.cbx_type.grid(row=1, column=0, columnspan=2)
-        self.cbx_src.grid(row=2, column=0)
         self.ent_dst.grid(row=3, column=0)
+
+        self.set_values()
 
 
     def set_setting(self, setting):
@@ -164,7 +160,7 @@ class ThresholdGui(tk.Frame):
             self.var_maxval.set(setting["maxval"])
             self.var_type.set(setting["type"])
             self.cbx_type.current(newindex=tuple(ENUM_THRESHOLD_TYPES.values()).index(setting["type"]))
-            self.var_src.set(setting["src"])
+            self.src = setting["src"]
             self.var_dst.set(setting["dst"])
 
             self.set_values()
@@ -185,19 +181,7 @@ class ThresholdGui(tk.Frame):
 
 
     def get_output(self):
-        return self.dst
-
-
-    def set_src_list(self, image_list):
-        srcs = list(image_list.keys())
-        try:
-            srcs.remove(self.dst)
-        except:
-            pass
-        self.cbx_src.config(values=srcs)
-
-        if not bool(self.var_src.get()) and bool(image_list):
-            self.cbx_src.current(newindex=(len(image_list) - 1))
+        return [self.dst]
 
 
     def run_process(self, images):
@@ -217,7 +201,6 @@ class ThresholdGui(tk.Frame):
         self.maxval = self.var_maxval.get()
         self.type = ENUM_THRESHOLD_TYPES[self.var_type.get()]
         self.dst = self.var_dst.get()
-        self.src = self.var_src.get()
 
 
 class ResizeGui(tk.Frame):
@@ -230,10 +213,6 @@ class ResizeGui(tk.Frame):
         self.fx = 0.3
         self.fy = 0.3
         self.interpolation = cv2.INTER_NEAREST
-
-        self.var_src = tk.StringVar()
-        self.cbx_src = ttk.Combobox(self, textvariable=self.var_src)
-        self.cbx_src.config(state="readonly")
 
         self.var_dst = tk.StringVar()
         self.ent_dst = tk.Entry(self, textvariable=self.var_dst, state="readonly")
@@ -265,8 +244,9 @@ class ResizeGui(tk.Frame):
         scl_fx.grid(row=1, column=0)
         scl_fy.grid(row=1, column=1)
         self.cbx_interpolation.grid(row=2, column=0, columnspan=2)
-        self.cbx_src.grid(row=3, column=0)
         self.ent_dst.grid(row=4, column=0)
+
+        self.set_values()
 
 
     def reset_factor(self, source):
@@ -287,7 +267,7 @@ class ResizeGui(tk.Frame):
             self.var_fy.set(setting["fy"])
             self.var_interpolation.set(setting["interpolation"])
             self.cbx_interpolation.current(newindex=tuple(ENUM_INTERPOLATION_FLAGS.values()).index(setting["interpolation"]))
-            self.var_src.set(setting["src"])
+            self.src = setting["src"]
             self.var_dst.set(setting["dst"])
 
             self.set_values()
@@ -309,19 +289,7 @@ class ResizeGui(tk.Frame):
 
 
     def get_output(self):
-        return self.dst
-
-
-    def set_src_list(self, image_list):
-        srcs = list(image_list.keys())
-        try:
-            srcs.remove(self.dst)
-        except:
-            pass
-        self.cbx_src.config(values=srcs)
-
-        if not bool(self.var_src.get()) and bool(image_list):
-            self.cbx_src.current(newindex=(len(image_list) - 1))
+        return [self.dst]
 
 
     def run_process(self, image_list):
@@ -341,4 +309,3 @@ class ResizeGui(tk.Frame):
         self.fy = self.var_fy.get()
         self.interpolation = ENUM_INTERPOLATION_FLAGS[self.var_interpolation.get()]
         self.dst = self.var_dst.get()
-        self.src = self.var_src.get()
