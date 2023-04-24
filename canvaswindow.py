@@ -84,7 +84,7 @@ class Mainwindow(tk.Tk):
         # btn_move_up.grid(row=0, column=2)
         # btn_move_down.grid(row=0, column=3)
         # lbl_command.bind("<Button-1>", lambda event: self.show_command_setting_form(command))
-        # frm_row.pack()
-        self.can_main.create_window(100, 100, window=frm_row)
+        # frm_row.pack(side=tk.S)
+        self.can_main.create_window(100, 100, window=frm_row, height=100, anchor=tk.CENTER)
 
         self.canvas_elements.append(frm_row)
