@@ -1,6 +1,7 @@
 import cv2
 import tkinter as tk
 from tkinter import ttk
+from PIL import Image, ImageTk
 from pathlib import Path
 
 
@@ -330,4 +331,62 @@ class ResizeGui(tk.Frame):
         self.interpolation = ENUM_INTERPOLATION_FLAGS[self.var_interpolation.get()]
 
         self.lbl_input.config(text=self.input)
+        self.lbl_output.config(text=self.output)
+
+
+class TkDisplay(tk.Frame):
+    def __init__(self, master, name):
+        super().__init__(master)
+
+        self.input = {"src": None}
+        self.output = None
+
+        image_default = ImageTk.PhotoImage(Image.open("resources/gears_400.jpg"))
+        self.lbl_output = tk.Label(self, image=image_default)
+        self.lbl_output.pack()
+
+        self.set_values()
+
+
+    def set_setting(self, setting):
+        if bool(setting):
+            self.input = setting["input"]
+            self.output =  setting["output"]
+
+            self.set_values()
+
+
+    def get_setting(self):
+        setting = {}
+
+        self.set_values()
+
+        setting.update({"input": self.input})
+        setting.update({"output": self.output})
+
+        return setting
+
+
+    def get_input(self):
+        return self.input
+
+
+    def get_output(self):
+        return self.output
+
+
+    def run_process(self, image_list):
+        self.set_values()
+
+        image = None
+        try:
+            image = cv2.cvtColor(image_list[self.input["src"]], cv2.COLOR_BGR2RGB)
+            imagetk = ImageTk.PhotoImage(image=Image.fromarray(image))
+            self.lbl_output.configure(image=imagetk)
+            self.lbl_output.image = imagetk
+        except:
+            pass
+
+
+    def set_values(self):
         self.lbl_output.config(text=self.output)
