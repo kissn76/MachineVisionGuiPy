@@ -25,7 +25,7 @@ class Mainwindow(tk.Tk):
         self.frm_used_command_setting = tk.Frame(self.frm_config)
 
         # ttk.Button(self.frm_available_commands, text="Reload GUI", command=self.reload_gui).pack()
-        # ttk.Button(self.frm_available_commands, text="Save setting", command=self.save_settings).pack()
+        ttk.Button(self.frm_available_commands, text="Save setting", command=self.save_settings).pack()
         ttk.Label(self.frm_available_commands, text="Available commands").pack()
         ttk.Label(self.frm_used_command_setting, text="Command setting").pack()
 
@@ -45,6 +45,20 @@ class Mainwindow(tk.Tk):
         ttk.Button(self.frm_available_commands, text="Add display", command=self.add_display).pack()
         for available_command in self.available_commands:
             self.add_available_command_row(available_command)
+
+        # előzőleg elmentett munka betöltése
+        # setting = self.load_setting()
+        # if bool(setting):
+        #     self.used_command_list = list(setting.keys())
+
+        # max_counter = 0
+        # for command in self.used_command_list:
+        #     counter = int(command[command.rfind(".") + 1:]) + 1
+        #     if counter > max_counter:
+        #         max_counter = counter
+        # self.command_counter = max_counter
+        # TODO
+        # előző canvas elemek betöltése
 
         self.next_image()
 
@@ -178,12 +192,12 @@ class Mainwindow(tk.Tk):
         if not bool(self.output_clipboard):
             print("Empty clipboard")
         else:
-            print(command_name, input_key, self.output_clipboard)
             self.used_command_setting_list[command_name].input[input_key] = self.output_clipboard
             self.used_command_setting_list[command_name].set_values()
             self.canvas_input_elements[f"{command_name}.{input_key}"].config(text=f"{input_key}: {self.output_clipboard}")
 
-        # TODO: kiszűrni a saját kimenetet, ne legyen a saját kimenet, a saját bemenet
+        # TODO
+        # kiszűrni a saját kimenetet, ne legyen a saját kimenet, a saját bemenet
 
 
     def del_command_row(self, command):
@@ -221,6 +235,8 @@ class Mainwindow(tk.Tk):
 
 
     def save_settings(self):
+        # TODO
+        # canvas elemek mentése
         setting = self.get_setting()
         with open("setting.json", "w") as fp:
             json.dump(setting, fp)

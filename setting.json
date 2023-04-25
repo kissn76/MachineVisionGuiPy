@@ -1,0 +1,1 @@
+{"opencv_imread.0": {"input": null, "output": {"ret": "opencv_imread.0.ret"}, "filename": "resources/example/ocv_1.jpg", "flags": 0}, "opencv_resize.1": {"input": {"src": "opencv_imread.0.ret"}, "output": {"dst": "opencv_resize.1.dst"}, "dsize": [0, 0], "fx": 0.3, "fy": 0.3, "interpolation": 0}}
