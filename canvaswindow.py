@@ -14,9 +14,11 @@ class Mainwindow(tk.Tk):
         self.command_counter = 0            # a parancs nevéhez egy counter, hogy ne legyen két egyforma nevű parancs
         self.used_command_list = []         # végrehajtási sor. A végrehajtandó parancsokat tartalmazza
         self.used_command_setting_list = {}  # a végrehajtandó parancsok object-jeit tartalmazza
+        self.image_list = {}
 
         self.output_clipboard = None
         self.canvas_input_elements = {}
+        self.canvas_display_list = {}
 
         self.frm_config = tk.Frame(self)
         self.frm_available_commands = tk.Frame(self.frm_config)
@@ -40,8 +42,11 @@ class Mainwindow(tk.Tk):
         self.frm_image.grid(row=0, column=1, sticky="n, s, w, e")
 
         # elérhető parancsok gui frame feltöltése
+        ttk.Button(self.frm_available_commands, text="Add display", command=self.add_display).pack()
         for available_command in self.available_commands:
             self.add_available_command_row(available_command)
+
+        self.next_image()
 
         self.mainloop()
 
@@ -49,7 +54,6 @@ class Mainwindow(tk.Tk):
     def select_object(self, event):
         self.can_main.bind('<Motion>', self.move_object)
         self.can_main.bind('<ButtonRelease-1>', self.deselect_object)
-        # self.can_main.addtag_withtag('selected', tk.CURRENT)
 
         x, y = event.x, event.y
         self.can_main.addtag_closest('selected', x, y)
@@ -63,6 +67,38 @@ class Mainwindow(tk.Tk):
     def deselect_object(self, event):
         self.can_main.dtag('selected')    # removes the 'selected' tag
         self.can_main.unbind('<Motion>')
+
+
+    def add_display(self):
+        display_name = f"tkdisplay.{self.command_counter}"
+        self.command_counter += 1
+
+        image = ImageTk.PhotoImage(Image.open("resources/gears_400.jpg"))
+        ci = self.can_main.create_image(100, 100, image=image)
+
+        self.canvas_display_list.update({display_name: {"object": ci, "src": None, "imagetk": image}})
+
+        self.can_main.tag_bind(ci, "<Double-Button-1>", lambda event: self.paste_display_input(display_name))
+
+
+    def refresh_display(self):
+        for display_name, display_properties in self.canvas_display_list.items():
+            try:
+                image = self.image_list[self.canvas_display_list[display_name]["src"]]
+                image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+                imgtk = ImageTk.PhotoImage(image=Image.fromarray(image))
+
+                self.canvas_display_list[display_name]["imagetk"] = imgtk
+                self.can_main.itemconfig(display_properties["object"], image=imgtk)
+            except:
+                pass
+
+
+    def paste_display_input(self, display_name):
+        if not bool(self.output_clipboard):
+            print("Empty clipboard")
+        else:
+            self.canvas_display_list[display_name]["src"] = self.output_clipboard
 
 
     def add_available_command_row(self, command):
@@ -136,7 +172,6 @@ class Mainwindow(tk.Tk):
 
     def copy_output(self, output):
         self.output_clipboard = output
-        print("Clipboard:", self.output_clipboard)
 
 
     def paste_input(self, command_name, input_key):
@@ -189,3 +224,15 @@ class Mainwindow(tk.Tk):
         setting = self.get_setting()
         with open("setting.json", "w") as fp:
             json.dump(setting, fp)
+
+
+    def next_image(self):
+        for command in self.used_command_list:
+            try:
+                self.used_command_setting_list[command].run_process(self.image_list)
+            except:
+                pass
+
+        self.refresh_display()
+
+        self.after(100, self.next_image)
