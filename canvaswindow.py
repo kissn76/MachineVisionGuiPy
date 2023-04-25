@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 from PIL import Image, ImageTk
+import json
 
 from opencvgui import *
 
@@ -13,6 +14,7 @@ class Mainwindow(tk.Tk):
         self.command_counter = 0            # a parancs nevéhez egy counter, hogy ne legyen két egyforma nevű parancs
         self.used_command_list = []         # végrehajtási sor. A végrehajtandó parancsokat tartalmazza
         self.used_command_setting_list = {}  # a végrehajtandó parancsok object-jeit tartalmazza
+        self.output_clipboard = None
 
         self.frm_config = tk.Frame(self)
         self.frm_available_commands = tk.Frame(self.frm_config)
@@ -82,38 +84,54 @@ class Mainwindow(tk.Tk):
 
         # hozzáadás a gui-hoz
         frm_row = tk.Frame(self.can_main)
+        frm_input = tk.Frame(frm_row)
         lbl_command = tk.Label(frm_row, text=command_name)
         btn_delete = ttk.Button(frm_row, text="t", width=1, command=lambda: self.del_command_row(command_name))
         frm_output = tk.Frame(frm_row)
-        lbl_command.grid(row=0, column=0)
-        btn_delete.grid(row=0, column=1)
-        frm_output.grid(row=1, column=0)
+        frm_input.grid(row=0, column=0)
+        lbl_command.grid(row=1, column=0)
+        btn_delete.grid(row=1, column=1)
+        frm_output.grid(row=2, column=0)
         lbl_command.bind("<Button-1>", lambda event: self.show_command_setting_form(command_name))
 
-        output_list = self.used_command_setting_list[command_name].get_output()
-        for output in output_list:
-            lbl_out = tk.Label(frm_output, text=output)
-            lbl_out.pack()
-            self.make_draggable(lbl_out)
+        # bemenetek kirajzolása
+        try:
+            input_list = self.used_command_setting_list[command_name].get_input()
+            for input_key, input_value in input_list.items():
+                if input_value is None:
+                    input_value = "None"
+                lbl_in = tk.Label(frm_input, text=f"{input_key}: {input_value}")
+                lbl_in.pack()
+                lbl_in.bind("<Double-Button-1>", lambda event: self.paste_input(command_name, input_key))
+        except:
+            pass
+
+        # kimenetek kirajzolása
+        try:
+            output_list = self.used_command_setting_list[command_name].get_output()
+            for output_key, output_value in output_list.items():
+                lbl_out = tk.Label(frm_output, text=f"{output_key}: {output_value}")
+                lbl_out.pack()
+                lbl_out.bind("<Double-Button-1>", lambda event: self.copy_output(output_value))
+        except:
+            pass
 
         w = self.can_main.create_window(100, 100, window=frm_row, anchor="nw")
         self.canvas_elements.append(w)
 
 
-    def make_draggable(self, widget):
-        widget.bind("<Button-1>", self.on_drag_start)
-        widget.bind("<B1-Motion>", self.on_drag_motion)
+    def copy_output(self, output):
+        self.output_clipboard = output
+        print("Clipboard:", self.output_clipboard)
 
-    def on_drag_start(self, event):
-        widget = event.widget
-        widget._drag_start_x = event.x
-        widget._drag_start_y = event.y
 
-    def on_drag_motion(self, event):
-        widget = event.widget
-        x = widget.winfo_x() - widget._drag_start_x + event.x
-        y = widget.winfo_y() - widget._drag_start_y + event.y
-        print(x, y)
+    def paste_input(self, command_name, input_key):
+        if not bool(self.output_clipboard):
+            print("Empty clipboard")
+        else:
+            print(command_name, input_key, self.output_clipboard)
+
+        # TODO: kiszűrni a saját kimenetet, ne legyen a saját kimenet, a saját bemenet
 
 
     def add_used_command_setting(self, command, setting):

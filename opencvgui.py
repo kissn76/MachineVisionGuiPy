@@ -49,11 +49,13 @@ class ImreadGui(tk.Frame):
     def __init__(self, master, name):
         super().__init__(master)
 
+
+        self.input = None
+        self.output = {"ret": f"{name}.ret"}
         self.filename = None
         self.filename = "resources/example/ocv_1.jpg"
         # self.flags = cv2.IMREAD_COLOR
         self.flags = cv2.IMREAD_GRAYSCALE
-        self.output_name = None
 
         self.var_filename = tk.StringVar()
         self.ent_filename = tk.Entry(self, textvariable=self.var_filename)
@@ -64,13 +66,11 @@ class ImreadGui(tk.Frame):
         self.cbx_flags.config(values=tuple(ENUM_IMREAD_MODES.keys()))
         self.cbx_flags.current(newindex=tuple(ENUM_IMREAD_MODES.values()).index(self.flags))
 
-        self.var_output_name = tk.StringVar()
-        self.ent_output_name = tk.Entry(self, textvariable=self.var_output_name, state="readonly")
-        self.var_output_name.set(f"{name}.out")
+        self.lbl_dst = tk.Label(self, text=self.output)
 
         self.ent_filename.grid(row=0, column=0)
         self.cbx_flags.grid(row=1, column=0)
-        self.ent_output_name.grid(row=2, column=0)
+        self.lbl_dst.grid(row=2, column=0)
 
         self.set_values()
 
@@ -80,7 +80,8 @@ class ImreadGui(tk.Frame):
             self.var_filename.set(setting["filename"])
             self.var_flags.set(setting["flags"])
             self.cbx_flags.current(newindex=tuple(ENUM_IMREAD_MODES.values()).index(setting["flags"]))
-            self.var_output_name.set(setting["output_name"])
+            self.input = setting["input"]
+            self.output =  setting["output"]
 
             self.set_values()
 
@@ -90,15 +91,20 @@ class ImreadGui(tk.Frame):
 
         self.set_values()
 
+        setting.update({"input": self.input})
+        setting.update({"output": self.output})
         setting.update({"filename": self.filename})
         setting.update({"flags": self.flags})
-        setting.update({"output_name": self.output_name})
 
         return setting
 
 
+    def get_input(self):
+        return self.input
+
+
     def get_output(self):
-        return [self.output_name]
+        return self.output
 
 
     def run_process(self, images):
@@ -108,7 +114,7 @@ class ImreadGui(tk.Frame):
         try:
             if Path(self.filename).is_file():
                 image = cv2.imread(self.filename, self.flags)
-                images.update({self.output_name: image})
+                images.update({self.output["ret"]: image})
         except:
             pass
 
@@ -116,15 +122,14 @@ class ImreadGui(tk.Frame):
     def set_values(self):
         self.filename = self.var_filename.get()
         self.flags = ENUM_IMREAD_MODES[self.var_flags.get()]
-        self.output_name = self.var_output_name.get()
 
 
 class ThresholdGui(tk.Frame):
     def __init__(self, master, name):
         super().__init__(master)
 
-        self.src = None
-        self.dst = None
+        self.input = {"src": None}
+        self.output = {"dst": f"{name}.dst"}
         self.thresh = 150.0
         self.maxval = 255.0
         self.type = cv2.THRESH_BINARY
@@ -142,14 +147,12 @@ class ThresholdGui(tk.Frame):
         self.cbx_type.config(values=tuple(ENUM_THRESHOLD_TYPES.keys()))
         self.cbx_type.current(newindex=tuple(ENUM_THRESHOLD_TYPES.values()).index(self.type))
 
-        self.var_dst = tk.StringVar()
-        self.ent_dst = tk.Entry(self, textvariable=self.var_dst, state="readonly")
-        self.var_dst.set(f"{name}.out")
+        self.lbl_dst = tk.Label(self, text=self.output)
 
         scl_thresh.grid(row=0, column=0)
         scl_maxval.grid(row=0, column=1)
         self.cbx_type.grid(row=1, column=0, columnspan=2)
-        self.ent_dst.grid(row=3, column=0)
+        self.lbl_dst.grid(row=2, column=0, columnspan=2)
 
         self.set_values()
 
@@ -160,8 +163,8 @@ class ThresholdGui(tk.Frame):
             self.var_maxval.set(setting["maxval"])
             self.var_type.set(setting["type"])
             self.cbx_type.current(newindex=tuple(ENUM_THRESHOLD_TYPES.values()).index(setting["type"]))
-            self.src = setting["src"]
-            self.var_dst.set(setting["dst"])
+            self.input = setting["input"]
+            self.output =  setting["output"]
 
             self.set_values()
 
@@ -171,8 +174,8 @@ class ThresholdGui(tk.Frame):
 
         self.set_values()
 
-        setting.update({"src": self.src})
-        setting.update({"dst": self.dst})
+        setting.update({"input": self.input})
+        setting.update({"output": self.output})
         setting.update({"thresh": self.thresh})
         setting.update({"maxval": self.maxval})
         setting.update({"type": self.type})
@@ -180,18 +183,22 @@ class ThresholdGui(tk.Frame):
         return setting
 
 
+    def get_input(self):
+        return self.input
+
+
     def get_output(self):
-        return [self.dst]
+        return self.output
 
 
-    def run_process(self, images):
+    def run_process(self, image_list):
         self.set_values()
 
         image = None
         try:
-            _, image = cv2.threshold(images[self.src], self.thresh, self.maxval, self.type)
+            _, image = cv2.threshold(image_list[self.input["src"]], self.thresh, self.maxval, self.type)
             image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
-            images.update({self.dst: image})
+            image_list.update({self.output["dst"]: image})
         except:
             pass
 
@@ -200,23 +207,18 @@ class ThresholdGui(tk.Frame):
         self.thresh = self.var_thresh.get()
         self.maxval = self.var_maxval.get()
         self.type = ENUM_THRESHOLD_TYPES[self.var_type.get()]
-        self.dst = self.var_dst.get()
 
 
 class ResizeGui(tk.Frame):
     def __init__(self, master, name):
         super().__init__(master)
 
-        self.src = None
-        self.dst = None
+        self.input = {"src": None}
+        self.output = {"dst": f"{name}.dst"}
         self.dsize = (0, 0)
         self.fx = 0.3
         self.fy = 0.3
         self.interpolation = cv2.INTER_NEAREST
-
-        self.var_dst = tk.StringVar()
-        self.ent_dst = tk.Entry(self, textvariable=self.var_dst, state="readonly")
-        self.var_dst.set(f"{name}.out")
 
         self.var_dsize_width = tk.IntVar()
         scl_dsize_width = tk.Scale(self, variable=self.var_dsize_width, from_=0, to=255, orient=tk.HORIZONTAL, command=self.reset_factor)
@@ -239,12 +241,14 @@ class ResizeGui(tk.Frame):
         self.cbx_interpolation.config(values=tuple(ENUM_INTERPOLATION_FLAGS.keys()))
         self.cbx_interpolation.current(newindex=tuple(ENUM_INTERPOLATION_FLAGS.values()).index(self.interpolation))
 
+        self.lbl_dst = tk.Label(self, text=self.output)
+
         scl_dsize_width.grid(row=0, column=0)
         scl_dsize_height.grid(row=0, column=1)
         scl_fx.grid(row=1, column=0)
         scl_fy.grid(row=1, column=1)
         self.cbx_interpolation.grid(row=2, column=0, columnspan=2)
-        self.ent_dst.grid(row=4, column=0)
+        self.lbl_dst.grid(row=4, column=0, columnspan=2)
 
         self.set_values()
 
@@ -267,8 +271,8 @@ class ResizeGui(tk.Frame):
             self.var_fy.set(setting["fy"])
             self.var_interpolation.set(setting["interpolation"])
             self.cbx_interpolation.current(newindex=tuple(ENUM_INTERPOLATION_FLAGS.values()).index(setting["interpolation"]))
-            self.src = setting["src"]
-            self.var_dst.set(setting["dst"])
+            self.input = setting["input"]
+            self.output =  setting["output"]
 
             self.set_values()
 
@@ -278,8 +282,8 @@ class ResizeGui(tk.Frame):
 
         self.set_values()
 
-        setting.update({"src": self.src})
-        setting.update({"dst": self.dst})
+        setting.update({"input": self.input})
+        setting.update({"output": self.output})
         setting.update({"dsize": self.dsize})
         setting.update({"fx": self.fx})
         setting.update({"fy": self.fy})
@@ -288,8 +292,12 @@ class ResizeGui(tk.Frame):
         return setting
 
 
+    def get_input(self):
+        return self.input
+
+
     def get_output(self):
-        return [self.dst]
+        return self.output
 
 
     def run_process(self, image_list):
@@ -297,8 +305,8 @@ class ResizeGui(tk.Frame):
 
         image = None
         try:
-            image = cv2.resize(image_list[self.src], dsize=self.dsize, fx=self.fx, fy=self.fy, interpolation=self.interpolation)
-            image_list.update({self.dst: image})
+            image = cv2.resize(image_list[self.input["src"]], dsize=self.dsize, fx=self.fx, fy=self.fy, interpolation=self.interpolation)
+            image_list.update({self.output["dst"]: image})
         except:
             pass
 
@@ -308,4 +316,3 @@ class ResizeGui(tk.Frame):
         self.fx = self.var_fx.get()
         self.fy = self.var_fy.get()
         self.interpolation = ENUM_INTERPOLATION_FLAGS[self.var_interpolation.get()]
-        self.dst = self.var_dst.get()
