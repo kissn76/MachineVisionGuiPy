@@ -14,7 +14,9 @@ class Mainwindow(tk.Tk):
         self.command_counter = 0            # a parancs nevéhez egy counter, hogy ne legyen két egyforma nevű parancs
         self.used_command_list = []         # végrehajtási sor. A végrehajtandó parancsokat tartalmazza
         self.used_command_setting_list = {}  # a végrehajtandó parancsok object-jeit tartalmazza
+
         self.output_clipboard = None
+        self.canvas_input_elements = {}
 
         self.frm_config = tk.Frame(self)
         self.frm_available_commands = tk.Frame(self.frm_config)
@@ -40,9 +42,6 @@ class Mainwindow(tk.Tk):
         # elérhető parancsok gui frame feltöltése
         for available_command in self.available_commands:
             self.add_available_command_row(available_command)
-
-        self.canvas_elements = {}
-        self.canvas_input_elements = {}
 
         self.mainloop()
 
@@ -118,8 +117,21 @@ class Mainwindow(tk.Tk):
         except:
             pass
 
-        w = self.can_main.create_window(100, 100, window=frm_row, anchor="nw")
-        self.canvas_elements.update({command_name: w})
+        self.can_main.create_window(100, 100, window=frm_row, anchor="nw")
+
+
+    def add_used_command_setting(self, command, setting):
+        if command.startswith("opencv_imread"):
+            self.used_command_setting_list[command] = ImreadGui(self.frm_used_command_setting, command)
+        elif command.startswith("opencv_threshold"):
+            self.used_command_setting_list[command] = ThresholdGui(self.frm_used_command_setting, command)
+        elif command.startswith("opencv_resize"):
+            self.used_command_setting_list[command] = ResizeGui(self.frm_used_command_setting, command)
+
+        try:
+            self.used_command_setting_list[command].set_setting(setting[command])
+        except:
+            pass
 
 
     def copy_output(self, output):
@@ -137,20 +149,6 @@ class Mainwindow(tk.Tk):
             self.canvas_input_elements[f"{command_name}.{input_key}"].config(text=f"{input_key}: {self.output_clipboard}")
 
         # TODO: kiszűrni a saját kimenetet, ne legyen a saját kimenet, a saját bemenet
-
-
-    def add_used_command_setting(self, command, setting):
-        if command.startswith("opencv_imread"):
-            self.used_command_setting_list[command] = ImreadGui(self.frm_used_command_setting, command)
-        elif command.startswith("opencv_threshold"):
-            self.used_command_setting_list[command] = ThresholdGui(self.frm_used_command_setting, command)
-        elif command.startswith("opencv_resize"):
-            self.used_command_setting_list[command] = ResizeGui(self.frm_used_command_setting, command)
-
-        try:
-            self.used_command_setting_list[command].set_setting(setting[command])
-        except:
-            pass
 
 
     def del_command_row(self, command):
