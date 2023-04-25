@@ -66,11 +66,13 @@ class ImreadGui(tk.Frame):
         self.cbx_flags.config(values=tuple(ENUM_IMREAD_MODES.keys()))
         self.cbx_flags.current(newindex=tuple(ENUM_IMREAD_MODES.values()).index(self.flags))
 
-        self.lbl_dst = tk.Label(self, text=self.output)
+        self.lbl_input = tk.Label(self, text=self.input)
+        self.lbl_output = tk.Label(self, text=self.output)
 
         self.ent_filename.grid(row=0, column=0)
         self.cbx_flags.grid(row=1, column=0)
-        self.lbl_dst.grid(row=2, column=0)
+        self.lbl_input.grid(row=2, column=0)
+        self.lbl_output.grid(row=3, column=0)
 
         self.set_values()
 
@@ -123,6 +125,9 @@ class ImreadGui(tk.Frame):
         self.filename = self.var_filename.get()
         self.flags = ENUM_IMREAD_MODES[self.var_flags.get()]
 
+        self.lbl_input.config(text=self.input)
+        self.lbl_output.config(text=self.output)
+
 
 class ThresholdGui(tk.Frame):
     def __init__(self, master, name):
@@ -147,12 +152,14 @@ class ThresholdGui(tk.Frame):
         self.cbx_type.config(values=tuple(ENUM_THRESHOLD_TYPES.keys()))
         self.cbx_type.current(newindex=tuple(ENUM_THRESHOLD_TYPES.values()).index(self.type))
 
-        self.lbl_dst = tk.Label(self, text=self.output)
+        self.lbl_input = tk.Label(self, text=self.input)
+        self.lbl_output = tk.Label(self, text=self.output)
 
         scl_thresh.grid(row=0, column=0)
         scl_maxval.grid(row=0, column=1)
         self.cbx_type.grid(row=1, column=0, columnspan=2)
-        self.lbl_dst.grid(row=2, column=0, columnspan=2)
+        self.lbl_input.grid(row=2, column=0, columnspan=2)
+        self.lbl_output.grid(row=3, column=0, columnspan=2)
 
         self.set_values()
 
@@ -208,6 +215,9 @@ class ThresholdGui(tk.Frame):
         self.maxval = self.var_maxval.get()
         self.type = ENUM_THRESHOLD_TYPES[self.var_type.get()]
 
+        self.lbl_input.config(text=self.input)
+        self.lbl_output.config(text=self.output)
+
 
 class ResizeGui(tk.Frame):
     def __init__(self, master, name):
@@ -241,14 +251,16 @@ class ResizeGui(tk.Frame):
         self.cbx_interpolation.config(values=tuple(ENUM_INTERPOLATION_FLAGS.keys()))
         self.cbx_interpolation.current(newindex=tuple(ENUM_INTERPOLATION_FLAGS.values()).index(self.interpolation))
 
-        self.lbl_dst = tk.Label(self, text=self.output)
+        self.lbl_input = tk.Label(self, text=self.input)
+        self.lbl_output = tk.Label(self, text=self.output)
 
         scl_dsize_width.grid(row=0, column=0)
         scl_dsize_height.grid(row=0, column=1)
         scl_fx.grid(row=1, column=0)
         scl_fy.grid(row=1, column=1)
         self.cbx_interpolation.grid(row=2, column=0, columnspan=2)
-        self.lbl_dst.grid(row=4, column=0, columnspan=2)
+        self.lbl_input.grid(row=3, column=0, columnspan=2)
+        self.lbl_output.grid(row=4, column=0, columnspan=2)
 
         self.set_values()
 
@@ -316,3 +328,6 @@ class ResizeGui(tk.Frame):
         self.fx = self.var_fx.get()
         self.fy = self.var_fy.get()
         self.interpolation = ENUM_INTERPOLATION_FLAGS[self.var_interpolation.get()]
+
+        self.lbl_input.config(text=self.input)
+        self.lbl_output.config(text=self.output)

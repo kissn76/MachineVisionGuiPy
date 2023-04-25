@@ -41,7 +41,8 @@ class Mainwindow(tk.Tk):
         for available_command in self.available_commands:
             self.add_available_command_row(available_command)
 
-        self.canvas_elements = []
+        self.canvas_elements = {}
+        self.canvas_input_elements = {}
 
         self.mainloop()
 
@@ -103,6 +104,7 @@ class Mainwindow(tk.Tk):
                 lbl_in = tk.Label(frm_input, text=f"{input_key}: {input_value}")
                 lbl_in.pack()
                 lbl_in.bind("<Double-Button-1>", lambda event: self.paste_input(command_name, input_key))
+                self.canvas_input_elements.update({f"{command_name}.{input_key}": lbl_in})
         except:
             pass
 
@@ -117,7 +119,7 @@ class Mainwindow(tk.Tk):
             pass
 
         w = self.can_main.create_window(100, 100, window=frm_row, anchor="nw")
-        self.canvas_elements.append(w)
+        self.canvas_elements.update({command_name: w})
 
 
     def copy_output(self, output):
@@ -130,6 +132,9 @@ class Mainwindow(tk.Tk):
             print("Empty clipboard")
         else:
             print(command_name, input_key, self.output_clipboard)
+            self.used_command_setting_list[command_name].input[input_key] = self.output_clipboard
+            self.used_command_setting_list[command_name].set_values()
+            self.canvas_input_elements[f"{command_name}.{input_key}"].config(text=f"{input_key}: {self.output_clipboard}")
 
         # TODO: kiszűrni a saját kimenetet, ne legyen a saját kimenet, a saját bemenet
 
