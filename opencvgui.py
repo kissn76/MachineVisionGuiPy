@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import ttk
 from PIL import Image, ImageTk
 from pathlib import Path
+import os.path
 
 
 ENUM_IMREAD_MODES = {
@@ -78,6 +79,10 @@ class ImreadGui(tk.Frame):
         self.set_values()
 
 
+    def get_gui(self, master):
+        return ttk.Label(master)
+
+
     def set_setting(self, setting):
         if bool(setting):
             self.var_filename.set(setting["filename"])
@@ -113,13 +118,16 @@ class ImreadGui(tk.Frame):
     def run_process(self, images):
         self.set_values()
 
-        image = None
-        try:
-            if Path(self.filename).is_file():
+        if Path(self.filename).is_file():
+            image = None
+            try:
                 image = cv2.imread(self.filename, self.flags)
                 images.update({self.output["ret"]: image})
-        except:
-            pass
+                return True
+            except:
+                pass
+
+        return False
 
 
     def set_values(self):
@@ -165,6 +173,10 @@ class ThresholdGui(tk.Frame):
         self.set_values()
 
 
+    def get_gui(self, master):
+        return ttk.Label(master)
+
+
     def set_setting(self, setting):
         if bool(setting):
             self.var_thresh.set(setting["thresh"])
@@ -202,13 +214,17 @@ class ThresholdGui(tk.Frame):
     def run_process(self, image_list):
         self.set_values()
 
-        image = None
-        try:
-            _, image = cv2.threshold(image_list[self.input["src"]], self.thresh, self.maxval, self.type)
-            image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
-            image_list.update({self.output["dst"]: image})
-        except:
-            pass
+        if bool(self.input["src"] and len(image_list[self.input["src"]]) > 0):
+            image = None
+            try:
+                _, image = cv2.threshold(image_list[self.input["src"]], self.thresh, self.maxval, self.type)
+                image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
+                image_list.update({self.output["dst"]: image})
+                return True
+            except:
+                pass
+
+        return False
 
 
     def set_values(self):
@@ -266,6 +282,10 @@ class ResizeGui(tk.Frame):
         self.set_values()
 
 
+    def get_gui(self, master):
+        return ttk.Label(master)
+
+
     def reset_factor(self, source):
         self.var_fx.set(0)
         self.var_fy.set(0)
@@ -316,12 +336,16 @@ class ResizeGui(tk.Frame):
     def run_process(self, image_list):
         self.set_values()
 
-        image = None
-        try:
-            image = cv2.resize(image_list[self.input["src"]], dsize=self.dsize, fx=self.fx, fy=self.fy, interpolation=self.interpolation)
-            image_list.update({self.output["dst"]: image})
-        except:
-            pass
+        if bool(self.input["src"] and len(image_list[self.input["src"]]) > 0):
+            image = None
+            try:
+                image = cv2.resize(image_list[self.input["src"]], dsize=self.dsize, fx=self.fx, fy=self.fy, interpolation=self.interpolation)
+                image_list.update({self.output["dst"]: image})
+                return True
+            except:
+                pass
+
+        return False
 
 
     def set_values(self):
@@ -341,11 +365,17 @@ class TkDisplay(tk.Frame):
         self.input = {"src": None}
         self.output = None
 
-        image_default = ImageTk.PhotoImage(Image.open("resources/gears_400.jpg"))
-        self.lbl_output = tk.Label(self, image=image_default)
-        self.lbl_output.pack()
+        self.lbl_input = tk.Label(self, text=self.input)
+        self.lbl_input.pack()
+
+        self.lbl_gui = None
 
         self.set_values()
+
+
+    def get_gui(self, master):
+        self.lbl_gui = ttk.Label(master)
+        return self.lbl_gui
 
 
     def set_setting(self, setting):
@@ -378,15 +408,19 @@ class TkDisplay(tk.Frame):
     def run_process(self, image_list):
         self.set_values()
 
-        image = None
-        try:
-            image = cv2.cvtColor(image_list[self.input["src"]], cv2.COLOR_BGR2RGB)
-            imagetk = ImageTk.PhotoImage(image=Image.fromarray(image))
-            self.lbl_output.configure(image=imagetk)
-            self.lbl_output.image = imagetk
-        except:
-            pass
+        if bool(self.input["src"] and len(image_list[self.input["src"]]) > 0):
+            image = None
+            try:
+                image = cv2.cvtColor(image_list[self.input["src"]], cv2.COLOR_BGR2RGB)
+                imagetk = ImageTk.PhotoImage(image=Image.fromarray(image))
+                self.lbl_gui.configure(image=imagetk)
+                self.lbl_gui.image = imagetk
+                return True
+            except:
+                pass
+
+        return False
 
 
     def set_values(self):
-        self.lbl_output.config(text=self.output)
+        self.lbl_input.config(text=self.input)
