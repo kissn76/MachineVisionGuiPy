@@ -1,9 +1,8 @@
 import mainwindow as mw
-import canvaswindow as cw
 
 
 def main():
-    cw.Mainwindow()
+    mw.Mainwindow()
 
 
 if __name__ == '__main__':
