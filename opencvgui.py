@@ -3,7 +3,6 @@ import tkinter as tk
 from tkinter import ttk
 from PIL import Image, ImageTk
 from pathlib import Path
-import os.path
 
 
 ENUM_IMREAD_MODES = {
@@ -47,17 +46,89 @@ ENUM_INTERPOLATION_FLAGS = {
 }
 
 
-class ImreadGui(tk.Frame):
-    def __init__(self, master, name):
-        super().__init__(master)
+# controller
+class Imread():
+    def __init__(self, name):
+        self.model = ImreadModel(name)
+        self.setting_gui = None
+        self.display_gui = None
 
 
+    def get_setting_gui(self, master):
+        if not bool(self.setting_gui):
+            self.setting_gui = ImreadSettingGui(master, self.model)
+
+        return self.setting_gui
+
+
+    def get_display_gui(self, master):
+        if not bool(self.display_gui):
+            self.display_gui = ImreadDisplayGui(master, self.model)
+
+        return self.display_gui
+
+
+    def get_setting(self):
+        setting = {}
+
+        self.set_values()
+
+        setting.update({"input": self.model.input})
+        setting.update({"output": self.model.output})
+        setting.update({"filename": self.model.filename})
+        setting.update({"flags": self.model.flags})
+
+        return setting
+
+
+    def get_input(self):
+        return self.model.input
+
+
+    def get_output(self):
+        return self.model.output
+
+
+    def run_process(self, images):
+        self.set_values()
+
+        if Path(self.model.filename).is_file():
+            image = None
+            try:
+                image = cv2.imread(self.model.filename, self.model.flags)
+                images.update({self.model.output["ret"]: image})
+                return True
+            except:
+                pass
+
+        return False
+
+
+# model
+class ImreadModel():
+    def __init__(self, name):
         self.input = None
         self.output = {"ret": f"{name}.ret"}
         self.filename = None
         self.filename = "resources/example/ocv_1.jpg"
         # self.flags = cv2.IMREAD_COLOR
         self.flags = cv2.IMREAD_GRAYSCALE
+
+
+# view
+class ImreadDisplayGui(tk.Frame):
+    def __init__(self, master, model):
+        super().__init__(master)
+        self.model = model
+
+        self.lbl_name = ttk.Label(self)
+
+
+# view
+class ImreadSettingGui(tk.Frame):
+    def __init__(self, master, model):
+        super().__init__(master)
+        self.model = model
 
         self.var_filename = tk.StringVar()
         self.ent_filename = tk.Entry(self, textvariable=self.var_filename)
@@ -79,10 +150,6 @@ class ImreadGui(tk.Frame):
         self.set_values()
 
 
-    def get_gui(self, master):
-        return ttk.Label(master)
-
-
     def set_setting(self, setting):
         if bool(setting):
             self.var_filename.set(setting["filename"])
@@ -92,42 +159,6 @@ class ImreadGui(tk.Frame):
             self.output =  setting["output"]
 
             self.set_values()
-
-
-    def get_setting(self):
-        setting = {}
-
-        self.set_values()
-
-        setting.update({"input": self.input})
-        setting.update({"output": self.output})
-        setting.update({"filename": self.filename})
-        setting.update({"flags": self.flags})
-
-        return setting
-
-
-    def get_input(self):
-        return self.input
-
-
-    def get_output(self):
-        return self.output
-
-
-    def run_process(self, images):
-        self.set_values()
-
-        if Path(self.filename).is_file():
-            image = None
-            try:
-                image = cv2.imread(self.filename, self.flags)
-                images.update({self.output["ret"]: image})
-                return True
-            except:
-                pass
-
-        return False
 
 
     def set_values(self):

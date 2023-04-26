@@ -108,28 +108,27 @@ class Mainwindow(tk.Tk):
 
         # hozzáadás a végrehajtási listához
         setting = self.setting_get()
+
         if command_name.startswith("opencv_imread"):
             self.used_command_list[command_name] = ImreadGui(self.frm_used_command_setting, command_name)
             frm_command_filling = self.used_command_list[command_name].get_gui(frm_command)
             frm_command_filling.configure(text=command_name)
-            frm_command_filling.pack()
         elif command_name.startswith("opencv_threshold"):
             self.used_command_list[command_name] = ThresholdGui(self.frm_used_command_setting, command_name)
             frm_command_filling = self.used_command_list[command_name].get_gui(frm_command)
             frm_command_filling.configure(text=command_name)
-            frm_command_filling.pack()
         elif command_name.startswith("opencv_resize"):
             self.used_command_list[command_name] = ResizeGui(self.frm_used_command_setting, command_name)
             frm_command_filling = self.used_command_list[command_name].get_gui(frm_command)
             frm_command_filling.configure(text=command_name)
-            frm_command_filling.pack()
         elif command_name.startswith("tk_display"):
             self.used_command_list[command_name] = TkDisplay(self.frm_used_command_setting, command_name)
             frm_command_filling = self.used_command_list[command_name].get_gui(frm_command)
             imagetk = ImageTk.PhotoImage(Image.open("resources/gears_400.jpg"))
             frm_command_filling.configure(image=imagetk)
             frm_command_filling.image = imagetk
-            frm_command_filling.pack()
+
+        frm_command_filling.pack()
 
         try:
             self.used_command_list[command_name].set_setting(setting[command_name])
