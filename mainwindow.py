@@ -93,27 +93,16 @@ class Mainwindow(tk.Tk):
 
 
     def used_command_add(self, command):
-        # hozzáadás a gui-hoz
-        frm_row = tk.Frame(self.can_main)
-        frm_input = tk.Frame(frm_row)
-        frm_command = tk.Frame(frm_row)
-        # btn_delete = ttk.Button(frm_row, text="t", width=1, command=lambda: self.used_command_del(command_name))
-        frm_output = tk.Frame(frm_row)
-
-        frm_input.grid(row=0, column=0)
-        frm_command.grid(row=1, column=0)
-        # btn_delete.grid(row=1, column=1)
-        frm_output.grid(row=2, column=0)
+        command_obj = fw.Command(command)
+        self.used_command_list.update({command_obj.command_name: command_obj})
+        command_obj.get_setting_widget(self.frm_used_command_setting).pack()
 
         # hozzáadás a végrehajtási listához
         # setting = self.setting_get()
-
-        frm_command_filling = fw.CommandGui(frm_command, command)
-        frm_command_filling.pack()
-
-        self.used_command_list.update({frm_command_filling.command_name: frm_command_filling})
-
-        # frm_command_filling.bind("<Button-1>", lambda event: self.used_command_setting_form_show(command_name))
+        frm_command = command_obj.get_display_widget(self.can_main)
+        lbl_command_edit = ttk.Label(frm_command, text="Edit")
+        lbl_command_edit.pack()
+        lbl_command_edit.bind("<Button-1>", lambda event: self.used_command_setting_form_show(command_obj.command_name))
 
         # bemenetek kirajzolása
         # try:
@@ -138,7 +127,15 @@ class Mainwindow(tk.Tk):
         # except:
         #     pass
 
-        self.can_main.create_window(100, 100, window=frm_row, anchor="nw")
+        self.can_main.create_window(100, 100, window=frm_command, anchor="nw")
+
+
+    def used_command_setting_form_show(self, command):
+        for child in self.frm_used_command_setting.pack_slaves():
+            child.pack_forget()
+
+        # a szükséges (amelyikre kattintottunk) beállítás megjelenítése
+        self.used_command_list[command].frm_main_setting.pack()
 
 
 
