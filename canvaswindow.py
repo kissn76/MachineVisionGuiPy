@@ -3,7 +3,7 @@ from tkinter import ttk
 from PIL import Image, ImageTk
 import json
 
-from opencvgui import *
+from delete.opencvgui import *
 
 # TODO
 # a parancsok végrehajtási sorrendje a be és kimenetek láncolata alapján legyen
