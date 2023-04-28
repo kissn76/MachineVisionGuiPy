@@ -77,15 +77,15 @@ class FwImage(ttk.Frame):
     def __init__(self, master, name, default_image="resources/gears_400.jpg"):
         super().__init__(master)
 
-        self.input = {"src": None}
+        self.input = "src"
 
         self.lbl_input = ttk.Label(self, text=self.input)
         self.lbl_name = ttk.Label(self, text=name)
         self.lbl_image = ttk.Label(self)
 
-        self.lbl_name.pack()
+        # self.lbl_name.pack()
         self.lbl_image.pack()
-        self.lbl_input.pack()
+        # self.lbl_input.pack()
 
         imagetk = ImageTk.PhotoImage(Image.open(default_image))
         self.lbl_image.configure(image=imagetk)
@@ -96,8 +96,22 @@ class FwImage(ttk.Frame):
         pass
 
 
-    def set(self, image):
+    def set(self, images):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         imagetk = ImageTk.PhotoImage(image=Image.fromarray(image))
         self.lbl_image.configure(image=imagetk)
         self.lbl_image.image = imagetk
+
+
+
+
+        if bool(self.input and len(images[self.input]) > 0):
+            image = None
+            try:
+                image = cv2.cvtColor(image_list[self.input["src"]], cv2.COLOR_BGR2RGB)
+                imagetk = ImageTk.PhotoImage(image=Image.fromarray(image))
+                self.lbl_gui.configure(image=imagetk)
+                self.lbl_gui.image = imagetk
+                return True
+            except:
+                pass

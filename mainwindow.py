@@ -9,24 +9,8 @@ class Mainwindow(tk.Tk):
 
         # self.images = {}
 
-        # command = "opencv_imread"
-        # # command = "opencv_resize"
-        # # command = "opencv_threshold"
-        # self.obj = fw.CommandGui(self, command)
-        # self.obj.pack()
-
-
-
-
-
-
         self.available_commands = ["opencv_imread", "opencv_threshold", "opencv_resize", "tk_display"]
-        self.command_counter = 0        # a parancs nevéhez egy counter, hogy ne legyen két egyforma nevű parancs
-        self.used_command_list = {}     # a végrehajtandó parancsok object-jeit tartalmazza
         self.image_list = {}
-
-        self.output_clipboard = None
-        self.canvas_input_elements = {}
 
         self.frm_config = ttk.Frame(self)
         # ttk.Button(self.frm_config, text="Save setting", command=self.settings_save).grid(row=0, column=0)
@@ -62,7 +46,7 @@ class Mainwindow(tk.Tk):
         # TODO
         # előző canvas elemek betöltése
 
-        # self.next_image()
+        self.next_image()
         self.mainloop()
 
 
@@ -94,59 +78,21 @@ class Mainwindow(tk.Tk):
 
     def used_command_add(self, command):
         command_obj = fw.Command(command)
-        self.used_command_list.update({command_obj.command_name: command_obj})
         command_obj.get_setting_widget(self.frm_used_command_setting).pack()
 
         # hozzáadás a végrehajtási listához
         # setting = self.setting_get()
         frm_command = command_obj.get_display_widget(self.can_main)
-        lbl_command_edit = ttk.Label(frm_command, text="Edit")
-        lbl_command_edit.pack()
-        lbl_command_edit.bind("<Button-1>", lambda event: self.used_command_setting_form_show(command_obj.command_name))
-
-        # bemenetek kirajzolása
-        # try:
-        #     input_list = self.used_command_list[command_name].get_input()
-        #     for input_key, input_value in input_list.items():
-        #         if input_value is None:
-        #             input_value = "None"
-        #         lbl_in = tk.Label(frm_input, text=f"{input_key}: {input_value}")
-        #         lbl_in.pack()
-        #         lbl_in.bind("<Double-Button-1>", lambda event: self.paste_input(command_name, input_key))
-        #         self.canvas_input_elements.update({f"{command_name}.{input_key}": lbl_in})
-        # except:
-        #     pass
-
-        # kimenetek kirajzolása
-        # try:
-        #     output_list = self.used_command_list[command_name].get_output()
-        #     for output_key, output_value in output_list.items():
-        #         lbl_out = tk.Label(frm_output, text=f"{output_key}: {output_value}")
-        #         lbl_out.pack()
-        #         lbl_out.bind("<Double-Button-1>", lambda event: self.copy_output(output_value))
-        # except:
-        #     pass
 
         self.can_main.create_window(100, 100, window=frm_command, anchor="nw")
+        command_obj.show_setting_widget()
 
 
-    def used_command_setting_form_show(self, command):
-        for child in self.frm_used_command_setting.pack_slaves():
-            child.pack_forget()
+    def next_image(self):
+        for command_name, command_object in fw.used_command_list.items():
+            # print(command_name, command_object.print_values())
+            command_object.run(self.image_list)
 
-        # a szükséges (amelyikre kattintottunk) beállítás megjelenítése
-        self.used_command_list[command].frm_main_setting.pack()
+        # print(self.image_list.keys())
 
-
-
-
-
-
-
-    # def next_image(self):
-    #     # self.obj.print_values()
-    #     self.obj.run(self.images)
-
-    #     print(list(self.images.keys()))
-
-    #     self.after(100, self.next_image)
+        self.after(100, self.next_image)
