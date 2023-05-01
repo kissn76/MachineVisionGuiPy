@@ -46,7 +46,7 @@ class Mainwindow(tk.Tk):
         # TODO
         # előző canvas elemek betöltése
 
-        self.next_image()
+        # self.next_image()
         self.mainloop()
 
 
@@ -77,15 +77,14 @@ class Mainwindow(tk.Tk):
 
 
     def used_command_add(self, command):
-        command_obj = fw.Command(command)
-        command_obj.get_setting_widget(self.frm_used_command_setting).pack()
+        command_obj = fw.Command(command, self.frm_used_command_setting, self.can_main)
 
         # hozzáadás a végrehajtási listához
         # setting = self.setting_get()
-        frm_command = command_obj.get_display_widget(self.can_main)
+        frm_command = command_obj.frm_display_main
 
         self.can_main.create_window(100, 100, window=frm_command, anchor="nw")
-        command_obj.show_setting_widget()
+        # command_obj.show_setting_widget()
 
 
     def next_image(self):
