@@ -12,12 +12,19 @@ class Mainwindow(tk.Tk):
 
         self.available_commands = ["opencv_imread", "opencv_threshold", "opencv_resize", "tk_display"]
         self.image_list = {}
+        self.run_contimous = False
 
         self.frm_config = ttk.Frame(self)
-        # ttk.Button(self.frm_config, text="Save setting", command=self.settings_save).grid(row=0, column=0)
         self.frm_available_commands = ttk.LabelFrame(self.frm_config, text="Available commands")
         self.frm_used_command_setting = ttk.LabelFrame(self.frm_config, text="Command setting")
 
+        # ttk.Button(self.frm_config, text="Save setting", command=self.settings_save).grid(row=0, column=0)
+        frm_button = ttk.Frame(self.frm_config)
+        ttk.Button(frm_button, text="Run once", command=self.next_image).grid(row=0, column=0)
+        ttk.Button(frm_button, text="Run continous", command=self.next_image).grid(row=0, column=1)
+        ttk.Button(frm_button, text="Stop", command=self.next_image).grid(row=0, column=2)
+
+        frm_button.grid(row=0, column=0)
         self.frm_available_commands.grid(row=1, column=0)
         self.frm_used_command_setting.grid(row=2, column=0)
 
@@ -47,7 +54,7 @@ class Mainwindow(tk.Tk):
         # TODO
         # előző canvas elemek betöltése
 
-        self.next_image()
+        # self.next_image()
         self.mainloop()
 
 
@@ -90,7 +97,11 @@ class Mainwindow(tk.Tk):
 
 
     def next_image(self):
+        counter = 1
         for command_name, command_object in used_command_list.items():
             command_object.run(self.image_list)
+            print(counter, command_name, self.image_list.keys())
+            counter += 1
 
-        self.after(100, self.next_image)
+        if self.run_contimous:
+            self.after(100, self.next_image)
