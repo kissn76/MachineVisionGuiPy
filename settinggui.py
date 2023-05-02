@@ -39,8 +39,8 @@ class SettingGui(ttk.Frame):
             # input_list = {"src": wg.FwEntry(self, "Source", None)}
             # output_list = {"dst": wg.FwEntry(self, "Destination", f"{self.command_name}.dst")}
             setting_list = {
-                "dsize_w": wg.FwScale(self, "Width", 0, 255, 0),
-                "dsize_h": wg.FwScale(self, "Height", 0, 255, 0),
+                "dsize_w": wg.FwScale(self, "Width", 0, 255, 0, value_type=int),
+                "dsize_h": wg.FwScale(self, "Height", 0, 255, 0, value_type=int),
                 "fx": wg.FwScale(self, "Factor x", 0, 1, 0.3, resolution=0.1),
                 "fy": wg.FwScale(self, "Factor y", 0, 1, 0.3, resolution=0.1),
                 "interpolation": wg.FwCombobox(self, "Interpolation", ENUM_INTERPOLATION_FLAGS, tuple(ENUM_INTERPOLATION_FLAGS.values()).index(cv2.INTER_NEAREST))

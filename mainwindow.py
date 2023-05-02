@@ -3,11 +3,12 @@ from tkinter import ttk
 import command as com
 
 
+used_command_list = {}  # a végrehajtandó parancsok object-jeit tartalmazza
+
+
 class Mainwindow(tk.Tk):
     def __init__(self):
         super().__init__()
-
-        # self.images = {}
 
         self.available_commands = ["opencv_imread", "opencv_threshold", "opencv_resize", "tk_display"]
         self.image_list = {}
@@ -78,6 +79,7 @@ class Mainwindow(tk.Tk):
 
     def used_command_add(self, command):
         command_obj = com.Command(command, self.frm_used_command_setting, self.can_main)
+        used_command_list.update({command_obj.command_name: command_obj})
 
         # hozzáadás a végrehajtási listához
         # setting = self.setting_get()
@@ -88,7 +90,7 @@ class Mainwindow(tk.Tk):
 
 
     def next_image(self):
-        for command_name, command_object in com.used_command_list.items():
+        for command_name, command_object in used_command_list.items():
             command_object.run(self.image_list)
 
         self.after(100, self.next_image)

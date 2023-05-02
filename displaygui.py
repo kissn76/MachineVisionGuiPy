@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 import widgets as wg
 from enums import *
+import mainwindow as mw
 
 
 input_elements = {}
@@ -32,7 +33,7 @@ class DisplayGui(ttk.Frame):
         frm_display_command.pack()
         frm_display_output.pack()
 
-        lbl_command_name.bind("<Button-1>", lambda event: self.show_setting_widget())
+        lbl_command_name.bind("<Button-1>", lambda event: self.show_setting_widget(self.command_name))
 
         for widget in self.widget_list.values():
             widget.pack()
@@ -67,12 +68,12 @@ class DisplayGui(ttk.Frame):
             pass
 
 
-    def show_setting_widget(self):
+    def show_setting_widget(self, command_name):
         pass
-        # for command_obj in used_command_list.values():
-        #     command_obj.frm_setting_main.pack_forget()
+        for command_obj in mw.used_command_list.values():
+            command_obj.frm_setting_main.pack_forget()
 
-        # self.frm_setting_main.pack()
+        mw.used_command_list[command_name].frm_setting_main.pack()
 
 
     def copy_output(self, output_name):

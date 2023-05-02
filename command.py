@@ -7,7 +7,6 @@ import commandmodel as cm
 
 
 command_counter = 0     # a parancs nevéhez egy counter, hogy ne legyen két egyforma nevű parancs
-used_command_list = {}  # a végrehajtandó parancsok object-jeit tartalmazza
 
 
 class Command():
@@ -27,8 +26,6 @@ class Command():
         self.run = None
 
         self.set()
-
-        used_command_list.update({self.command_name: self})
 
 
     def set(self):
@@ -63,9 +60,8 @@ class Command():
                 type = self.command_model.parameters["setting"]["type"]
 
                 try:
-                    print(src, len(images[src]))
                     if bool(src) and len(images[src]) > 0:
-                        _, image = cv2.threshold(images[src], thresh, maxval, type)
+                        _, image = cv2.threshold(images[src], thresh=thresh, maxval=maxval, type=type)
                         images.update({dst: image})
                         return True
                 except:
@@ -88,9 +84,8 @@ class Command():
                 interpolation = self.command_model.parameters["setting"]["interpolation"]
 
                 try:
-                    print(src, len(images[src]))
                     if bool(src) and len(images[src]) > 0:
-                        image = cv2.resize(src, dsize=(dsize_w, dsize_h), fx=fx, fy=fy, interpolation=interpolation)
+                        image = cv2.resize(images[src], dsize=(dsize_w, dsize_h), fx=fx, fy=fy, interpolation=interpolation)
                         images.update({dst: image})
                         return True
                 except:
@@ -106,7 +101,6 @@ class Command():
                 display_obj = self.frm_display_main.widget_list["display"]
 
                 try:
-                    print(src, len(images[src]))
                     if bool(src) and len(images[src]) > 0:
                         display_obj.set(images[src])
                         return True
