@@ -57,6 +57,9 @@ class SettingGui(ttk.Frame):
 
 
     def get(self):
-        main_key = "setting"
-        for key in self.command_model.parameters.keys():
-            self.command_model.parameters[main_key][key] = self.widget_list[main_key][key].get()
+        for main_key in self.command_model.parameters.keys():
+            for key in self.command_model.parameters[main_key].keys():
+                try:
+                    self.command_model.parameters[main_key][key] = self.widget_list[main_key][key].get()
+                except:
+                    pass

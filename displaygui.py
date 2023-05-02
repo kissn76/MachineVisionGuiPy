@@ -66,12 +66,6 @@ class DisplayGui(ttk.Frame):
         except:
             pass
 
-        for widgets in self.widget_list.values():
-            if bool(widgets):
-                for widget in widgets.values():
-                    if bool(widget):
-                        widget.pack()
-
 
     def show_setting_widget(self):
         pass

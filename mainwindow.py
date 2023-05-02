@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
-import commandframework as fw
+import command as com
 
 
 class Mainwindow(tk.Tk):
@@ -46,7 +46,7 @@ class Mainwindow(tk.Tk):
         # TODO
         # előző canvas elemek betöltése
 
-        # self.next_image()
+        self.next_image()
         self.mainloop()
 
 
@@ -77,7 +77,7 @@ class Mainwindow(tk.Tk):
 
 
     def used_command_add(self, command):
-        command_obj = fw.Command(command, self.frm_used_command_setting, self.can_main)
+        command_obj = com.Command(command, self.frm_used_command_setting, self.can_main)
 
         # hozzáadás a végrehajtási listához
         # setting = self.setting_get()
@@ -88,10 +88,7 @@ class Mainwindow(tk.Tk):
 
 
     def next_image(self):
-        for command_name, command_object in fw.used_command_list.items():
-            # print(command_name, command_object.print_values())
+        for command_name, command_object in com.used_command_list.items():
             command_object.run(self.image_list)
-
-        # print(self.image_list.keys())
 
         self.after(100, self.next_image)
