@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+import json
 import command as com
 
 
@@ -59,13 +60,27 @@ class Mainwindow(tk.Tk):
 
 
     def setting_save(self):
-        # get setting
+        setting = {}
+        # model setting
         for command_name, command_obj in used_command_list.items():
-            print(command_name, command_obj.command_model.parameters)
-            print(self.can_main.find_all())
+            setting.update({command_name: {"model": command_obj.command_model.parameters}})
 
-            for ch in self.can_main.children.values():
-                print(ch.winfo_y)
+        # position of canvas elements
+        for id in self.can_main.find_all():
+            setting[self.can_main.gettags(id)[0]].update({"coords": self.can_main.coords(id)})
+
+        with open("setting.json", "w") as fp:
+            json.dump(setting, fp, indent=4)
+
+
+    def setting_load(self):
+        try:
+            with open("setting.json", "r") as fp:
+                setting = json.load(fp)
+        except:
+            setting = {}
+
+        return setting
 
 
     def continous_run_start(self):
@@ -111,7 +126,8 @@ class Mainwindow(tk.Tk):
         # setting = self.setting_get()
         frm_command = command_obj.frm_display_main
 
-        self.can_main.create_window(100, 100, window=frm_command, anchor="nw")
+        id = self.can_main.create_window(100, 100, window=frm_command, anchor="nw")
+        self.can_main.addtag_withtag(command_obj.command_name, id)
 
 
     def used_command_list_reorder(self):
