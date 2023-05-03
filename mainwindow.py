@@ -18,11 +18,11 @@ class Mainwindow(tk.Tk):
         self.frm_available_commands = ttk.LabelFrame(self.frm_config, text="Available commands")
         self.frm_used_command_setting = ttk.LabelFrame(self.frm_config, text="Command setting")
 
-        # ttk.Button(self.frm_config, text="Save setting", command=self.settings_save).grid(row=0, column=0)
         frm_button = ttk.Frame(self.frm_config)
-        ttk.Button(frm_button, text="Run once", command=self.next_image).grid(row=0, column=0)
-        ttk.Button(frm_button, text="Run continous", command=self.next_image).grid(row=0, column=1)
-        ttk.Button(frm_button, text="Stop", command=self.next_image).grid(row=0, column=2)
+        ttk.Button(frm_button, text="Save", command=self.setting_save).grid(row=0, column=0)
+        ttk.Button(frm_button, text="Run once", command=self.next_image).grid(row=0, column=1)
+        ttk.Button(frm_button, text="Run continous", command=self.continous_run_start).grid(row=0, column=2)
+        ttk.Button(frm_button, text="Stop", command=self.continous_run_stop).grid(row=0, column=3)
 
         frm_button.grid(row=0, column=0)
         self.frm_available_commands.grid(row=1, column=0)
@@ -56,6 +56,25 @@ class Mainwindow(tk.Tk):
 
         # self.next_image()
         self.mainloop()
+
+
+    def setting_save(self):
+        # get setting
+        for command_name, command_obj in used_command_list.items():
+            print(command_name, command_obj.command_model.parameters)
+            print(self.can_main.find_all())
+
+            for ch in self.can_main.children.values():
+                print(ch.winfo_y)
+
+
+    def continous_run_start(self):
+        self.run_contimous = True
+        self.next_image()
+
+
+    def continous_run_stop(self):
+        self.run_contimous = False
 
 
     def dnd_select_object(self, event):
@@ -93,10 +112,14 @@ class Mainwindow(tk.Tk):
         frm_command = command_obj.frm_display_main
 
         self.can_main.create_window(100, 100, window=frm_command, anchor="nw")
-        # command_obj.show_setting_widget()
+
+
+    def used_command_list_reorder(self):
+        pass
 
 
     def next_image(self):
+        self.image_list.clear()
         counter = 1
         for command_name, command_object in used_command_list.items():
             command_object.run(self.image_list)
