@@ -13,18 +13,17 @@ class DisplayGui(ttk.Frame):
     def __init__(self, master, command_model):
         super().__init__(master=master)
         self.command_model = command_model
-        self.command_name = self.command_model.command_name
         self.widget_list = {}
 
         self.set()
 
 
     def set(self):
-        if self.command_name.startswith("tk_display"):
+        if self.command_model.command_name.startswith("tk_display"):
             self.widget_list.update({"display": wg.FwImage(self, "Image")})
 
         frm_display_input = ttk.Frame(self)
-        lbl_command_name = ttk.Label(self, text=self.command_name)
+        lbl_command_name = ttk.Label(self, text=self.command_model.command_name)
         frm_display_command = ttk.Frame(self)
         frm_display_output = ttk.Frame(self)
 
@@ -33,7 +32,7 @@ class DisplayGui(ttk.Frame):
         frm_display_command.pack()
         frm_display_output.pack()
 
-        lbl_command_name.bind("<Button-1>", lambda event: self.show_setting_widget(self.command_name))
+        lbl_command_name.bind("<Button-1>", lambda event: self.show_setting_widget(self.command_model.command_name))
 
         for widget in self.widget_list.values():
             widget.pack()
@@ -49,7 +48,7 @@ class DisplayGui(ttk.Frame):
                 lbl_in = ttk.Label(frm_display_input, text=f"{input_key}: {input_value}")
                 lbl_in.pack()
                 lbl_in.bind("<Double-Button-1>", lambda event: self.paste_input(input_key))
-                input_elements.update({f"{self.command_name}.{input_key}": lbl_in})
+                input_elements.update({f"{self.command_model.command_name}.{input_key}": lbl_in})
         except:
             pass
 
@@ -86,7 +85,8 @@ class DisplayGui(ttk.Frame):
             print("Empty clipboard")
         else:
             self.command_model.parameters["input"][input_key] = clipboard_io
-            input_elements[f"{self.command_name}.{input_key}"].config(text=f"{input_key}: {clipboard_io}")
+            print(input_elements.keys())
+            input_elements[f"{self.command_model.command_name}.{input_key}"].config(text=f"{input_key}: {clipboard_io}")
 
         # TODO
         # kiszűrni a saját kimenetet, ne legyen a saját kimenet, a saját bemenet

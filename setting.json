@@ -24,9 +24,9 @@
                 "dst": "opencv_threshold.1.dst"
             },
             "setting": {
-                "thresh": 150.0,
+                "thresh": 120.0,
                 "maxval": 255.0,
-                "type": 1
+                "type": 0
             }
         },
         "coords": [
@@ -45,7 +45,7 @@
             "setting": {
                 "dsize_w": 0,
                 "dsize_h": 0,
-                "fx": 0.3,
+                "fx": 0.4,
                 "fy": 0.3,
                 "interpolation": 3
             }

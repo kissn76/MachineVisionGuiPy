@@ -8,7 +8,7 @@ class SettingGui(ttk.Frame):
     def __init__(self, master, command_model):
         super().__init__(master=master)
         self.command_model = command_model
-        self.command_name = self.command_model.command_name
+        self.command_model.command_name = self.command_model.command_name
         self.widget_list = {}
 
         self.set()
@@ -19,25 +19,25 @@ class SettingGui(ttk.Frame):
         output_list = {}
         setting_list = {}
 
-        if self.command_name.startswith("opencv_imread"):
-            # output_list = {"output": wg.FwEntry(self, "Output", f"{self.command_name}.out")}
+        if self.command_model.command_name.startswith("opencv_imread"):
+            # output_list = {"output": wg.FwEntry(self, "Output", f"{self.command_model.command_name}.out")}
             setting_list = {
                 "filename": wg.FwEntry(self, "Filename", self.command_model.parameters["setting"]["filename"], state=None),
                 "flags": wg.FwCombobox(self, "Flags", ENUM_IMREAD_MODES, self.command_model.parameters["setting"]["flags"])
                 }
 
-        elif self.command_name.startswith("opencv_threshold"):
+        elif self.command_model.command_name.startswith("opencv_threshold"):
             # input_list = {"src": wg.FwEntry(self, "Source", None)}
-            # output_list = {"dst": wg.FwEntry(self, "Destination", f"{self.command_name}.dst")}
+            # output_list = {"dst": wg.FwEntry(self, "Destination", f"{self.command_model.command_name}.dst")}
             setting_list = {
                 "thresh": wg.FwScale(self, "Threshold", 0, 255, self.command_model.parameters["setting"]["thresh"]),
                 "maxval": wg.FwScale(self, "Maximum value", 0, 255, self.command_model.parameters["setting"]["maxval"]),
                 "type": wg.FwCombobox(self, "Type", ENUM_THRESHOLD_TYPES, self.command_model.parameters["setting"]["type"])
                 }
 
-        elif self.command_name.startswith("opencv_resize"):
+        elif self.command_model.command_name.startswith("opencv_resize"):
             # input_list = {"src": wg.FwEntry(self, "Source", None)}
-            # output_list = {"dst": wg.FwEntry(self, "Destination", f"{self.command_name}.dst")}
+            # output_list = {"dst": wg.FwEntry(self, "Destination", f"{self.command_model.command_name}.dst")}
             setting_list = {
                 "dsize_w": wg.FwScale(self, "Width", 0, 255, self.command_model.parameters["setting"]["dsize_w"], value_type=int),
                 "dsize_h": wg.FwScale(self, "Height", 0, 255, self.command_model.parameters["setting"]["dsize_h"], value_type=int),
@@ -50,7 +50,7 @@ class SettingGui(ttk.Frame):
         self.widget_list.update({"output": output_list})
         self.widget_list.update({"setting": setting_list})
 
-        ttk.Label(self, text=self.command_name).pack()
+        ttk.Label(self, text=self.command_model.command_name).pack()
         for widget in self.widget_list["setting"].values():
             if bool(widget):
                 widget.pack()

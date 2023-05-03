@@ -45,7 +45,7 @@ class Mainwindow(tk.Tk):
         setting = self.setting_load()
         if bool(setting):
             for command_name, command_setting in setting.items():
-                self.used_command_load(command_name, command_setting)
+                self.used_command_add(command_name, command_setting)
 
         # max_counter = 0
         # for command in self.used_command_list:
@@ -69,6 +69,8 @@ class Mainwindow(tk.Tk):
         # position of canvas elements
         for id in self.can_main.find_all():
             setting[self.can_main.gettags(id)[0]].update({"coords": self.can_main.coords(id)})
+
+        print(setting)
 
         with open("setting.json", "w") as fp:
             json.dump(setting, fp, indent=4)
@@ -119,24 +121,25 @@ class Mainwindow(tk.Tk):
         frm_row.pack()
 
 
-    def used_command_load(self, command_name, command_setting):
-        model_setting = command_setting["model"]
-        coords = command_setting["coords"]
-        print(command_name)
-        print(model_setting)
-        print(coords)
+    def used_command_add(self, command, setting=None):
+        coords = None
+        if bool(setting):
+            model_setting = setting["model"]
+            coords = setting["coords"]
+            command_obj = com.Command(command, self.frm_used_command_setting, self.can_main, setting=model_setting)
+        else:
+            command_obj = com.Command(command, self.frm_used_command_setting, self.can_main)
 
-
-    def used_command_add(self, command):
-        command_obj = com.Command(command, self.frm_used_command_setting, self.can_main)
-        used_command_list.update({command_obj.command_name: command_obj})
+        used_command_list.update({command_obj.command_model.command_name: command_obj})
 
         # hozzáadás a végrehajtási listához
-        # setting = self.setting_get()
         frm_command = command_obj.frm_display_main
 
         id = self.can_main.create_window(100, 100, window=frm_command, anchor="nw")
-        self.can_main.addtag_withtag(command_obj.command_name, id)
+        self.can_main.addtag_withtag(command_obj.command_model.command_name, id)
+
+        if bool(setting):
+            self.can_main.moveto(id, coords[0], coords[1])
 
 
     def used_command_list_reorder(self):

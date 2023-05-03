@@ -10,12 +10,19 @@ command_counter = 0     # a parancs nevéhez egy counter, hogy ne legyen két eg
 
 
 class Command():
-    def __init__(self, command, setting_master, display_master):
+    def __init__(self, command, setting_master, display_master, setting=None):
         global command_counter
-        self.command_name = f"{command}.{command_counter}"
-        command_counter += 1
+        self.command_model = None
+        if bool(setting):
+            self.command_model = cm.CommandModel(command)
+            self.command_model.parameters = setting
+            counter = int(command[command.rindex(".") + 1:]) + 1
 
-        self.command_model = cm.CommandModel(self.command_name)
+            if counter > command_counter:
+                command_counter = counter
+        else:
+            self.command_model = cm.CommandModel(f"{command}.{command_counter}")
+            command_counter += 1
 
         # setting widget
         self.frm_setting_main = sg.SettingGui(setting_master, self.command_model)
@@ -29,7 +36,7 @@ class Command():
 
 
     def set(self):
-        if self.command_name.startswith("opencv_imread"):
+        if self.command_model.command_name.startswith("opencv_imread"):
             def run_command(images):
                 self.frm_setting_main.get()
 
@@ -49,7 +56,7 @@ class Command():
 
             self.run = run_command
 
-        elif self.command_name.startswith("opencv_threshold"):
+        elif self.command_model.command_name.startswith("opencv_threshold"):
             def run_command(images):
                 self.frm_setting_main.get()
 
@@ -71,7 +78,7 @@ class Command():
 
             self.run = run_command
 
-        elif self.command_name.startswith("opencv_resize"):
+        elif self.command_model.command_name.startswith("opencv_resize"):
             def run_command(images):
                 self.frm_setting_main.get()
 
@@ -95,7 +102,7 @@ class Command():
 
             self.run = run_command
 
-        elif self.command_name.startswith("tk_display"):
+        elif self.command_model.command_name.startswith("tk_display"):
             def run_command(images):
                 src = self.command_model.parameters["input"]["src"]
                 display_obj = self.frm_display_main.widget_list["display"]
