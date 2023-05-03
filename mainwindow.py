@@ -42,9 +42,10 @@ class Mainwindow(tk.Tk):
             self.available_command_row_add(available_command)
 
         # előzőleg elmentett munka betöltése
-        # setting = self.load_setting()
-        # if bool(setting):
-        #     self.used_command_list = list(setting.keys())
+        setting = self.setting_load()
+        if bool(setting):
+            for command_name, command_setting in setting.items():
+                self.used_command_load(command_name, command_setting)
 
         # max_counter = 0
         # for command in self.used_command_list:
@@ -116,6 +117,14 @@ class Mainwindow(tk.Tk):
         lbl_command.pack()
         lbl_command.bind("<Double-Button-1>", lambda event: self.used_command_add(command))
         frm_row.pack()
+
+
+    def used_command_load(self, command_name, command_setting):
+        model_setting = command_setting["model"]
+        coords = command_setting["coords"]
+        print(command_name)
+        print(model_setting)
+        print(coords)
 
 
     def used_command_add(self, command):
