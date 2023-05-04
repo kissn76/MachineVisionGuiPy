@@ -5,7 +5,7 @@ from PIL import Image, ImageTk
 
 
 class FwCombobox(ttk.Frame):
-    def __init__(self, master, name, values, default_index, state="readonly"):
+    def __init__(self, master, name, values, default_value, state="readonly"):
         super().__init__(master)
 
         self.values = values
@@ -15,17 +15,19 @@ class FwCombobox(ttk.Frame):
         self.var_widget = tk.StringVar()
         self.widget = ttk.Combobox(self, textvariable=self.var_widget, state=state)
         self.widget.config(values=tuple(self.values.keys()))
-        self.set(default_index)
+        self.set(default_value)
 
         self.lbl_name.pack(side=tk.LEFT)
         self.widget.pack(side=tk.RIGHT)
 
 
     def get(self):
-        return self.values[self.var_widget.get()]
+        value = self.values[self.var_widget.get()]
+        return value
 
 
-    def set(self, index):
+    def set(self, value):
+        index = tuple(self.values.values()).index(value)
         self.widget.current(newindex=index)
 
 

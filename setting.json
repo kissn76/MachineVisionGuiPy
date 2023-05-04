@@ -11,8 +11,8 @@
             }
         },
         "coords": [
-            678.0,
-            36.0
+            581.0,
+            29.0
         ]
     },
     "opencv_threshold.1": {
@@ -24,14 +24,14 @@
                 "dst": "opencv_threshold.1.dst"
             },
             "setting": {
-                "thresh": 120.0,
+                "thresh": 128.0,
                 "maxval": 255.0,
                 "type": 0
             }
         },
         "coords": [
-            677.0,
-            95.0
+            582.0,
+            93.0
         ]
     },
     "opencv_resize.2": {
@@ -46,13 +46,13 @@
                 "dsize_w": 0,
                 "dsize_h": 0,
                 "fx": 0.4,
-                "fy": 0.3,
+                "fy": 0.4,
                 "interpolation": 3
             }
         },
         "coords": [
-            676.0,
-            171.0
+            585.0,
+            173.0
         ]
     },
     "tk_display.3": {
@@ -64,8 +64,8 @@
             "setting": {}
         },
         "coords": [
-            676.0,
-            253.0
+            385.0,
+            251.0
         ]
     }
 }

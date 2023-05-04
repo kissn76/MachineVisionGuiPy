@@ -18,7 +18,7 @@ class CommandModel():
             output_list = {"output": f"{self.command_name}.out"}
             setting_list = {
                 "filename": "./resources/example/ocv_1.jpg",
-                "flags": tuple(ENUM_IMREAD_MODES.values()).index(cv2.IMREAD_UNCHANGED)
+                "flags": cv2.IMREAD_UNCHANGED
                 }
 
         elif self.command_name.startswith("opencv_threshold"):
@@ -27,7 +27,7 @@ class CommandModel():
             setting_list = {
                 "thresh": 150,
                 "maxval": 255,
-                "type": tuple(ENUM_THRESHOLD_TYPES.values()).index(cv2.THRESH_BINARY)
+                "type": cv2.THRESH_BINARY
                 }
 
         elif self.command_name.startswith("opencv_resize"):
@@ -38,7 +38,7 @@ class CommandModel():
                 "dsize_h": 0,
                 "fx": 0.3,
                 "fy": 0.3,
-                "interpolation": tuple(ENUM_INTERPOLATION_FLAGS.values()).index(cv2.INTER_NEAREST)
+                "interpolation": cv2.INTER_NEAREST
                 }
 
         elif self.command_name.startswith("tk_display"):

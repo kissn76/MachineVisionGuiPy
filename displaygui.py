@@ -68,11 +68,8 @@ class DisplayGui(ttk.Frame):
 
 
     def show_setting_widget(self, command_name):
-        pass
-        for command_obj in mw.used_command_list.values():
-            command_obj.frm_setting_main.pack_forget()
-
-        mw.used_command_list[command_name].frm_setting_main.pack()
+        mw.setting_widgets_hide()
+        mw.setting_widget_show(command_name)
 
 
     def copy_output(self, output_name):

@@ -7,6 +7,15 @@ import command as com
 used_command_list = {}  # a végrehajtandó parancsok object-jeit tartalmazza
 
 
+def setting_widgets_hide():
+    for command_obj in used_command_list.values():
+        command_obj.frm_setting_main.pack_forget()
+
+
+def setting_widget_show(command_name):
+    used_command_list[command_name].frm_setting_main.pack()
+
+
 class Mainwindow(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -69,8 +78,6 @@ class Mainwindow(tk.Tk):
         # position of canvas elements
         for id in self.can_main.find_all():
             setting[self.can_main.gettags(id)[0]].update({"coords": self.can_main.coords(id)})
-
-        print(setting)
 
         with open("setting.json", "w") as fp:
             json.dump(setting, fp, indent=4)
