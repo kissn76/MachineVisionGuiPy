@@ -6,6 +6,10 @@ import command as com
 
 used_command_list = {}  # a végrehajtandó parancsok object-jeit tartalmazza
 
+# DEBUG
+process_counter = 0     # élesben nem kell
+# DEBUG END
+
 
 def setting_widgets_hide():
     for command_obj in used_command_list.values():
@@ -20,7 +24,7 @@ class Mainwindow(tk.Tk):
     def __init__(self):
         super().__init__()
 
-        self.available_commands = ["opencv_imread", "opencv_threshold", "opencv_resize", "tk_display"]
+        self.available_commands = ["opencv_imread", "opencv_threshold", "opencv_gaussianblur", "opencv_resize", "opencv_canny", "tk_display"]
         self.image_list = {}
         self.run_contimous = False
 
@@ -56,16 +60,6 @@ class Mainwindow(tk.Tk):
             for command_name, command_setting in setting.items():
                 self.used_command_add(command_name, command_setting)
 
-        # max_counter = 0
-        # for command in self.used_command_list:
-        #     counter = int(command[command.rfind(".") + 1:]) + 1
-        #     if counter > max_counter:
-        #         max_counter = counter
-        # self.command_counter = max_counter
-        # TODO
-        # előző canvas elemek betöltése
-
-        # self.next_image()
         self.mainloop()
 
 
@@ -102,6 +96,7 @@ class Mainwindow(tk.Tk):
         self.run_contimous = False
 
 
+    # DRAG & DROP metódusok
     def dnd_select_object(self, event):
         self.can_main.bind('<Motion>', self.dnd_move_object)
         self.can_main.bind('<ButtonRelease-1>', self.dnd_deselect_object)
@@ -118,6 +113,7 @@ class Mainwindow(tk.Tk):
     def dnd_deselect_object(self, event):
         self.can_main.dtag('selected')    # removes the 'selected' tag
         self.can_main.unbind('<Motion>')
+    # DRAG & DROP metódusok END
 
 
     def available_command_row_add(self, command):
@@ -130,21 +126,21 @@ class Mainwindow(tk.Tk):
 
     def used_command_add(self, command, setting=None):
         coords = None
-        if bool(setting):
+        if bool(setting):   # ha dict-ből töltünk be meglévő adatokat, tipikusan mentés visszatöltésekor
             model_setting = setting["model"]
             coords = setting["coords"]
             command_obj = com.Command(command, self.frm_used_command_setting, self.can_main, setting=model_setting)
-        else:
+        else:   # új létrehozása
             command_obj = com.Command(command, self.frm_used_command_setting, self.can_main)
 
+        # hozzáadás a végrehajtási listához
         used_command_list.update({command_obj.command_model.command_name: command_obj})
 
-        # hozzáadás a végrehajtási listához
+        # display hozzáadás a canvas-hoz
         frm_command = command_obj.frm_display_main
-
         id = self.can_main.create_window(100, 100, window=frm_command, anchor="nw")
-        self.can_main.addtag_withtag(command_obj.command_model.command_name, id)
-
+        self.can_main.addtag_withtag(command_obj.command_model.command_name, id)    # a canvas elem tag-ként megkapja a command_name-et, hogy egyedileg meghívható legyen később
+        # ha betöltött elem, akkor mozgatás a mentett pozícióba a canvas-on
         if bool(setting):
             self.can_main.moveto(id, coords[0], coords[1])
 
@@ -154,12 +150,15 @@ class Mainwindow(tk.Tk):
 
 
     def next_image(self):
+        # DEBUG
+        # global process_counter
+        # print(process_counter, "run process")
+        # process_counter += 1
+        # DEBUG END
+
         self.image_list.clear()
-        counter = 1
-        for command_name, command_object in used_command_list.items():
+        for command_object in used_command_list.values():
             command_object.run(self.image_list)
-            print(counter, command_name, self.image_list.keys())
-            counter += 1
 
         if self.run_contimous:
             self.after(100, self.next_image)

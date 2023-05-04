@@ -15,10 +15,10 @@ class DisplayGui(ttk.Frame):
         self.command_model = command_model
         self.widget_list = {}
 
-        self.set()
+        self.init()
 
 
-    def set(self):
+    def init(self):
         if self.command_model.command_name.startswith("tk_display"):
             self.widget_list.update({"display": wg.FwImage(self, "Image")})
 
@@ -82,7 +82,6 @@ class DisplayGui(ttk.Frame):
             print("Empty clipboard")
         else:
             self.command_model.parameters["input"][input_key] = clipboard_io
-            print(input_elements.keys())
             input_elements[f"{self.command_model.command_name}.{input_key}"].config(text=f"{input_key}: {clipboard_io}")
 
         # TODO

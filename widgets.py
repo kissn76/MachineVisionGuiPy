@@ -79,6 +79,28 @@ class FwEntry(ttk.Frame):
         self.var_widget.set(value)
 
 
+class FwCheckbutton(ttk.Frame):
+    def __init__(self, master, name, text, default_value, onvalue=True, offvalue=False):
+        super().__init__(master)
+
+        self.lbl_name = ttk.Label(self, text=name)
+
+        self.var_widget = tk.BooleanVar()
+        self.widget = ttk.Checkbutton(self, text=text, variable=self.var_widget, onvalue=onvalue, offvalue=offvalue)
+        self.set(default_value)
+
+        self.lbl_name.pack(side=tk.LEFT)
+        self.widget.pack(side=tk.RIGHT)
+
+
+    def get(self):
+        return self.var_widget.get()
+
+
+    def set(self, value):
+        self.var_widget.set(value)
+
+
 class FwImage(ttk.Frame):
     def __init__(self, master, name, default_image="resources/gears_400.jpg"):
         super().__init__(master)

@@ -8,13 +8,12 @@ class SettingGui(ttk.Frame):
     def __init__(self, master, command_model):
         super().__init__(master=master)
         self.command_model = command_model
-        self.command_model.command_name = self.command_model.command_name
         self.widget_list = {}
 
-        self.set()
+        self.init()
 
 
-    def set(self):
+    def init(self):
         input_list = {}
         output_list = {}
         setting_list = {}
@@ -35,6 +34,15 @@ class SettingGui(ttk.Frame):
                 "type": wg.FwCombobox(self, "Type", ENUM_THRESHOLD_TYPES, self.command_model.parameters["setting"]["type"])
                 }
 
+        elif self.command_model.command_name.startswith("opencv_gaussianblur"):
+            setting_list = {
+                "ksize_w": wg.FwScale(self, "Kernel size width", 0, 255, self.command_model.parameters["setting"]["ksize_w"], value_type=int),
+                "ksize_h": wg.FwScale(self, "Kernel size height", 0, 255, self.command_model.parameters["setting"]["ksize_h"], value_type=int),
+                "sigmaX": wg.FwScale(self, "Sigma x", 0, 1, self.command_model.parameters["setting"]["sigmaX"], resolution=0.1),
+                "sigmaY": wg.FwScale(self, "Sigma y", 0, 1, self.command_model.parameters["setting"]["sigmaY"], resolution=0.1),
+                "borderType": wg.FwCombobox(self, "Interpolation", ENUM_BORDERTYPES, self.command_model.parameters["setting"]["borderType"])
+                }
+
         elif self.command_model.command_name.startswith("opencv_resize"):
             # input_list = {"src": wg.FwEntry(self, "Source", None)}
             # output_list = {"dst": wg.FwEntry(self, "Destination", f"{self.command_model.command_name}.dst")}
@@ -44,6 +52,14 @@ class SettingGui(ttk.Frame):
                 "fx": wg.FwScale(self, "Factor x", 0, 1, self.command_model.parameters["setting"]["fx"], resolution=0.1),
                 "fy": wg.FwScale(self, "Factor y", 0, 1, self.command_model.parameters["setting"]["fy"], resolution=0.1),
                 "interpolation": wg.FwCombobox(self, "Interpolation", ENUM_INTERPOLATION_FLAGS, self.command_model.parameters["setting"]["interpolation"])
+                }
+
+        elif self.command_model.command_name.startswith("opencv_canny"):
+            setting_list = {
+                "threshold1": wg.FwScale(self, "Threshold 1", 0, 255, self.command_model.parameters["setting"]["threshold1"]),
+                "threshold2": wg.FwScale(self, "Threshold 2", 0, 255, self.command_model.parameters["setting"]["threshold2"]),
+                "apertureSize": wg.FwScale(self, "Aperture size", 0, 255, self.command_model.parameters["setting"]["apertureSize"], value_type=int),
+                "L2gradient": wg.FwCheckbutton(self, "L2 gradient", "L2gradient", self.command_model.parameters["setting"]["L2gradient"])
                 }
 
         self.widget_list.update({"input": input_list})
