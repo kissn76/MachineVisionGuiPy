@@ -29,18 +29,24 @@ class Mainwindow(tk.Tk):
         self.run_contimous = False
 
         self.frm_config = ttk.Frame(self)
-        self.frm_available_commands = ttk.LabelFrame(self.frm_config, text="Available commands")
-        self.frm_used_command_setting = ttk.LabelFrame(self.frm_config, text="Command setting")
 
         frm_button = ttk.Frame(self.frm_config)
         ttk.Button(frm_button, text="Save", command=self.setting_save).grid(row=0, column=0)
         ttk.Button(frm_button, text="Run once", command=self.next_image).grid(row=0, column=1)
-        ttk.Button(frm_button, text="Run continous", command=self.continous_run_start).grid(row=0, column=2)
-        ttk.Button(frm_button, text="Stop", command=self.continous_run_stop).grid(row=0, column=3)
+        self.btn_run_continous = ttk.Button(frm_button, text="Run continous", command=self.continous_run_start)
+        self.btn_run_continous.grid(row=0, column=2)
+        self.lbl_counter = ttk.Label(frm_button, text=process_counter)
+        self.lbl_counter.grid(row=0, column=3)
+        ttk.Button(frm_button, text="Stop", command=self.continous_run_stop).grid(row=0, column=4)
+
+        self.frm_available_commands = ttk.LabelFrame(self.frm_config, text="Available commands")
+        self.frm_used_command_setting = ttk.LabelFrame(self.frm_config, text="Command setting")
+        self.frm_used_command_queue = ttk.LabelFrame(self.frm_config, text="Command queue")
 
         frm_button.grid(row=0, column=0)
         self.frm_available_commands.grid(row=1, column=0)
         self.frm_used_command_setting.grid(row=2, column=0)
+        self.frm_used_command_queue.grid(row=3, column=0)
 
         self.frm_image = ttk.Frame(self)
         self.can_main = tk.Canvas(self.frm_image, bg="blue", height=800, width=1200)
@@ -89,11 +95,16 @@ class Mainwindow(tk.Tk):
 
     def continous_run_start(self):
         self.run_contimous = True
+        self.btn_run_continous.configure(state="disabled")
         self.next_image()
 
 
     def continous_run_stop(self):
         self.run_contimous = False
+        self.btn_run_continous.configure(state="enabled")
+        # global process_counter
+        # process_counter = 0
+        # self.lbl_counter.configure(text=process_counter)
 
 
     # DRAG & DROP metódusok
@@ -144,16 +155,23 @@ class Mainwindow(tk.Tk):
         if bool(setting):
             self.can_main.moveto(id, coords[0], coords[1])
 
+        self.used_command_list_reorder()
+
 
     def used_command_list_reorder(self):
-        pass
+        for widget in self.frm_used_command_queue.winfo_children():
+            widget.destroy()
+
+        for command_name in used_command_list.keys():
+            ttk.Label(self.frm_used_command_queue, text=command_name).pack()
 
 
     def next_image(self):
         # DEBUG
-        # global process_counter
+        global process_counter
         # print(process_counter, "run process")
-        # process_counter += 1
+        process_counter += 1
+        self.lbl_counter.configure(text=process_counter)
         # DEBUG END
 
         self.image_list.clear()
