@@ -1,10 +1,14 @@
+import cv2
+from pathlib import Path
 import tkinter as tk
 from tkinter import ttk
+from PIL import Image, ImageTk
 import json
 import command as com
 
 
 used_command_list = {}  # a végrehajtandó parancsok object-jeit tartalmazza
+preview_command = None
 
 # DEBUG
 process_counter = 0     # élesben nem kell
@@ -24,7 +28,7 @@ class Mainwindow(tk.Tk):
     def __init__(self):
         super().__init__()
 
-        self.available_commands = ["opencv_imread", "opencv_threshold", "opencv_gaussianblur", "opencv_resize", "opencv_canny", "tk_display"]
+        self.available_commands = ["opencv_videocapture_index", "opencv_imread", "opencv_threshold", "opencv_gaussianblur", "opencv_resize", "opencv_canny", "tk_display"]
         self.image_list = {}
         self.run_contimous = False
 
@@ -43,10 +47,19 @@ class Mainwindow(tk.Tk):
         self.frm_used_command_setting = ttk.LabelFrame(self.frm_config, text="Command setting")
         self.frm_used_command_queue = ttk.LabelFrame(self.frm_config, text="Command queue")
 
+        self.frm_preview = ttk.LabelFrame(self.frm_config, text="Preview")
+        self.lbl_preview_name = ttk.Label(self.frm_preview)
+        self.lbl_preview = ttk.Label(self.frm_preview)
+
         frm_button.grid(row=0, column=0)
         self.frm_available_commands.grid(row=1, column=0)
         self.frm_used_command_setting.grid(row=2, column=0)
         self.frm_used_command_queue.grid(row=3, column=0)
+        self.frm_preview.grid(row=4, column=0)
+
+        self.lbl_preview_name.pack()
+        self.lbl_preview.pack()
+        self.preview_set()
 
         self.frm_image = ttk.Frame(self)
         self.can_main = tk.Canvas(self.frm_image, bg="blue", height=800, width=1200)
@@ -67,6 +80,37 @@ class Mainwindow(tk.Tk):
                 self.used_command_add(command_name, command_setting)
 
         self.mainloop()
+
+
+    def preview_set(self):
+        image = None
+        if not bool(preview_command):
+            image = "./resources/gears_400.jpg"
+            if Path(image).is_file():
+                image = cv2.imread(image)
+        else:
+            try:
+                image = self.image_list[preview_command]
+                image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            except:
+                image = "./resources/gears_400.jpg"
+                if Path(image).is_file():
+                    image = cv2.imread(image)
+
+
+        width = 240
+        height = width * (image.shape[0] / image.shape[1])
+        image = cv2.resize(image, dsize=(int(width), int(height)))
+
+        imagetk = ImageTk.PhotoImage(image=Image.fromarray(image))
+        self.lbl_preview.configure(image=imagetk)
+        self.lbl_preview.image = imagetk
+
+        if not bool(preview_command):
+            name = "None"
+        else:
+            name = preview_command
+        self.lbl_preview_name.configure(text=name)
 
 
     def setting_save(self):
@@ -177,6 +221,8 @@ class Mainwindow(tk.Tk):
         self.image_list.clear()
         for command_object in used_command_list.values():
             command_object.run(self.image_list)
+
+        self.preview_set()
 
         if self.run_contimous:
             self.after(100, self.next_image)

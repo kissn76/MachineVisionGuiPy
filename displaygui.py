@@ -64,6 +64,7 @@ class DisplayGui(ttk.Frame):
                 lbl_out = ttk.Label(frm_display_output, text=f"{output_key}: {output_value}")
                 lbl_out.pack()
                 lbl_out.bind("<Double-Button-1>", lambda event: self.copy_output(output_value))
+                lbl_out.bind("<Button-1>", lambda event: self.preview_set(output_value))
                 output_elements.update({f"{self.command_model.command_name}.{output_value}": lbl_out})
         except:
             pass
@@ -72,6 +73,10 @@ class DisplayGui(ttk.Frame):
     def show_setting_widget(self, command_name):
         mw.setting_widgets_hide()
         mw.setting_widget_show(command_name)
+
+
+    def preview_set(self, output_name):
+        mw.preview_command = output_name
 
 
     def copy_output(self, output_name):

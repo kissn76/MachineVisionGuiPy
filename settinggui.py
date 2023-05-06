@@ -18,7 +18,13 @@ class SettingGui(ttk.Frame):
         output_list = {}
         setting_list = {}
 
-        if self.command_model.command_name.startswith("opencv_imread"):
+        if self.command_model.command_name.startswith("opencv_videocapture_index"):
+            # output_list = {"output": wg.FwEntry(self, "Output", f"{self.command_model.command_name}.out")}
+            setting_list = {
+                "index": wg.FwEntry(self, "Index", self.command_model.parameters["setting"]["index"], state=None)
+                }
+
+        elif self.command_model.command_name.startswith("opencv_imread"):
             # output_list = {"output": wg.FwEntry(self, "Output", f"{self.command_model.command_name}.out")}
             setting_list = {
                 "filename": wg.FwEntry(self, "Filename", self.command_model.parameters["setting"]["filename"], state=None),

@@ -36,6 +36,45 @@ class Command():
 
 
     def init(self):
+        if self.command_model.command_name.startswith("opencv_videocapture_index"):
+            def run_command(images):
+                self.frm_setting_main.get()
+
+                videocapture = self.command_model.parameters["input"]["videocapture"]
+                index = self.command_model.parameters["setting"]["index"]
+                apiPreference = self.command_model.parameters["setting"]["apiPreference"]
+                output = self.command_model.parameters["output"]["output"]
+
+                if not bool(videocapture):
+                    input = None
+                    if not index is None:
+                        input = int(index)
+
+                    if not input is None:
+                        print("VideoCapture setting:", input)
+                        self.command_model.parameters["input"]["videocapture"] = cv2.VideoCapture(input, apiPreference)
+                        videocapture = self.command_model.parameters["input"]["videocapture"]
+                        if videocapture.isOpened():
+                            print("VideoCapture", input, "is opened")
+                        else:
+                            print("Error - VideoCapture - Can't open")
+                            self.command_model.parameters["input"]["videocapture"].release()
+                            self.command_model.parameters["input"]["videocapture"] = None
+                            videocapture = None
+                    else:
+                        print("Error - VideoCapture - Unknown input device")
+
+                if not bool(videocapture) and videocapture.isOpened():
+                    try:
+                        ret, frame = videocapture.read()
+                        if not ret:
+                            print("Error - VideoCapture - Can't receive frame")
+                        images.update({output: frame})
+                    except:
+                        pass
+
+            self.run = run_command
+
         if self.command_model.command_name.startswith("opencv_imread"):
             def run_command(images):
                 self.frm_setting_main.get()

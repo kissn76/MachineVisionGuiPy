@@ -14,7 +14,15 @@ class CommandModel():
         output_list = {}
         setting_list = {}
 
-        if self.command_name.startswith("opencv_imread"):
+        if self.command_name.startswith("opencv_videocapture_index"):
+            input_list = {"videocapture": None}
+            output_list = {"output": f"{self.command_name}.out"}
+            setting_list = {
+                "index": 0,
+                "apiPreference": cv2.CAP_ANY
+                }
+
+        elif self.command_name.startswith("opencv_imread"):
             output_list = {"output": f"{self.command_name}.out"}
             setting_list = {
                 "filename": "./resources/example/ocv_1.jpg",
