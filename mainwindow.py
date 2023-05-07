@@ -74,10 +74,10 @@ class Mainwindow(tk.Tk):
             self.available_command_row_add(available_command)
 
         # előzőleg elmentett munka betöltése
-        setting = self.setting_load()
-        if bool(setting):
-            for command_name, command_setting in setting.items():
-                self.used_command_add(command_name, command_setting)
+        # setting = self.setting_load()
+        # if bool(setting):
+        #     for command_name, command_setting in setting.items():
+        #         self.used_command_add(command_name, command_setting)
 
         self.mainloop()
 
