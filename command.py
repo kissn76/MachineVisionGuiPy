@@ -1,5 +1,6 @@
 from enums import *
 import command_openvc_input as coi
+import command_opencv_processing as cop
 
 
 command_counter = 0     # a parancs nevéhez egy counter, hogy ne legyen két egyforma nevű parancs
@@ -15,11 +16,14 @@ class Command():
                 command_counter = counter
         else:
             command = f"{command}.{command_counter}"
+            command_counter += 1
 
         if command.startswith("opencv_videocapture_index"):
             self.command_model = coi.OpencvVideoCapture(command, setting)
-
-        command_counter += 1
+        elif command.startswith("opencv_imread"):
+            self.command_model = coi.OpencvImread(command, setting)
+        elif command.startswith("opencv_threshold"):
+            self.command_model = cop.OpencvThreshold(command, setting)
 
         # setting widget
         self.frm_setting_main = self.command_model.setting_widget_get(setting_master)

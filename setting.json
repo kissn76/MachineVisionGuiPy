@@ -14,5 +14,21 @@
             600.0,
             67.0
         ]
+    },
+    "opencv_imread.1": {
+        "model": {
+            "input": {},
+            "output": {
+                "output": "opencv_imread.1.out"
+            },
+            "setting": {
+                "filename": "./resources/example/ocv_1.jpg",
+                "flags": 0
+            }
+        },
+        "coords": [
+            896.0,
+            68.0
+        ]
     }
 }

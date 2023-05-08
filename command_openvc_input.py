@@ -1,7 +1,59 @@
 import cv2
+from pathlib import Path
 from tkinter import ttk
 import commandmodel as cm
 import widgets as wg
+from enums import *
+
+
+class OpencvImread(cm.CommandModel):
+    def __init__(self, command_name, setting = None):
+        super().__init__(command_name)
+        self.input = {}
+        self.output = {"output": f"{self.command_name}.out"}
+        self.setting = {
+            "filename": "./resources/example/ocv_1.jpg",
+            "flags": cv2.IMREAD_UNCHANGED
+            }
+
+        if bool(setting):
+            self.set(setting)
+
+
+    def setting_widget_get(self, master):
+        self.setting_widget = ttk.Frame(master)
+        input = {}
+        output = {}
+        setting = {
+            "filename": wg.FwEntry(self.setting_widget, "Filename", self.setting["filename"], state=None),
+            "flags": wg.FwCombobox(self.setting_widget, "Flags", ENUM_IMREAD_MODES, self.setting["flags"])
+            }
+
+        self.setting_widget_elements.update({"input": input})
+        self.setting_widget_elements.update({"output": output})
+        self.setting_widget_elements.update({"setting": setting})
+
+        ttk.Label(self.setting_widget, text=self.command_name).pack()
+        for widget in self.setting_widget_elements["setting"].values():
+            if bool(widget):
+                widget.pack()
+
+        return self.setting_widget
+
+
+    def run(self, images):
+        self.copy_widget2model()
+
+        filename = self.setting["filename"]
+        flags = self.setting["flags"]
+        output = self.output["output"]
+
+        try:
+            if Path(filename).is_file():
+                image = cv2.imread(filename, flags)
+                images.update({output: image})
+        except:
+            pass
 
 
 class OpencvVideoCapture(cm.CommandModel):
@@ -37,8 +89,6 @@ class OpencvVideoCapture(cm.CommandModel):
                 widget.pack()
         ttk.Button(self.setting_widget, text="Connect", command=self.camera_connect).pack()
         ttk.Button(self.setting_widget, text="Disconnect", command=self.camera_disconnect).pack()
-
-        # super().setting_widget_get(master)
 
         return self.setting_widget
 

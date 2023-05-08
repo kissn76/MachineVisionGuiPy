@@ -104,14 +104,6 @@ class CommandModel():
         # kiszűrni a saját kimenetet, ne legyen a saját kimenet, a saját bemenet
 
 
-    # def setting_widget_get(self, master):
-    #     self.setting_widget = ttk.Frame(master)
-    #     ttk.Label(self.setting_widget, text=self.command_name).pack()
-    #     for widget in self.setting_widget_elements["setting"].values():
-    #         if bool(widget):
-    #             widget.pack()
-
-
     # copy setting widget values into model
     def copy_widget2model(self):
         for key in self.setting.keys():
