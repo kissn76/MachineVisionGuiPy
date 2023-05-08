@@ -74,10 +74,10 @@ class Mainwindow(tk.Tk):
             self.available_command_row_add(available_command)
 
         # előzőleg elmentett munka betöltése
-        # setting = self.setting_load()
-        # if bool(setting):
-        #     for command_name, command_setting in setting.items():
-        #         self.used_command_add(command_name, command_setting)
+        setting = self.setting_load()
+        if bool(setting):
+            for command_name, command_setting in setting.items():
+                self.used_command_add(command_name, command_setting)
 
         self.mainloop()
 
@@ -117,11 +117,17 @@ class Mainwindow(tk.Tk):
         setting = {}
         # model setting
         for command_name, command_obj in used_command_list.items():
-            setting.update({command_name: {"model": command_obj.command_model.parameters}})
+            model_input = command_obj.command_model.input
+            model_output = command_obj.command_model.output
+            model_setting = command_obj.command_model.setting
+            model = {"input": model_input, "output": model_output, "setting": model_setting}
+            setting.update({command_name: {"model": model}})
 
         # position of canvas elements
         for id in self.can_main.find_all():
             setting[self.can_main.gettags(id)[0]].update({"coords": self.can_main.coords(id)})
+
+        print(setting)
 
         with open("setting.json", "w") as fp:
             json.dump(setting, fp, indent=4)

@@ -8,8 +8,17 @@ command_counter = 0     # a parancs nevéhez egy counter, hogy ne legyen két eg
 class Command():
     def __init__(self, command, setting_master, display_master, setting=None):
         global command_counter
+        if bool(setting):
+            # counter beállítása a mentett maximális utáni értékre
+            counter = int(command[command.rindex(".") + 1:]) + 1
+            if counter > command_counter:
+                command_counter = counter
+        else:
+            command = f"{command}.{command_counter}"
+
         if command.startswith("opencv_videocapture_index"):
-            self.command_model = coi.OpencvVideoCapture(f"{command}.{command_counter}")
+            self.command_model = coi.OpencvVideoCapture(command, setting)
+
         command_counter += 1
 
         # setting widget
