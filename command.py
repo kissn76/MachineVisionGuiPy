@@ -18,17 +18,19 @@ class Command():
             command = f"{command}.{command_counter}"
             command_counter += 1
 
-        if command.startswith("opencv_videocapture_index"):
-            self.command_model = coi.OpencvVideoCapture(command, setting)
+        if command.startswith("opencv_videocapture"):
+            self.command_model = coi.OpencvVideoCapture(command, setting_master, display_master, setting)
         elif command.startswith("opencv_imread"):
-            self.command_model = coi.OpencvImread(command, setting)
+            self.command_model = coi.OpencvImread(command, setting_master, display_master, setting)
         elif command.startswith("opencv_threshold"):
-            self.command_model = cop.OpencvThreshold(command, setting)
+            self.command_model = cop.OpencvThreshold(command, setting_master, display_master, setting)
+        elif command.startswith("opencv_gaussianblur"):
+            self.command_model = cop.OpencvGaussianblur(command, setting_master, display_master, setting)
 
         # setting widget
-        self.frm_setting_main = self.command_model.setting_widget_get(setting_master)
+        self.frm_setting_main = self.command_model.setting_widget_get()
 
         # display widget
-        self.frm_display_main = self.command_model.display_widget_get(display_master)
+        self.frm_display_main = self.command_model.display_widget_get()
 
         self.run = self.command_model.run

@@ -10,20 +10,19 @@ clipboard_io = None
 
 
 class CommandModel():
-    def __init__(self, command_name):
+    def __init__(self, command_name, setting_master, display_master):
         self.command_name = command_name
-        self.setting_widget = None
+        self.setting_widget = ttk.Frame(setting_master)
         self.setting_widget_elements = {}
-        self.display_widget = None
+        self.display_widget = ttk.Frame(display_master)
         self.display_widget_elements = {}
         self.input = {}
         self.output = {}
         self.setting = {}
 
 
-    def display_widget_get(self, master):
-        self.display_widget = ttk.Frame(master)
 
+    def display_widget_get(self):
         frm_display_input = ttk.Frame(self.display_widget)
         lbl_command_name = ttk.Label(self.display_widget, text=self.command_name)
         frm_display_command = ttk.Frame(self.display_widget)
@@ -122,3 +121,14 @@ class CommandModel():
 
         for key in self.setting.keys():
             self.setting[key] = setting["setting"][key]
+
+
+    def setting_widget_set(self, input, output, setting):
+        self.setting_widget_elements.update({"input": input})
+        self.setting_widget_elements.update({"output": output})
+        self.setting_widget_elements.update({"setting": setting})
+
+        ttk.Label(self.setting_widget, text=self.command_name).pack()
+        for widget in self.setting_widget_elements["setting"].values():
+            if bool(widget):
+                widget.pack()

@@ -28,7 +28,7 @@ class Mainwindow(tk.Tk):
     def __init__(self):
         super().__init__()
 
-        self.available_commands = ["opencv_videocapture_index", "opencv_imread", "opencv_threshold", "opencv_gaussianblur", "opencv_resize", "opencv_canny", "tk_display"]
+        self.available_commands = ["opencv_videocapture", "opencv_imread", "opencv_threshold", "opencv_gaussianblur", "opencv_resize", "opencv_canny", "tk_display"]
         self.image_list = {}
         self.run_contimous = False
 

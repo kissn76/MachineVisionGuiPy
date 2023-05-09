@@ -7,8 +7,8 @@ from enums import *
 
 
 class OpencvImread(cm.CommandModel):
-    def __init__(self, command_name, setting = None):
-        super().__init__(command_name)
+    def __init__(self, command_name, setting_master, display_master, setting=None):
+        super().__init__(command_name, setting_master, display_master)
         self.input = {}
         self.output = {"output": f"{self.command_name}.out"}
         self.setting = {
@@ -20,8 +20,7 @@ class OpencvImread(cm.CommandModel):
             self.set(setting)
 
 
-    def setting_widget_get(self, master):
-        self.setting_widget = ttk.Frame(master)
+    def setting_widget_get(self):
         input = {}
         output = {}
         setting = {
@@ -29,14 +28,7 @@ class OpencvImread(cm.CommandModel):
             "flags": wg.FwCombobox(self.setting_widget, "Flags", ENUM_IMREAD_MODES, self.setting["flags"])
             }
 
-        self.setting_widget_elements.update({"input": input})
-        self.setting_widget_elements.update({"output": output})
-        self.setting_widget_elements.update({"setting": setting})
-
-        ttk.Label(self.setting_widget, text=self.command_name).pack()
-        for widget in self.setting_widget_elements["setting"].values():
-            if bool(widget):
-                widget.pack()
+        self.setting_widget_set(input, output, setting)
 
         return self.setting_widget
 
@@ -57,8 +49,8 @@ class OpencvImread(cm.CommandModel):
 
 
 class OpencvVideoCapture(cm.CommandModel):
-    def __init__(self, command_name, setting = None):
-        super().__init__(command_name)
+    def __init__(self, command_name, setting_master, display_master, setting=None):
+        super().__init__(command_name, setting_master, display_master)
         self.videocapture = None
         self.input = {}
         self.output = {"output": f"{self.command_name}.out"}
@@ -71,8 +63,7 @@ class OpencvVideoCapture(cm.CommandModel):
             self.set(setting)
 
 
-    def setting_widget_get(self, master):
-        self.setting_widget = ttk.Frame(master)
+    def setting_widget_get(self):
         input = {}
         output = {}
         setting = {
@@ -83,10 +74,7 @@ class OpencvVideoCapture(cm.CommandModel):
         self.setting_widget_elements.update({"output": output})
         self.setting_widget_elements.update({"setting": setting})
 
-        ttk.Label(self.setting_widget, text=self.command_name).pack()
-        for widget in self.setting_widget_elements["setting"].values():
-            if bool(widget):
-                widget.pack()
+        self.setting_widget_set(input, output, setting)
         ttk.Button(self.setting_widget, text="Connect", command=self.camera_connect).pack()
         ttk.Button(self.setting_widget, text="Disconnect", command=self.camera_disconnect).pack()
 
