@@ -26,6 +26,10 @@ class Command():
             self.command_model = cop.OpencvThreshold(command, setting_master, display_master, setting)
         elif command.startswith("opencv_gaussianblur"):
             self.command_model = cop.OpencvGaussianblur(command, setting_master, display_master, setting)
+        elif command.startswith("opencv_resize"):
+            self.command_model = cop.OpencvResize(command, setting_master, display_master, setting)
+        elif command.startswith("opencv_canny"):
+            self.command_model = cop.OpencvCanny(command, setting_master, display_master, setting)
 
         # setting widget
         self.frm_setting_main = self.command_model.setting_widget_get()

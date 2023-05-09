@@ -102,3 +102,104 @@ class OpencvGaussianblur(cm.CommandModel):
                 images.update({dst: image})
         except:
             pass
+
+
+class OpencvCanny(cm.CommandModel):
+    def __init__(self, command_name, setting_master, display_master, setting=None):
+        super().__init__(command_name, setting_master, display_master)
+        self.input = {"src": None}
+        self.output = {"dst": f"{self.command_name}.dst"}
+        self.setting = {
+                "threshold1": 100,
+                "threshold2": 200,
+                "apertureSize": 3,
+                "L2gradient": False
+                }
+
+        if bool(setting):
+            self.set(setting)
+
+
+    def setting_widget_get(self):
+        input = {}
+        output = {}
+        setting = {
+            "threshold1": wg.FwScale(self.setting_widget, "Threshold 1", 0, 255, self.setting["threshold1"]),
+            "threshold2": wg.FwScale(self.setting_widget, "Threshold 2", 0, 255, self.setting["threshold2"]),
+            "apertureSize": wg.FwScale(self.setting_widget, "Aperture size", 0, 255, self.setting["apertureSize"], value_type=int),
+            "L2gradient": wg.FwCheckbutton(self.setting_widget, "L2 gradient", "L2gradient", self.setting["L2gradient"])
+            }
+
+        self.setting_widget_set(input, output, setting)
+
+        return self.setting_widget
+
+
+    def run(self, images):
+        self.copy_widget2model()
+
+        src = self.input["src"]
+        dst = self.output["dst"]
+        threshold1 = self.setting["threshold1"]
+        threshold2 = self.setting["threshold2"]
+        apertureSize = self.setting["apertureSize"]
+        L2gradient = self.setting["L2gradient"]
+
+        try:
+            if bool(src) and len(images[src]) > 0:
+                image = cv2.Canny(images[src], threshold1=threshold1, threshold2=threshold2, apertureSize=apertureSize, L2gradient=L2gradient)
+                images.update({dst: image})
+        except:
+            pass
+
+
+class OpencvResize(cm.CommandModel):
+    def __init__(self, command_name, setting_master, display_master, setting=None):
+        super().__init__(command_name, setting_master, display_master)
+        self.input = {"src": None}
+        self.output = {"dst": f"{self.command_name}.dst"}
+        self.setting = {
+                "dsize_w": 0,
+                "dsize_h": 0,
+                "fx": 0.3,
+                "fy": 0.3,
+                "interpolation": cv2.INTER_NEAREST
+                }
+
+        if bool(setting):
+            self.set(setting)
+
+
+    def setting_widget_get(self):
+        input = {}
+        output = {}
+        setting = {
+            "dsize_w": wg.FwScale(self.setting_widget, "Width", 0, 255, self.setting["dsize_w"], value_type=int),
+            "dsize_h": wg.FwScale(self.setting_widget, "Height", 0, 255, self.setting["dsize_h"], value_type=int),
+            "fx": wg.FwScale(self.setting_widget, "Factor x", 0, 1, self.setting["fx"], resolution=0.1),
+            "fy": wg.FwScale(self.setting_widget, "Factor y", 0, 1, self.setting["fy"], resolution=0.1),
+            "interpolation": wg.FwCombobox(self.setting_widget, "Interpolation", ENUM_INTERPOLATION_FLAGS, self.setting["interpolation"])
+            }
+
+        self.setting_widget_set(input, output, setting)
+
+        return self.setting_widget
+
+
+    def run(self, images):
+        self.copy_widget2model()
+
+        src = self.input["src"]
+        dst = self.output["dst"]
+        dsize_w = self.setting["dsize_w"]
+        dsize_h = self.setting["dsize_h"]
+        fx = self.setting["fx"]
+        fy = self.setting["fy"]
+        interpolation = self.setting["interpolation"]
+
+        try:
+            if bool(src) and len(images[src]) > 0:
+                image = cv2.resize(images[src], dsize=(dsize_w, dsize_h), fx=fx, fy=fy, interpolation=interpolation)
+                images.update({dst: image})
+        except:
+            pass
