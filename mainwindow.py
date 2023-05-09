@@ -205,16 +205,6 @@ class Mainwindow(tk.Tk):
         if bool(setting):
             self.can_main.moveto(id, coords[0], coords[1])
 
-        self.used_command_list_reorder()
-
-
-    def used_command_list_reorder(self):
-        for widget in self.frm_used_command_queue.winfo_children():
-            widget.destroy()
-
-        for command_name in used_command_list.keys():
-            ttk.Label(self.frm_used_command_queue, text=command_name).pack()
-
 
     def next_image(self):
         # DEBUG
@@ -225,7 +215,23 @@ class Mainwindow(tk.Tk):
         # DEBUG END
 
         self.image_list.clear()
-        for command_object in used_command_list.values():
+
+        ##
+        # Parancsok lefuttatása helyes sorrendben
+        ##
+        # 0. Hibák felderítése
+        # 0.1 Törlünk minden olyan parancsot, amelyiknek nincs bemenete, de kéne, hogy legyen.
+        for command_name, command_object in used_command_list.items():
+            if None in command_object.command_model.input.values():
+                print("Error - command has empty input", command_name, command_object.command_model.input.keys())
+        #
+        # 1. Input parancsok megkeresése, végrehejtása
+        # 2. Az Input parancsok outputját inputként használó parancsok megkeresése.
+        # Ha ennek a parancsnak egyéb inputja is van, ami még nem futott le, akkor várakozási sorba tesszük.
+        # Ha minden inputja megvan, végrehajtjuk.
+        # 3. A 2. pont iterálása, amíg minden parancs le nem futott.
+
+        for command_name, command_object in used_command_list.items():
             command_object.run(self.image_list)
 
         self.preview_set()
