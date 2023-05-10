@@ -219,26 +219,22 @@ class Mainwindow(tk.Tk):
         ##
         # Parancsok lefuttatása helyes sorrendben
         ##
-
-        votman = {}
-
         def get_command_by_output(output_name):
-            for command_object in used_command_list.values():
-                if output_name in command_object.command_model.output.values():
-                    return command_object
-            return None
+            command_name = output_name[:output_name.rfind('.')]
+            command_object = used_command_list[command_name]
+            return command_object
 
 
+        checked = {}
         def find_own_output(command_name, input_name):
             # megkeressük, hogy az input_name melyik parancs outputja
             parent_command_object = get_command_by_output(input_name)
             if bool(parent_command_object):
-                votman[command_name].append(parent_command_object.command_model.command_name)
-                print(votman)
-                if command_name in votman[command_name] or parent_command_object.command_model.command_name in votman[command_name]:
+                if parent_command_object.command_model.command_name in checked[command_name]:
                     print("Az inputja ugyanaz, mint az outputja:", command_name)
                     return False
                 else:
+                    checked[command_name].append(parent_command_object.command_model.command_name)
                     for parent_command_input in parent_command_object.command_model.input.values():
                         ret = find_own_output(command_name, parent_command_input)
                         if not ret:
@@ -255,7 +251,7 @@ class Mainwindow(tk.Tk):
             else:
         # 0.2 Megkeresünk minden olyan parancsot, amelyiknek az inputja a saját outputja, akár más parancsokon keresztűl is.
                 for command_input in command_object.command_model.input.values():
-                    votman.update({command_name: []})
+                    checked.update({command_name: [command_name]})
                     ret = find_own_output(command_name, command_input)
                     if not ret:
                         return False
