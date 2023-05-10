@@ -96,11 +96,12 @@ class CommandModel():
         if not bool(clipboard_io):
             print("Empty clipboard")
         else:
-            self.input[input_key] = clipboard_io
-            input_elements[f"{self.command_name}.{input_key}"].config(text=f"{input_key}: {clipboard_io}")
+            if not clipboard_io in self.output.values():
+                self.input[input_key] = clipboard_io
+                input_elements[f"{self.command_name}.{input_key}"].config(text=f"{input_key}: {clipboard_io}")
+            else:
+                print("Error: nem lehet a saját maga inputja!")
 
-        # TODO
-        # kiszűrni a saját kimenetet, ne legyen a saját kimenet, a saját bemenet
 
 
     # copy setting widget values into model

@@ -219,11 +219,46 @@ class Mainwindow(tk.Tk):
         ##
         # Parancsok lefuttatása helyes sorrendben
         ##
+
+        votman = {}
+
+        def get_command_by_output(output_name):
+            for command_object in used_command_list.values():
+                if output_name in command_object.command_model.output.values():
+                    return command_object
+            return None
+
+
+        def find_own_output(command_name, input_name):
+            # megkeressük, hogy az input_name melyik parancs outputja
+            parent_command_object = get_command_by_output(input_name)
+            if bool(parent_command_object):
+                votman[command_name].append(parent_command_object.command_model.command_name)
+                print(votman)
+                if command_name in votman[command_name] or parent_command_object.command_model.command_name in votman[command_name]:
+                    print("Az inputja ugyanaz, mint az outputja:", command_name)
+                    return False
+                else:
+                    for parent_command_input in parent_command_object.command_model.input.values():
+                        ret = find_own_output(command_name, parent_command_input)
+                        if not ret:
+                            return False
+
+            return True
+
         # 0. Hibák felderítése
-        # 0.1 Törlünk minden olyan parancsot, amelyiknek nincs bemenete, de kéne, hogy legyen.
+        # 0.1 Megkeresünk minden olyan parancsot, amelyiknek nincs bemenete, de kéne, hogy legyen.
         for command_name, command_object in used_command_list.items():
             if None in command_object.command_model.input.values():
-                print("Error - command has empty input", command_name, command_object.command_model.input.keys())
+                print("Error - command has empty input:", command_name, "-", command_object.command_model.input)
+                return False
+            else:
+        # 0.2 Megkeresünk minden olyan parancsot, amelyiknek az inputja a saját outputja, akár más parancsokon keresztűl is.
+                for command_input in command_object.command_model.input.values():
+                    votman.update({command_name: []})
+                    ret = find_own_output(command_name, command_input)
+                    if not ret:
+                        return False
         #
         # 1. Input parancsok megkeresése, végrehejtása
         # 2. Az Input parancsok outputját inputként használó parancsok megkeresése.
