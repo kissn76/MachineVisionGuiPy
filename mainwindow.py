@@ -219,16 +219,10 @@ class Mainwindow(tk.Tk):
         ##
         # Parancsok lefuttatása helyes sorrendben
         ##
-        def get_command_by_output(output_name):
-            command_name = output_name[:output_name.rfind('.')]
-            command_object = used_command_list[command_name]
-            return command_object
-
-
         checked = {}
         def find_own_output(command_name, input_name):
             # megkeressük, hogy az input_name melyik parancs outputja
-            parent_command_object = get_command_by_output(input_name)
+            parent_command_object = used_command_list[input_name[0:input_name.rfind('.')]]
             if bool(parent_command_object):
                 if parent_command_object.command_model.command_name in checked[command_name]:
                     print("Az inputja ugyanaz, mint az outputja:", command_name)
@@ -239,7 +233,6 @@ class Mainwindow(tk.Tk):
                         ret = find_own_output(command_name, parent_command_input)
                         if not ret:
                             return False
-
             return True
 
         # 0. Hibák felderítése
@@ -248,13 +241,14 @@ class Mainwindow(tk.Tk):
             if None in command_object.command_model.input.values():
                 print("Error - command has empty input:", command_name, "-", command_object.command_model.input)
                 return False
-            else:
         # 0.2 Megkeresünk minden olyan parancsot, amelyiknek az inputja a saját outputja, akár más parancsokon keresztűl is.
-                for command_input in command_object.command_model.input.values():
-                    checked.update({command_name: [command_name]})
-                    ret = find_own_output(command_name, command_input)
-                    if not ret:
-                        return False
+        for command_name, command_object in used_command_list.items():
+            for command_input in command_object.command_model.input.values():
+                checked.clear()
+                checked.update({command_name: [command_name]})
+                ret = find_own_output(command_name, command_input)
+                if not ret:
+                    return False
         #
         # 1. Input parancsok megkeresése, végrehejtása
         # 2. Az Input parancsok outputját inputként használó parancsok megkeresése.
