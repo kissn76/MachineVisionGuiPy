@@ -80,6 +80,12 @@ class CommandModel():
     def preview_set(self, output_name):
         mw.preview_command = output_name
 
+        for lbl_name, lbl_out in output_elements.items():
+            if lbl_name == f"{self.command_name}.{output_name}":
+                lbl_out.configure(borderwidth=1, relief="solid")
+            else:
+                lbl_out.configure(borderwidth=0)
+
 
     def copy_output(self, output_name):
         global clipboard_io
