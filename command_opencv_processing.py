@@ -48,8 +48,11 @@ class OpencvThreshold(cm.CommandModel):
             if bool(src) and len(images[src]) > 0:
                 _, image = cv2.threshold(images[src], thresh=thresh, maxval=maxval, type=type)
                 images.update({dst: image})
+                return True
         except:
             pass
+
+        return False
 
 
 class OpencvGaussianblur(cm.CommandModel):
@@ -100,8 +103,11 @@ class OpencvGaussianblur(cm.CommandModel):
             if bool(src) and len(images[src]) > 0:
                 image = cv2.GaussianBlur(images[src], ksize=(ksize_w, ksize_h), sigmaX=sigmaX, sigmaY=sigmaY, borderType=borderType)
                 images.update({dst: image})
+                return True
         except:
             pass
+
+        return False
 
 
 class OpencvCanny(cm.CommandModel):
@@ -149,8 +155,11 @@ class OpencvCanny(cm.CommandModel):
             if bool(src) and len(images[src]) > 0:
                 image = cv2.Canny(images[src], threshold1=threshold1, threshold2=threshold2, apertureSize=apertureSize, L2gradient=L2gradient)
                 images.update({dst: image})
+                return True
         except:
             pass
+
+        return False
 
 
 class OpencvResize(cm.CommandModel):
@@ -201,5 +210,8 @@ class OpencvResize(cm.CommandModel):
             if bool(src) and len(images[src]) > 0:
                 image = cv2.resize(images[src], dsize=(dsize_w, dsize_h), fx=fx, fy=fy, interpolation=interpolation)
                 images.update({dst: image})
+                return True
         except:
             pass
+
+        return False

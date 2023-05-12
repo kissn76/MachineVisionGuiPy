@@ -44,8 +44,11 @@ class OpencvImread(cm.CommandModel):
             if Path(filename).is_file():
                 image = cv2.imread(filename, flags)
                 images.update({output: image})
+                return True
         except:
             pass
+
+        return False
 
 
 class OpencvVideoCapture(cm.CommandModel):
@@ -127,7 +130,10 @@ class OpencvVideoCapture(cm.CommandModel):
                 if not ret:
                     print("Error - VideoCapture - Can't receive frame")
                 images.update({output: frame})
+                return True
             except:
                 pass
         else:
             print("VideoCapture", index, "is not opened")
+
+        return False

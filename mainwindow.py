@@ -260,23 +260,31 @@ class Mainwindow(tk.Tk):
             return child_commands
 
 
+        # Input parancsok megkeresése, végrehejtása.
+        # Az outputjaikat használó parancsok kigyűjtése.
         command_queue = []
         for command_name, command_object in used_command_list.items():
             if not bool(command_object.command_model.input):
-                for output in command_object.command_model.output:
+                for output in command_object.command_model.output.values():
                     command_queue.extend(find_child_commands(output))
                 command_object.command_model.run(self.image_list)
-        # 2. Az Input parancsok outputját inputként használó parancsok megkeresése.
-        # Ha ennek a parancsnak egyéb inputja is van, ami még nem futott le, akkor várakozási sorba tesszük.
+        # 2. Ha ennek a parancsnak egyéb inputja is van, ami még nem futott le, akkor várakozási sorba marad.
         # Ha minden inputja megvan, végrehajtjuk.
-        for command_name in command_queue:
-            command_object = used_command_list[command_name]
-
-
         # 3. A 2. pont iterálása, amíg minden parancs le nem futott.
+        while len(command_queue) > 0:
+            for command_name in command_queue:
+                command_object = used_command_list[command_name]
+                command_object_inputs = command_object.command_model.input.values()
+                command_object_outputs = command_object.command_model.output.values()
 
-        for command_name, command_object in used_command_list.items():
-            command_object.run(self.image_list)
+                for output in command_object_outputs:
+                    command_queue.extend(find_child_commands(output))
+
+                if all(input in self.image_list.keys() for input in command_object_inputs): # ha a parancs összes inputja benne van a már létező parancskimenetek listájában
+                    ret = command_object.command_model.run(self.image_list)
+                    print(command_name)
+                    if ret:
+                        command_queue.remove(command_name)
 
         self.preview_set()
 
