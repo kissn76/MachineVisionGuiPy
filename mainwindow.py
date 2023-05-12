@@ -251,9 +251,28 @@ class Mainwindow(tk.Tk):
                     return False
         #
         # 1. Input parancsok megkeresése, végrehejtása
+        def find_child_commands(output_name):
+            child_commands = []
+            for command_object in used_command_list.values():
+                if output_name in command_object.command_model.input.values():
+                    child_commands.append(command_object.command_model.command_name)
+
+            return child_commands
+
+
+        command_queue = []
+        for command_name, command_object in used_command_list.items():
+            if not bool(command_object.command_model.input):
+                for output in command_object.command_model.output:
+                    command_queue.extend(find_child_commands(output))
+                command_object.command_model.run(self.image_list)
         # 2. Az Input parancsok outputját inputként használó parancsok megkeresése.
         # Ha ennek a parancsnak egyéb inputja is van, ami még nem futott le, akkor várakozási sorba tesszük.
         # Ha minden inputja megvan, végrehajtjuk.
+        for command_name in command_queue:
+            command_object = used_command_list[command_name]
+
+
         # 3. A 2. pont iterálása, amíg minden parancs le nem futott.
 
         for command_name, command_object in used_command_list.items():
