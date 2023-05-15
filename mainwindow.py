@@ -62,11 +62,31 @@ class Mainwindow(tk.Tk):
         self.preview_set()
 
         self.frm_image = ttk.Frame(self)
-        self.can_main = tk.Canvas(self.frm_image, bg="blue", height=800, width=1200)
-        self.can_main.pack()
+        # self.can_main = tk.Canvas(self.frm_image, bg="blue", height=800, width=1200)
+
+
+
+
+        self.can_main = tk.Canvas(self.frm_image, bg='blue', scrollregion=(0, 0, 4000, 4000))
+        hbar=tk.Scrollbar(self.frm_image, orient=tk.HORIZONTAL)
+        # hbar.pack(side=tk.BOTTOM, fill=tk.X)
+        hbar.grid(row=1, column=0, sticky="e, w")
+        hbar.config(command=self.can_main.xview)
+        vbar=tk.Scrollbar(self.frm_image, orient=tk.VERTICAL)
+        # vbar.pack(side=tk.RIGHT, fill=tk.Y)
+        vbar.grid(row=0, column=1, sticky="n, s")
+        vbar.config(command=self.can_main.yview)
+        self.can_main.config(width=800, height=800)
+        self.can_main.config(xscrollcommand=hbar.set, yscrollcommand=vbar.set)
+        # self.can_main.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
+        self.can_main.grid(row=0, column=0, sticky="n, s, w, e")
+
+
+
+        # self.can_main.pack()
         self.can_main.bind('<Button-1>', self.dnd_select_object)
 
-        self.frm_config.grid(row=0, column=0, sticky="n, s, w, e")
+        self.frm_config.grid(row=0, column=0)
         self.frm_image.grid(row=0, column=1, sticky="n, s, w, e")
 
         # elérhető parancsok gui frame feltöltése
@@ -163,15 +183,35 @@ class Mainwindow(tk.Tk):
         self.can_main.bind('<ButtonRelease-1>', self.dnd_deselect_object)
 
         x, y = event.x, event.y
+        x = self.can_main.canvasx(x)
+        y = self.can_main.canvasy(y)
         self.can_main.addtag_closest('selected', x, y)
 
 
     def dnd_move_object(self, event):
         x, y = event.x, event.y
+        x = self.can_main.canvasx(x)
+        y = self.can_main.canvasy(y)
+        print((self.can_main.winfo_width(), self.can_main.winfo_height()), self.can_main.bbox('selected'), (x, y))
         self.can_main.coords('selected', x, y)
 
 
     def dnd_deselect_object(self, event):
+        # x0, y0, x1, y1 = self.can_main.bbox('selected')
+        # element_width = x1 - x0
+        # element_height = y1 - y0
+        # canvas_width = self.can_main.winfo_width()
+        # canvas_height = self.can_main.winfo_height()
+        # if x0 < 0:
+        #     x0 = 0
+        # if y0 < 0:
+        #     y0 = 0
+        # if x1 > canvas_width:
+        #     x0 = canvas_width - element_width
+        # if y1 > canvas_height:
+        #     y0 = canvas_height - element_height
+        # self.can_main.coords('selected', x0, y0)
+
         self.can_main.dtag('selected')    # removes the 'selected' tag
         self.can_main.unbind('<Motion>')
     # DRAG & DROP metódusok END
@@ -282,7 +322,6 @@ class Mainwindow(tk.Tk):
 
                 if all(input in self.image_list.keys() for input in command_object_inputs): # ha a parancs összes inputja benne van a már létező parancskimenetek listájában
                     ret = command_object.command_model.run(self.image_list)
-                    print(command_name)
                     if ret:
                         command_queue.remove(command_name)
 
