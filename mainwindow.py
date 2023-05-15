@@ -28,6 +28,12 @@ class Mainwindow(tk.Tk):
     def __init__(self):
         super().__init__()
 
+        self.lines = {}
+        self.canvas_images = []
+
+        self.can_main_width = 800
+        self.can_main_height = 800
+
         self.available_commands = ["opencv_videocapture", "opencv_imread", "opencv_threshold", "opencv_gaussianblur", "opencv_resize", "opencv_canny", "tk_display"]
         self.image_list = {}
         self.run_contimous = False
@@ -68,15 +74,15 @@ class Mainwindow(tk.Tk):
 
 
         self.can_main = tk.Canvas(self.frm_image, bg='blue', scrollregion=(0, 0, 4000, 4000))
-        hbar=tk.Scrollbar(self.frm_image, orient=tk.HORIZONTAL)
+        hbar=ttk.Scrollbar(self.frm_image, orient=tk.HORIZONTAL)
         # hbar.pack(side=tk.BOTTOM, fill=tk.X)
         hbar.grid(row=1, column=0, sticky="e, w")
         hbar.config(command=self.can_main.xview)
-        vbar=tk.Scrollbar(self.frm_image, orient=tk.VERTICAL)
+        vbar=ttk.Scrollbar(self.frm_image, orient=tk.VERTICAL)
         # vbar.pack(side=tk.RIGHT, fill=tk.Y)
         vbar.grid(row=0, column=1, sticky="n, s")
         vbar.config(command=self.can_main.yview)
-        self.can_main.config(width=800, height=800)
+        self.can_main.config(width=self.can_main_width, height=self.can_main_height)
         self.can_main.config(xscrollcommand=hbar.set, yscrollcommand=vbar.set)
         # self.can_main.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
         self.can_main.grid(row=0, column=0, sticky="n, s, w, e")
@@ -86,7 +92,7 @@ class Mainwindow(tk.Tk):
         # self.can_main.pack()
         self.can_main.bind('<Button-1>', self.dnd_select_object)
 
-        self.frm_config.grid(row=0, column=0)
+        self.frm_config.grid(row=0, column=0, sticky="n, s, w, e")
         self.frm_image.grid(row=0, column=1, sticky="n, s, w, e")
 
         # elérhető parancsok gui frame feltöltése
@@ -189,32 +195,44 @@ class Mainwindow(tk.Tk):
 
 
     def dnd_move_object(self, event):
-        x, y = event.x, event.y
-        x = self.can_main.canvasx(x)
-        y = self.can_main.canvasy(y)
-        print((self.can_main.winfo_width(), self.can_main.winfo_height()), self.can_main.bbox('selected'), (x, y))
-        self.can_main.coords('selected', x, y)
+        mouse_x, mouse_y = event.x, event.y
+        canvas_x = self.can_main.canvasx(mouse_x)
+        canvas_y = self.can_main.canvasy(mouse_y)
+        # print((self.can_main.winfo_width(), self.can_main.winfo_height()), self.can_main.bbox('selected'), (mouse_x, mouse_y), (canvas_x, canvas_y))
+        if mouse_x > self.can_main_width:
+            self.can_main.xview_scroll(1, 'units')
+        if mouse_x < 1:
+            self.can_main.xview_scroll(-1, 'units')
+        if mouse_y > self.can_main_height:
+            self.can_main.yview_scroll(1, 'units')
+        if mouse_y < 1:
+            self.can_main.yview_scroll(-1, 'units')
+        self.can_main.coords('selected', canvas_x, canvas_y)
+
+        self.connect_commands('selected')
 
 
     def dnd_deselect_object(self, event):
-        # x0, y0, x1, y1 = self.can_main.bbox('selected')
-        # element_width = x1 - x0
-        # element_height = y1 - y0
-        # canvas_width = self.can_main.winfo_width()
-        # canvas_height = self.can_main.winfo_height()
-        # if x0 < 0:
-        #     x0 = 0
-        # if y0 < 0:
-        #     y0 = 0
-        # if x1 > canvas_width:
-        #     x0 = canvas_width - element_width
-        # if y1 > canvas_height:
-        #     y0 = canvas_height - element_height
-        # self.can_main.coords('selected', x0, y0)
-
         self.can_main.dtag('selected')    # removes the 'selected' tag
         self.can_main.unbind('<Motion>')
     # DRAG & DROP metódusok END
+
+
+    # connect commands with line
+    def connect_commands(self, command_name):
+        command_name = self.can_main.gettags(command_name)[0]
+        command_x0, command_y0, command_x1, command_y1 = self.can_main.bbox(command_name)
+
+        for output_name in used_command_list[command_name].command_model.output.values():
+            children = self.find_child_commands(output_name)
+            for child in children:
+                line_name = f"{output_name}-{child}"
+                child_x0, child_y0, child_x1, child_y1 = self.can_main.bbox(child)
+                if line_name in self.lines.keys():
+                    self.can_main.coords(self.lines[line_name], command_x0, command_y1, child_x0, child_y0)
+                else:
+                    line = self.can_main.create_line(command_x0, command_y1, child_x0, child_y0, fill="green", width=2)
+                    self.lines.update({line_name: line})
 
 
     def available_command_row_add(self, command):
@@ -238,12 +256,26 @@ class Mainwindow(tk.Tk):
         used_command_list.update({command_obj.command_model.command_name: command_obj})
 
         # display hozzáadás a canvas-hoz
-        frm_command = command_obj.frm_display_main
-        id = self.can_main.create_window(100, 100, window=frm_command, anchor="nw")
-        self.can_main.addtag_withtag(command_obj.command_model.command_name, id)    # a canvas elem tag-ként megkapja a command_name-et, hogy egyedileg meghívható legyen később
-        # ha betöltött elem, akkor mozgatás a mentett pozícióba a canvas-on
+        img = ImageTk.PhotoImage(Image.open("./resources/icons/move.png"))
+        self.canvas_images.append(img)
+        id = self.can_main.create_image(100, 100, image=img, anchor="nw")
+        self.can_main.addtag_withtag(f"{command_obj.command_model.command_name}.move", id)
         if bool(setting):
             self.can_main.moveto(id, coords[0], coords[1])
+
+        # frm_command = command_obj.frm_display_main
+        # id = self.can_main.create_window(100, 100, window=frm_command, anchor="nw")
+        # self.can_main.addtag_withtag(command_obj.command_model.command_name, id)    # a canvas elem tag-ként megkapja a command_name-et, hogy egyedileg meghívható legyen később
+        # # ha betöltött elem, akkor mozgatás a mentett pozícióba a canvas-on
+
+
+    def find_child_commands(self, output_name):
+        child_commands = []
+        for command_object in used_command_list.values():
+            if output_name in command_object.command_model.input.values():
+                child_commands.append(command_object.command_model.command_name)
+
+        return child_commands
 
 
     def next_image(self):
@@ -291,22 +323,13 @@ class Mainwindow(tk.Tk):
                     return False
         #
         # 1. Input parancsok megkeresése, végrehejtása
-        def find_child_commands(output_name):
-            child_commands = []
-            for command_object in used_command_list.values():
-                if output_name in command_object.command_model.input.values():
-                    child_commands.append(command_object.command_model.command_name)
-
-            return child_commands
-
-
         # Input parancsok megkeresése, végrehejtása.
         # Az outputjaikat használó parancsok kigyűjtése.
         command_queue = []
         for command_name, command_object in used_command_list.items():
             if not bool(command_object.command_model.input):
                 for output in command_object.command_model.output.values():
-                    command_queue.extend(find_child_commands(output))
+                    command_queue.extend(self.find_child_commands(output))
                 command_object.command_model.run(self.image_list)
         # 2. Ha ennek a parancsnak egyéb inputja is van, ami még nem futott le, akkor várakozási sorba marad.
         # Ha minden inputja megvan, végrehajtjuk.
@@ -318,7 +341,7 @@ class Mainwindow(tk.Tk):
                 command_object_outputs = command_object.command_model.output.values()
 
                 for output in command_object_outputs:
-                    command_queue.extend(find_child_commands(output))
+                    command_queue.extend(self.find_child_commands(output))
 
                 if all(input in self.image_list.keys() for input in command_object_inputs): # ha a parancs összes inputja benne van a már létező parancskimenetek listájában
                     ret = command_object.command_model.run(self.image_list)
