@@ -191,7 +191,7 @@ class Mainwindow(tk.Tk):
         x, y = event.x, event.y
         x = self.can_main.canvasx(x)
         y = self.can_main.canvasy(y)
-        self.can_main.addtag_closest('selected', x, y)
+        self.can_main.addtag_overlapping('selected', x, y, x, y)
 
 
     def dnd_move_object(self, event):
@@ -207,9 +207,16 @@ class Mainwindow(tk.Tk):
             self.can_main.yview_scroll(1, 'units')
         if mouse_y < 1:
             self.can_main.yview_scroll(-1, 'units')
-        self.can_main.coords('selected', canvas_x, canvas_y)
+        self.can_main.coords('selected', canvas_x - 8, canvas_y - 8)
 
-        self.connect_commands('selected')
+        box = self.can_main.bbox('selected')
+        if bool(box):
+            x0, y0, x1, y1 = box
+            tag = self.can_main.gettags('selected')[0]
+            tag = tag[0:tag.rfind('.')]
+            self.can_main.coords(tag, x1, y0)
+
+            self.connect_commands(tag)
 
 
     def dnd_deselect_object(self, event):
@@ -256,17 +263,20 @@ class Mainwindow(tk.Tk):
         used_command_list.update({command_obj.command_model.command_name: command_obj})
 
         # display hozzáadás a canvas-hoz
-        img = ImageTk.PhotoImage(Image.open("./resources/icons/move.png"))
+        img = ImageTk.PhotoImage(Image.open("./resources/icons/move_16.png"))
         self.canvas_images.append(img)
         id = self.can_main.create_image(100, 100, image=img, anchor="nw")
         self.can_main.addtag_withtag(f"{command_obj.command_model.command_name}.move", id)
+        # ha betöltött elem, akkor mozgatás a mentett pozícióba a canvas-on
         if bool(setting):
             self.can_main.moveto(id, coords[0], coords[1])
 
-        # frm_command = command_obj.frm_display_main
-        # id = self.can_main.create_window(100, 100, window=frm_command, anchor="nw")
-        # self.can_main.addtag_withtag(command_obj.command_model.command_name, id)    # a canvas elem tag-ként megkapja a command_name-et, hogy egyedileg meghívható legyen később
-        # # ha betöltött elem, akkor mozgatás a mentett pozícióba a canvas-on
+        x0, y0, x1, y1 = self.can_main.bbox(id)
+
+        frm_command = command_obj.frm_display_main
+        id = self.can_main.create_window(x1, y0, window=frm_command, anchor="nw")
+        self.can_main.addtag_withtag(command_obj.command_model.command_name, id)    # a canvas elem tag-ként megkapja a command_name-et, hogy egyedileg meghívható legyen később
+
 
 
     def find_child_commands(self, output_name):
