@@ -198,7 +198,6 @@ class Mainwindow(tk.Tk):
         mouse_x, mouse_y = event.x, event.y
         canvas_x = self.can_main.canvasx(mouse_x)
         canvas_y = self.can_main.canvasy(mouse_y)
-        # print((self.can_main.winfo_width(), self.can_main.winfo_height()), self.can_main.bbox('selected'), (mouse_x, mouse_y), (canvas_x, canvas_y))
         if mouse_x > self.can_main_width:
             self.can_main.xview_scroll(1, 'units')
         if mouse_x < 1:
@@ -207,6 +206,10 @@ class Mainwindow(tk.Tk):
             self.can_main.yview_scroll(1, 'units')
         if mouse_y < 1:
             self.can_main.yview_scroll(-1, 'units')
+        if canvas_x < 8:
+            canvas_x = 8
+        if canvas_y  < 8:
+            canvas_y = 8
         self.can_main.coords('selected', canvas_x - 8, canvas_y - 8)
 
         box = self.can_main.bbox('selected')
