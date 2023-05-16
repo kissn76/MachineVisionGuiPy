@@ -1,8 +1,10 @@
 import mainwindow as mw
+import vars
 
 
 def main():
-    mw.Mainwindow()
+    vars.mainwindow = mw.Mainwindow()
+    vars.mainwindow.mainloop()
 
 
 if __name__ == '__main__':

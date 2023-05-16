@@ -68,28 +68,18 @@ class Mainwindow(tk.Tk):
         self.preview_set()
 
         self.frm_image = ttk.Frame(self)
-        # self.can_main = tk.Canvas(self.frm_image, bg="blue", height=800, width=1200)
-
-
-
 
         self.can_main = tk.Canvas(self.frm_image, bg='blue', scrollregion=(0, 0, 4000, 4000))
         hbar=ttk.Scrollbar(self.frm_image, orient=tk.HORIZONTAL)
-        # hbar.pack(side=tk.BOTTOM, fill=tk.X)
         hbar.grid(row=1, column=0, sticky="e, w")
         hbar.config(command=self.can_main.xview)
         vbar=ttk.Scrollbar(self.frm_image, orient=tk.VERTICAL)
-        # vbar.pack(side=tk.RIGHT, fill=tk.Y)
         vbar.grid(row=0, column=1, sticky="n, s")
         vbar.config(command=self.can_main.yview)
         self.can_main.config(width=self.can_main_width, height=self.can_main_height)
         self.can_main.config(xscrollcommand=hbar.set, yscrollcommand=vbar.set)
-        # self.can_main.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
         self.can_main.grid(row=0, column=0, sticky="n, s, w, e")
 
-
-
-        # self.can_main.pack()
         self.can_main.bind('<Button-1>', self.dnd_select_object)
 
         self.frm_config.grid(row=0, column=0, sticky="n, s, w, e")
@@ -104,8 +94,6 @@ class Mainwindow(tk.Tk):
         if bool(setting):
             for command_name, command_setting in setting.items():
                 self.used_command_add(command_name, command_setting)
-
-        self.mainloop()
 
 
     def preview_set(self):
@@ -230,7 +218,6 @@ class Mainwindow(tk.Tk):
 
     # connect commands with line
     def connect_commands(self, command_name):
-        command_name = self.can_main.gettags(command_name)[0]
         command_x0, command_y0, command_x1, command_y1 = self.can_main.bbox(command_name)
 
         for output_name in used_command_list[command_name].command_model.output.values():
@@ -242,6 +229,17 @@ class Mainwindow(tk.Tk):
                     self.can_main.coords(self.lines[line_name], command_x0, command_y1, child_x0, child_y0)
                 else:
                     line = self.can_main.create_line(command_x0, command_y1, child_x0, child_y0, fill="green", width=2)
+                    self.lines.update({line_name: line})
+
+        for input_name in used_command_list[command_name].command_model.input.values():
+            parents = self.find_parent_commands(input_name)
+            for parent in parents:
+                line_name = f"{input_name}-{command_name}"
+                parent_x0, parent_y0, parent_x1, parent_y1 = self.can_main.bbox(parent)
+                if line_name in self.lines.keys():
+                    self.can_main.coords(self.lines[line_name], command_x0, command_y0, parent_x0, parent_y1)
+                else:
+                    line = self.can_main.create_line(command_x0, command_y0, parent_x0, parent_y1, fill="green", width=2)
                     self.lines.update({line_name: line})
 
 
@@ -279,9 +277,20 @@ class Mainwindow(tk.Tk):
         frm_command = command_obj.frm_display_main
         id = self.can_main.create_window(x1, y0, window=frm_command, anchor="nw")
         self.can_main.addtag_withtag(command_obj.command_model.command_name, id)    # a canvas elem tag-ként megkapja a command_name-et, hogy egyedileg meghívható legyen később
+        self.connect_commands(command_obj.command_model.command_name)
 
 
+    # megkeres minden parancsot, amelyik outputja az input
+    def find_parent_commands(self, input_name):
+        parent_commands = []
+        for command_object in used_command_list.values():
+            if input_name in command_object.command_model.output.values():
+                parent_commands.append(command_object.command_model.command_name)
 
+        return parent_commands
+
+
+    # megkeres minden parancsot, amelyik inputként használja az outputot
     def find_child_commands(self, output_name):
         child_commands = []
         for command_object in used_command_list.values():

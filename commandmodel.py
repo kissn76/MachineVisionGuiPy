@@ -2,6 +2,7 @@ from tkinter import ttk
 import widgets as wg
 from enums import *
 import mainwindow as mw
+import vars
 
 
 input_elements = {}
@@ -19,7 +20,6 @@ class CommandModel():
         self.input = {}
         self.output = {}
         self.setting = {}
-
 
 
     def display_widget_get(self):
@@ -105,6 +105,7 @@ class CommandModel():
             if not clipboard_io in self.output.values():
                 self.input[input_key] = clipboard_io
                 input_elements[f"{self.command_name}.{input_key}"].config(text=f"{input_key}: {clipboard_io}")
+                vars.mainwindow.connect_commands(self.command_name)
             else:
                 print("Error: nem lehet a saját maga inputja!")
 
