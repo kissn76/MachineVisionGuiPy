@@ -232,10 +232,10 @@ class Mainwindow(tk.Tk):
                     self.lines.update({line_name: line})
 
         for input_name in used_command_list[command_name].command_model.input.values():
-            parents = self.find_parent_commands(input_name)
-            for parent in parents:
+            if bool(input_name):
+                input_command = input_name[:input_name.rfind('.')]
                 line_name = f"{input_name}-{command_name}"
-                parent_x0, parent_y0, parent_x1, parent_y1 = self.can_main.bbox(parent)
+                parent_x0, parent_y0, parent_x1, parent_y1 = self.can_main.bbox(input_command)
                 if line_name in self.lines.keys():
                     self.can_main.coords(self.lines[line_name], command_x0, command_y0, parent_x0, parent_y1)
                 else:
@@ -278,16 +278,6 @@ class Mainwindow(tk.Tk):
         id = self.can_main.create_window(x1, y0, window=frm_command, anchor="nw")
         self.can_main.addtag_withtag(command_obj.command_model.command_name, id)    # a canvas elem tag-ként megkapja a command_name-et, hogy egyedileg meghívható legyen később
         self.connect_commands(command_obj.command_model.command_name)
-
-
-    # megkeres minden parancsot, amelyik outputja az input
-    def find_parent_commands(self, input_name):
-        parent_commands = []
-        for command_object in used_command_list.values():
-            if input_name in command_object.command_model.output.values():
-                parent_commands.append(command_object.command_model.command_name)
-
-        return parent_commands
 
 
     # megkeres minden parancsot, amelyik inputként használja az outputot

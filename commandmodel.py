@@ -103,6 +103,12 @@ class CommandModel():
             print("Empty clipboard")
         else:
             if not clipboard_io in self.output.values():
+                # vonal törlése a gui-n, ha már volt beállított input
+                if bool(self.input[input_key]):
+                    line_name = f"{self.input[input_key]}-{self.command_name}"
+                    vars.mainwindow.can_main.delete(vars.mainwindow.lines[line_name])
+                    vars.mainwindow.lines.pop(line_name)
+
                 self.input[input_key] = clipboard_io
                 input_elements[f"{self.command_name}.{input_key}"].config(text=f"{input_key}: {clipboard_io}")
                 vars.mainwindow.connect_commands(self.command_name)
