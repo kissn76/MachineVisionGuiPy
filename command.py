@@ -18,6 +18,8 @@ class Command():
             command = f"{command}.{command_counter}"
             command_counter += 1
 
+        self.command_model = None
+
         if command.startswith("opencv_videocapture"):
             self.command_model = coi.OpencvVideoCapture(command, setting_master, display_master, setting)
         elif command.startswith("opencv_imread"):
