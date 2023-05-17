@@ -1,4 +1,3 @@
-from enums import *
 import command_openvc_input as coi
 import command_opencv_processing as cop
 
