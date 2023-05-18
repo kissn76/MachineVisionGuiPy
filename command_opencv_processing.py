@@ -1,56 +1,38 @@
 import cv2
+import basecommand as bc
 import settingwidget as sw
 import displaywidget as dw
 import widgets as wg
 from enums import *
 
 
-class OpencvThreshold():
+class OpencvThreshold(bc.BaseCommand):
     def __init__(self, command_model, setting_master, display_master):
-        self.command_model = command_model
+        super().__init__(command_model, setting_master, display_master)
         # DEFAULT VALUES
-        command_model_input = {"src": None}
-        command_model_output = {"dst": f"{self.command_model.command_name}.dst"}
-        command_model_properties = {
+        self.command_model_input = {"src": None}
+        self.command_model_output = {"dst": f"{self.command_model.command_name}.dst"}
+        self.command_model_properties = {
             "thresh": 150,
             "maxval": 255,
             "type": cv2.THRESH_BINARY
             }
 
-        if not bool(self.command_model.input):
-            self.command_model.set_input(command_model_input)
+        self.set_model()
 
-        if not bool(self.command_model.output):
-            self.command_model.set_output(command_model_output)
-
-        if not bool(self.command_model.properties):
-            self.command_model.set_properties(command_model_properties)
-
-        self.setting_widget = sw.SettingWidget(setting_master, self.command_model.command_name)
-        setting_widget_input = {}
-        setting_widget_output = {}
-        setting_widget_properties = {
+        self.setting_widget_properties = {
             "thresh": wg.FwScale(self.setting_widget, "Threshold", 0, 255, self.command_model.properties["thresh"]),
             "maxval": wg.FwScale(self.setting_widget, "Maximum value", 0, 255, self.command_model.properties["maxval"]),
             "type": wg.FwCombobox(self.setting_widget, "Type", ENUM_THRESHOLD_TYPES, self.command_model.properties["type"])
             }
 
-        self.setting_widget.set(setting_widget_input, setting_widget_output, setting_widget_properties)
+        self.set_setting_widget()
 
-        self.display_widget = dw.DisplayWidget(display_master, self.command_model)
-        display_widget_input = {}
-        display_widget_output = {}
-        display_widget_properties = {}
+        # self.display_widget_input = {}
+        # self.display_widget_output = {}
+        # self.display_widget_properties = {}
 
-        self.display_widget.set(display_widget_input, display_widget_output, display_widget_properties)
-
-
-    def setting_widget_get(self):
-        return self.setting_widget
-
-
-    def display_widget_get(self):
-        return self.display_widget
+        self.set_display_widget()
 
 
     def run(self, images):
@@ -71,13 +53,13 @@ class OpencvThreshold():
         return False
 
 
-class OpencvGaussianblur():
+class OpencvGaussianblur(bc.BaseCommand):
     def __init__(self, command_model, setting_master, display_master):
-        self.command_model = command_model
+        super().__init__(command_model, setting_master, display_master)
         # DEFAULT VALUES
-        command_model_input = {"src": None}
-        command_model_output = {"dst": f"{self.command_model.command_name}.dst"}
-        command_model_properties = {
+        self.command_model_input = {"src": None}
+        self.command_model_output = {"dst": f"{self.command_model.command_name}.dst"}
+        self.command_model_properties = {
                 "ksize_w": 3,
                 "ksize_h": 3,
                 "sigmaX": 0.0,
@@ -85,19 +67,11 @@ class OpencvGaussianblur():
                 "borderType": cv2.BORDER_DEFAULT
                 }
 
-        if not bool(self.command_model.input):
-            self.command_model.set_input(command_model_input)
+        self.set_model()
 
-        if not bool(self.command_model.output):
-            self.command_model.set_output(command_model_output)
-
-        if not bool(self.command_model.properties):
-            self.command_model.set_properties(command_model_properties)
-
-        self.setting_widget = sw.SettingWidget(setting_master, self.command_model.command_name)
-        setting_widget_input = {}
-        setting_widget_output = {}
-        setting_widget_properties = {
+        self.setting_widget_input = {}
+        self.setting_widget_output = {}
+        self.setting_widget_properties = {
             "ksize_w": wg.FwScale(self.setting_widget, "Kernel size width", 1, 255, self.command_model.properties["ksize_w"], resolution=2, value_type=int),
             "ksize_h": wg.FwScale(self.setting_widget, "Kernel size height", 1, 255, self.command_model.properties["ksize_h"], resolution=2, value_type=int),
             "sigmaX": wg.FwScale(self.setting_widget, "Sigma x", 0, 1, self.command_model.properties["sigmaX"], resolution=0.1),
@@ -105,22 +79,13 @@ class OpencvGaussianblur():
             "borderType": wg.FwCombobox(self.setting_widget, "Interpolation", ENUM_BORDERTYPES, self.command_model.properties["borderType"])
             }
 
-        self.setting_widget.set(setting_widget_input, setting_widget_output, setting_widget_properties)
+        self.set_setting_widget()
 
-        self.display_widget = dw.DisplayWidget(display_master, self.command_model)
-        display_widget_input = {}
-        display_widget_output = {}
-        display_widget_properties = {}
+        # self.display_widget_input = {}
+        # self.display_widget_output = {}
+        # self.display_widget_properties = {}
 
-        self.display_widget.set(display_widget_input, display_widget_output, display_widget_properties)
-
-
-    def setting_widget_get(self):
-        return self.setting_widget
-
-
-    def display_widget_get(self):
-        return self.display_widget
+        self.set_display_widget()
 
 
     def run(self, images):
@@ -143,54 +108,37 @@ class OpencvGaussianblur():
         return False
 
 
-class OpencvCanny():
+class OpencvCanny(bc.BaseCommand):
     def __init__(self, command_model, setting_master, display_master):
-        self.command_model = command_model
+        super().__init__(command_model, setting_master, display_master)
         # DEFAULT VALUES
-        command_model_input = {"src": None}
-        command_model_output = {"dst": f"{self.command_model.command_name}.dst"}
-        command_model_properties = {
+        self.command_model_input = {"src": None}
+        self.command_model_output = {"dst": f"{self.command_model.command_name}.dst"}
+        self.command_model_properties = {
             "threshold1": 100,
             "threshold2": 200,
             "apertureSize": 3,
             "L2gradient": False
             }
 
-        if not bool(self.command_model.input):
-            self.command_model.set_input(command_model_input)
+        self.set_model()
 
-        if not bool(self.command_model.output):
-            self.command_model.set_output(command_model_output)
-
-        if not bool(self.command_model.properties):
-            self.command_model.set_properties(command_model_properties)
-
-        self.setting_widget = sw.SettingWidget(setting_master, self.command_model.command_name)
-        setting_widget_input = {}
-        setting_widget_output = {}
-        setting_widget_properties = {
+        self.setting_widget_input = {}
+        self.setting_widget_output = {}
+        self.setting_widget_properties = {
             "threshold1": wg.FwScale(self.setting_widget, "Threshold 1", 0, 255, self.command_model.properties["threshold1"]),
             "threshold2": wg.FwScale(self.setting_widget, "Threshold 2", 0, 255, self.command_model.properties["threshold2"]),
             "apertureSize": wg.FwScale(self.setting_widget, "Aperture size", 0, 255, self.command_model.properties["apertureSize"], value_type=int),
             "L2gradient": wg.FwCheckbutton(self.setting_widget, "L2 gradient", "L2gradient", self.command_model.properties["L2gradient"])
             }
 
-        self.setting_widget.set(setting_widget_input, setting_widget_output, setting_widget_properties)
+        self.set_setting_widget()
 
-        self.display_widget = dw.DisplayWidget(display_master, self.command_model)
-        display_widget_input = {}
-        display_widget_output = {}
-        display_widget_properties = {}
+        # self.display_widget_input = {}
+        # self.display_widget_output = {}
+        # self.display_widget_properties = {}
 
-        self.display_widget.set(display_widget_input, display_widget_output, display_widget_properties)
-
-
-    def setting_widget_get(self):
-        return self.setting_widget
-
-
-    def display_widget_get(self):
-        return self.display_widget
+        self.set_display_widget()
 
 
     def run(self, images):
@@ -212,13 +160,13 @@ class OpencvCanny():
         return False
 
 
-class OpencvResize():
+class OpencvResize(bc.BaseCommand):
     def __init__(self, command_model, setting_master, display_master):
-        self.command_model = command_model
+        super().__init__(command_model, setting_master, display_master)
         # DEFAULT VALUES
-        command_model_input = {"src": None}
-        command_model_output = {"dst": f"{self.command_model.command_name}.dst"}
-        command_model_properties = {
+        self.command_model_input = {"src": None}
+        self.command_model_output = {"dst": f"{self.command_model.command_name}.dst"}
+        self.command_model_properties = {
             "dsize_w": 0,
             "dsize_h": 0,
             "fx": 0.3,
@@ -226,19 +174,11 @@ class OpencvResize():
             "interpolation": cv2.INTER_NEAREST
             }
 
-        if not bool(self.command_model.input):
-            self.command_model.set_input(command_model_input)
+        self.set_model()
 
-        if not bool(self.command_model.output):
-            self.command_model.set_output(command_model_output)
-
-        if not bool(self.command_model.properties):
-            self.command_model.set_properties(command_model_properties)
-
-        self.setting_widget = sw.SettingWidget(setting_master, self.command_model.command_name)
-        setting_widget_input = {}
-        setting_widget_output = {}
-        setting_widget_properties = {
+        self.setting_widget_input = {}
+        self.setting_widget_output = {}
+        self.setting_widget_properties = {
             "dsize_w": wg.FwScale(self.setting_widget, "Width", 0, 255, self.command_model.properties["dsize_w"], value_type=int),
             "dsize_h": wg.FwScale(self.setting_widget, "Height", 0, 255, self.command_model.properties["dsize_h"], value_type=int),
             "fx": wg.FwScale(self.setting_widget, "Factor x", 0, 1, self.command_model.properties["fx"], resolution=0.1),
@@ -246,22 +186,13 @@ class OpencvResize():
             "interpolation": wg.FwCombobox(self.setting_widget, "Interpolation", ENUM_INTERPOLATION_FLAGS, self.command_model.properties["interpolation"])
             }
 
-        self.setting_widget.set(setting_widget_input, setting_widget_output, setting_widget_properties)
+        self.set_setting_widget()
 
-        self.display_widget = dw.DisplayWidget(display_master, self.command_model)
-        display_widget_input = {}
-        display_widget_output = {}
-        display_widget_properties = {}
+        # self.display_widget_input = {}
+        # self.display_widget_output = {}
+        # self.display_widget_properties = {}
 
-        self.display_widget.set(display_widget_input, display_widget_output, display_widget_properties)
-
-
-    def setting_widget_get(self):
-        return self.setting_widget
-
-
-    def display_widget_get(self):
-        return self.display_widget
+        self.set_display_widget()
 
 
     def run(self, images):
