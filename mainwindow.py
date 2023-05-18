@@ -170,9 +170,6 @@ class Mainwindow(tk.Tk):
     def continous_run_stop(self):
         self.run_contimous = False
         self.btn_run_continous.configure(state="enabled")
-        # global process_counter
-        # process_counter = 0
-        # self.lbl_counter.configure(text=process_counter)
 
 
     # DRAG & DROP metódusok
@@ -265,13 +262,13 @@ class Mainwindow(tk.Tk):
             command_obj = com.Command(command, self.frm_used_command_setting, self.can_main)
 
         # hozzáadás a végrehajtási listához
-        used_command_list.update({command_obj.command_model.command_name: command_obj})
+        used_command_list.update({command_obj.command_name: command_obj})
 
         # display hozzáadás a canvas-hoz
         img = ImageTk.PhotoImage(Image.open("./resources/icons/move_16.png"))
         self.canvas_images.append(img)
         id = self.can_main.create_image(100, 100, image=img, anchor="nw")
-        self.can_main.addtag_withtag(f"{command_obj.command_model.command_name}.move", id)
+        self.can_main.addtag_withtag(f"{command_obj.command_name}.move", id)
         # ha betöltött elem, akkor mozgatás a mentett pozícióba a canvas-on
         if bool(setting):
             self.can_main.moveto(id, coords[0], coords[1])
@@ -280,12 +277,12 @@ class Mainwindow(tk.Tk):
 
         frm_command = command_obj.frm_display_main
         frm_command_id = self.can_main.create_window(x1, y0, window=frm_command, anchor="nw")
-        self.can_main.addtag_withtag(command_obj.command_model.command_name, frm_command_id)    # a canvas elem tag-ként megkapja a command_name-et, hogy egyedileg meghívható legyen később
+        self.can_main.addtag_withtag(command_obj.command_name, frm_command_id)    # a canvas elem tag-ként megkapja a command_name-et, hogy egyedileg meghívható legyen később
 
         # csak újonnan hozzáadott parancsoknál legyen összekötés,
         # mert a betöltöttnél még nem biztos, hogy megvan minden input és output elem
         if not bool(setting):
-            self.connect_commands(command_obj.command_model.command_name)
+            self.connect_commands(command_obj.command_name)
 
 
     # megkeres minden parancsot, amelyik inputként használja az outputot
@@ -293,7 +290,7 @@ class Mainwindow(tk.Tk):
         child_commands = []
         for command_object in used_command_list.values():
             if output_name in command_object.command_model.input.values():
-                child_commands.append(command_object.command_model.command_name)
+                child_commands.append(command_object.command_name)
 
         return child_commands
 
@@ -316,11 +313,11 @@ class Mainwindow(tk.Tk):
             # megkeressük, hogy az input_name melyik parancs outputja
             parent_command_object = used_command_list[input_name[0:input_name.rfind('.')]]
             if bool(parent_command_object):
-                if parent_command_object.command_model.command_name in checked[command_name]:
+                if parent_command_object.command_name in checked[command_name]:
                     print("Az inputja ugyanaz, mint az outputja:", command_name)
                     return False
                 else:
-                    checked[command_name].append(parent_command_object.command_model.command_name)
+                    checked[command_name].append(parent_command_object.command_name)
                     for parent_command_input in parent_command_object.command_model.input.values():
                         ret = find_own_output(command_name, parent_command_input)
                         if not ret:
