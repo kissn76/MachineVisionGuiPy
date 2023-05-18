@@ -1,44 +1,62 @@
 import cv2
 from pathlib import Path
 from tkinter import ttk
-import commandmodel as cm
+import settingwidget as sw
+import displaywidget as dw
 import widgets as wg
 from enums import *
 
 
-class OpencvImread(cm.CommandModel):
-    def __init__(self, command_name, setting_master, display_master, setting=None):
-        super().__init__(command_name, setting_master, display_master)
-        self.input = {}
-        self.output = {"output": f"{self.command_name}.out"}
-        self.setting = {
+class OpencvImread():
+    def __init__(self, command_model, setting_master, display_master):
+        self.command_model = command_model
+        self.videocapture = None
+        command_model_input = {}
+        command_model_output = {"output": f"{self.command_model.command_name}.out"}
+        command_model_properties = {
             "filename": "./resources/example/ocv_1.jpg",
             "flags": cv2.IMREAD_UNCHANGED
             }
 
-        if bool(setting):
-            self.set(setting)
+        if not bool(self.command_model.input):
+            self.command_model.set_input(command_model_input)
+
+        if not bool(self.command_model.output):
+            self.command_model.set_output(command_model_output)
+
+        if not bool(self.command_model.properties):
+            self.command_model.set_properties(command_model_properties)
+
+        self.setting_widget = sw.SettingWidget(setting_master, self.command_model.command_name)
+        setting_widget_input = {}
+        setting_widget_output = {}
+        setting_widget_properties = {
+            "filename": wg.FwEntry(self.setting_widget, "Filename", self.command_model.properties["filename"], state=None),
+            "flags": wg.FwCombobox(self.setting_widget, "Flags", ENUM_IMREAD_MODES, self.command_model.properties["flags"])
+            }
+
+        self.setting_widget.set(setting_widget_input, setting_widget_output, setting_widget_properties)
+
+        self.display_widget = dw.DisplayWidget(display_master, self.command_model)
+        display_widget_input = {}
+        display_widget_output = {}
+        display_widget_properties = {}
+
+        self.display_widget.set(display_widget_input, display_widget_output, display_widget_properties)
 
 
     def setting_widget_get(self):
-        input = {}
-        output = {}
-        setting = {
-            "filename": wg.FwEntry(self.setting_widget, "Filename", self.setting["filename"], state=None),
-            "flags": wg.FwCombobox(self.setting_widget, "Flags", ENUM_IMREAD_MODES, self.setting["flags"])
-            }
-
-        self.setting_widget_set(input, output, setting)
-
         return self.setting_widget
 
 
-    def run(self, images):
-        self.copy_widget2model()
+    def display_widget_get(self):
+        return self.display_widget
 
-        filename = self.setting["filename"]
-        flags = self.setting["flags"]
-        output = self.output["output"]
+
+    def run(self, images):
+        filename = self.command_model.properties["filename"]
+        flags = self.command_model.properties["flags"]
+        output = self.command_model.output["output"]
 
         try:
             if Path(filename).is_file():
@@ -51,44 +69,48 @@ class OpencvImread(cm.CommandModel):
         return False
 
 
-class OpencvVideoCapture(cm.CommandModel):
-    def __init__(self, command_name, setting_master, display_master, setting=None):
-        super().__init__(command_name, setting_master, display_master)
+class OpencvVideoCapture():
+    def __init__(self, command_model, setting_master, display_master):
+        self.command_model = command_model
         self.videocapture = None
-        self.input = {}
-        self.output = {"output": f"{self.command_name}.out"}
-        self.setting = {
+        command_model_input = {}
+        command_model_output = {"output": f"{self.command_model.command_name}.out"}
+        command_model_properties = {
                 "index": 0,
                 "apiPreference": cv2.CAP_ANY
                 }
 
-        if bool(setting):
-            self.set(setting)
+        if not bool(self.command_model.input):
+            self.command_model.set_input(command_model_input)
 
+        if not bool(self.command_model.output):
+            self.command_model.set_output(command_model_output)
 
-    def setting_widget_get(self):
-        input = {}
-        output = {}
-        setting = {
-            "index": wg.FwEntry(self.setting_widget, "Index", self.setting["index"], state=None)
+        if not bool(self.command_model.properties):
+            self.command_model.set_properties(command_model_properties)
+
+        self.setting_widget = sw.SettingWidget(setting_master, self.command_model.command_name)
+        setting_widget_input = {}
+        setting_widget_output = {}
+        setting_widget_properties = {
+            "index": wg.FwEntry(self.setting_widget, "Index", self.command_model.properties["index"], state=None)
             }
 
-        self.setting_widget_elements.update({"input": input})
-        self.setting_widget_elements.update({"output": output})
-        self.setting_widget_elements.update({"setting": setting})
+        self.setting_widget.set(setting_widget_input, setting_widget_output, setting_widget_properties)
 
-        self.setting_widget_set(input, output, setting)
+        self.display_widget = dw.DisplayWidget(display_master, self.command_model)
+        display_widget_input = {}
+        display_widget_output = {}
+        display_widget_properties = {}
+
+        self.display_widget.set(display_widget_input, display_widget_output, display_widget_properties)
         ttk.Button(self.setting_widget, text="Connect", command=self.camera_connect).pack()
         ttk.Button(self.setting_widget, text="Disconnect", command=self.camera_disconnect).pack()
 
-        return self.setting_widget
-
 
     def camera_connect(self):
-        self.copy_widget2model()
-
-        index = self.setting["index"]
-        apiPreference = self.setting["apiPreference"]
+        index = self.command_model.properties["index"]
+        apiPreference = self.command_model.properties["apiPreference"]
 
         if not bool(self.videocapture):
             input = None
@@ -118,11 +140,17 @@ class OpencvVideoCapture(cm.CommandModel):
             pass
 
 
-    def run(self, images):
-        self.copy_widget2model()
+    def setting_widget_get(self):
+        return self.setting_widget
 
-        index = self.setting["index"]
-        output = self.output["output"]
+
+    def display_widget_get(self):
+        return self.display_widget
+
+
+    def run(self, images):
+        index = self.command_model.properties["index"]
+        output = self.command_model.output["output"]
 
         if bool(self.videocapture) and self.videocapture.isOpened():
             try:

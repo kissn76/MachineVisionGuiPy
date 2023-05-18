@@ -1,78 +1,34 @@
 {
-    "opencv_threshold.0": {
+    "opencv_videocapture.0": {
         "model": {
-            "input": {
-                "src": null
-            },
+            "input": {},
             "output": {
-                "dst": "opencv_threshold.0.dst"
+                "output": "opencv_videocapture.0.out"
             },
             "properties": {
-                "thresh": 150,
-                "maxval": 255,
-                "type": 0
+                "index": "0",
+                "apiPreference": 0
             }
         },
         "coords": [
-            357.0,
-            47.0
+            313.0,
+            52.0
         ]
     },
-    "opencv_threshold.1": {
+    "opencv_imread.1": {
         "model": {
-            "input": {
-                "src": "opencv_threshold.2.dst"
-            },
+            "input": {},
             "output": {
-                "dst": "opencv_threshold.1.dst"
+                "output": "opencv_imread.1.out"
             },
             "properties": {
-                "thresh": 150,
-                "maxval": 255,
-                "type": 0
+                "filename": "./resources/example/ocv_1.jpg",
+                "flags": 0
             }
         },
         "coords": [
-            167.0,
-            427.0
-        ]
-    },
-    "opencv_threshold.2": {
-        "model": {
-            "input": {
-                "src": "opencv_threshold.0.dst"
-            },
-            "output": {
-                "dst": "opencv_threshold.2.dst"
-            },
-            "properties": {
-                "thresh": 150,
-                "maxval": 255,
-                "type": 0
-            }
-        },
-        "coords": [
-            252.0,
-            284.0
-        ]
-    },
-    "opencv_threshold.3": {
-        "model": {
-            "input": {
-                "src": "opencv_threshold.0.dst"
-            },
-            "output": {
-                "dst": "opencv_threshold.3.dst"
-            },
-            "properties": {
-                "thresh": 150,
-                "maxval": 255,
-                "type": 0
-            }
-        },
-        "coords": [
-            475.0,
-            283.0
+            575.0,
+            50.0
         ]
     }
 }

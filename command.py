@@ -14,16 +14,16 @@ class Command():
 
         if self.command_name.startswith("opencv_videocapture"):
             self.command_object = coi.OpencvVideoCapture(self.command_model, setting_master, display_master)
-        # elif self.command_name.startswith("opencv_imread"):
-        #     self.command_object = coi.OpencvImread(self.command_model, setting_master, display_master)
+        elif self.command_name.startswith("opencv_imread"):
+            self.command_object = coi.OpencvImread(self.command_model, setting_master, display_master)
         elif self.command_name.startswith("opencv_threshold"):
             self.command_object = cop.OpencvThreshold(self.command_model, setting_master, display_master)
-        # elif self.command_name.startswith("opencv_gaussianblur"):
-        #     self.command_object = cop.OpencvGaussianblur(self.command_model, setting_master, display_master)
-        # elif self.command_name.startswith("opencv_resize"):
-        #     self.command_object = cop.OpencvResize(self.command_model, setting_master, display_master)
-        # elif self.command_name.startswith("opencv_canny"):
-        #     self.command_object = cop.OpencvCanny(self.command_model, setting_master, display_master)
+        elif self.command_name.startswith("opencv_gaussianblur"):
+            self.command_object = cop.OpencvGaussianblur(self.command_model, setting_master, display_master)
+        elif self.command_name.startswith("opencv_resize"):
+            self.command_object = cop.OpencvResize(self.command_model, setting_master, display_master)
+        elif self.command_name.startswith("opencv_canny"):
+            self.command_object = cop.OpencvCanny(self.command_model, setting_master, display_master)
 
         if bool(self.command_object):
             # setting widget
@@ -33,3 +33,10 @@ class Command():
             self.frm_display_main = self.command_object.display_widget_get()
 
             self.run = self.command_object.run
+
+
+    def update(self):
+        for key, widget in self.frm_setting_main.widget_elements["properties"].items():
+            if bool(widget):
+                newvalue = widget.get()
+                self.command_model.set_propertie_value(key, newvalue)

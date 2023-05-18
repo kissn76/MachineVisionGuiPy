@@ -45,3 +45,7 @@ class CommandModel():
         self.properties.clear()
         for key in properties.keys():
             self.properties.update({key: properties[key]})
+
+
+    def set_propertie_value(self, propertie_key, new_value):
+        self.properties[propertie_key] = new_value

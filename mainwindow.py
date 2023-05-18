@@ -350,7 +350,8 @@ class Mainwindow(tk.Tk):
             if not bool(command_object.command_model.input):
                 for output in command_object.command_model.output.values():
                     command_queue.extend(self.find_child_commands(output))
-                command_object.command_model.run(self.image_list)
+                command_object.update()
+                command_object.run(self.image_list)
         # 2. Ha ennek a parancsnak egyéb inputja is van, ami még nem futott le, akkor várakozási sorba marad.
         # Ha minden inputja megvan, végrehajtjuk.
         # 3. A 2. pont iterálása, amíg minden parancs le nem futott.
@@ -364,7 +365,8 @@ class Mainwindow(tk.Tk):
                     command_queue.extend(self.find_child_commands(output))
 
                 if all(input in self.image_list.keys() for input in command_object_inputs): # ha a parancs összes inputja benne van a már létező parancskimenetek listájában
-                    ret = command_object.command_model.run(self.image_list)
+                    command_object.update()
+                    ret = command_object.run(self.image_list)
                     if ret:
                         command_queue.remove(command_name)
 
