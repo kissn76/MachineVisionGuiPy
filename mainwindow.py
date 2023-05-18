@@ -95,6 +95,9 @@ class Mainwindow(tk.Tk):
             for command_name, command_setting in setting.items():
                 self.used_command_add(command_name, command_setting)
 
+            for command_name in used_command_list.keys():
+                self.connect_commands(command_name)
+
 
     def preview_set(self):
         image = None
@@ -133,15 +136,16 @@ class Mainwindow(tk.Tk):
         for command_name, command_obj in used_command_list.items():
             model_input = command_obj.command_model.input
             model_output = command_obj.command_model.output
-            model_setting = command_obj.command_model.setting
-            model = {"input": model_input, "output": model_output, "setting": model_setting}
+            model_properties = command_obj.command_model.properties
+            model = {"input": model_input, "output": model_output, "properties": model_properties}
             setting.update({command_name: {"model": model}})
 
         # position of canvas elements
         for id in self.can_main.find_all():
-            setting[self.can_main.gettags(id)[0]].update({"coords": self.can_main.coords(id)})
-
-        print(setting)
+            try:
+                setting[self.can_main.gettags(id)[0]].update({"coords": self.can_main.coords(id)})
+            except:
+                pass
 
         with open("setting.json", "w") as fp:
             json.dump(setting, fp, indent=4)
@@ -275,9 +279,13 @@ class Mainwindow(tk.Tk):
         x0, y0, x1, y1 = self.can_main.bbox(id)
 
         frm_command = command_obj.frm_display_main
-        id = self.can_main.create_window(x1, y0, window=frm_command, anchor="nw")
-        self.can_main.addtag_withtag(command_obj.command_model.command_name, id)    # a canvas elem tag-ként megkapja a command_name-et, hogy egyedileg meghívható legyen később
-        self.connect_commands(command_obj.command_model.command_name)
+        frm_command_id = self.can_main.create_window(x1, y0, window=frm_command, anchor="nw")
+        self.can_main.addtag_withtag(command_obj.command_model.command_name, frm_command_id)    # a canvas elem tag-ként megkapja a command_name-et, hogy egyedileg meghívható legyen később
+
+        # csak újonnan hozzáadott parancsoknál legyen összekötés,
+        # mert a betöltöttnél még nem biztos, hogy megvan minden input és output elem
+        if not bool(setting):
+            self.connect_commands(command_obj.command_model.command_name)
 
 
     # megkeres minden parancsot, amelyik inputként használja az outputot
