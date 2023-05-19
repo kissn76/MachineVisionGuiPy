@@ -27,9 +27,14 @@ def setting_widget_show(command_name):
 class Mainwindow(tk.Tk):
     def __init__(self):
         super().__init__()
+        self.image_move = ImageTk.PhotoImage(Image.open("./resources/icons/move_16.png"))
+        self.image_close = ImageTk.PhotoImage(Image.open("./resources/icons/close_16.png"))
+        self.image_info = ImageTk.PhotoImage(Image.open("./resources/icons/info_16.png"))
+
+        self.system_language = "hu"
+        self.backup_language = "en"
 
         self.lines = {}
-        self.canvas_images = []
 
         self.can_main_width = 800
         self.can_main_height = 800
@@ -39,6 +44,7 @@ class Mainwindow(tk.Tk):
         self.run_contimous = False
 
         self.frm_config = ttk.Frame(self)
+        self.frm_popup_id = None
 
         frm_button = ttk.Frame(self.frm_config)
         ttk.Button(frm_button, text="Save", command=self.setting_save).grid(row=0, column=0)
@@ -219,6 +225,9 @@ class Mainwindow(tk.Tk):
 
     # connect commands with line
     def connect_commands(self, command_name):
+        if not command_name in used_command_list.keys():
+            return
+
         command_x0, command_y0, command_x1, command_y1 = self.can_main.bbox(command_name)
 
         for output_name in used_command_list[command_name].command_model.output.values():
@@ -244,12 +253,61 @@ class Mainwindow(tk.Tk):
                     self.lines.update({line_name: line})
 
 
+    def popup_open(self, title, text):
+        self.can_main.delete(self.frm_popup_id)
+
+        frm_popup = ttk.Frame(self.can_main)
+        lbl_title = ttk.Label(frm_popup, text=title, font=('Mistral 18 bold'))
+        lbl_text = ttk.Label(frm_popup, text=text)
+
+        lbl_title.pack()
+        lbl_text.pack()
+
+        self.frm_popup_id = self.can_main.create_window(10, 10, window=frm_popup, anchor="nw")
+        self.can_main.addtag_withtag(f"popup", self.frm_popup_id)
+
+        frm_popup.bind("<Button-1>", lambda event: self.can_main.delete(self.frm_popup_id))
+        # frm_popup.bind("<Leave>", lambda event: self.can_main.delete(self.frm_popup_id))
+
+
+    def popup_toplevel_open(self, title, text):
+        frm_popup = tk.Toplevel(self)
+        frm_popup.title(title)
+        lbl_title = ttk.Label(frm_popup, text=title, font=('Mistral 18 bold'))
+        lbl_text = ttk.Label(frm_popup, text=text)
+
+        lbl_title.pack()
+        lbl_text.pack()
+
+        frm_popup.bind("<Button-1>", lambda event: frm_popup.destroy())
+
+
     def available_command_row_add(self, command):
+        text_json = None
+        label_text = None
+        command_description = None
+        with open("lang/commands.json", "r") as fp:
+            text_json = json.load(fp)
+        try:
+            label_text = text_json[command]["name"][self.system_language]
+            command_description = text_json[command]["description"][self.system_language]
+        except:
+            try:
+                label_text = text_json[command]["name"][self.backup_language]
+                command_description = text_json[command]["description"][self.backup_language]
+            except:
+                label_text = command
         frm_row = ttk.Frame(self.frm_available_commands)
-        lbl_command = ttk.Label(frm_row, text=command, cursor= "hand2")
-        lbl_command.pack()
+        lbl_command = ttk.Label(frm_row, text=label_text, cursor= "hand2")
+        lbl_info = ttk.Label(frm_row, image=self.image_info)
+        lbl_info.image = self.image_info
+        lbl_info.pack(side=tk.LEFT)
+        lbl_command.pack(side=tk.LEFT)
         lbl_command.bind("<Double-Button-1>", lambda event: self.used_command_add(command))
-        frm_row.pack()
+        lbl_info.bind("<Enter>", lambda event: self.popup_open(label_text, command_description))
+        lbl_info.bind("<Leave>", lambda event: self.can_main.delete(self.frm_popup_id))
+        lbl_info.bind("<Button-1>", lambda event: self.popup_toplevel_open(label_text, command_description))
+        frm_row.pack(fill=tk.X, expand=True)
 
 
     def used_command_add(self, command, setting=None):
@@ -265,9 +323,7 @@ class Mainwindow(tk.Tk):
         used_command_list.update({command_obj.command_name: command_obj})
 
         # display hozzáadás a canvas-hoz
-        img = ImageTk.PhotoImage(Image.open("./resources/icons/move_16.png"))
-        self.canvas_images.append(img)
-        id = self.can_main.create_image(100, 100, image=img, anchor="nw")
+        id = self.can_main.create_image(100, 100, image=self.image_move, anchor="nw")
         self.can_main.addtag_withtag(f"{command_obj.command_name}.move", id)
         # ha betöltött elem, akkor mozgatás a mentett pozícióba a canvas-on
         if bool(setting):
