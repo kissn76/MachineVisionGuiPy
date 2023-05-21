@@ -5,6 +5,7 @@ from tkinter import ttk
 from PIL import Image, ImageTk
 import json
 import command as com
+import widgets as wg
 
 
 used_command_list = {}  # a végrehajtandó parancsok object-jeit tartalmazza
@@ -253,35 +254,6 @@ class Mainwindow(tk.Tk):
                     self.lines.update({line_name: line})
 
 
-    def popup_open(self, title, text):
-        self.can_main.delete(self.frm_popup_id)
-
-        frm_popup = ttk.Frame(self.can_main)
-        lbl_title = ttk.Label(frm_popup, text=title, font=('Mistral 18 bold'))
-        lbl_text = ttk.Label(frm_popup, text=text)
-
-        lbl_title.pack()
-        lbl_text.pack()
-
-        self.frm_popup_id = self.can_main.create_window(10, 10, window=frm_popup, anchor="nw")
-        self.can_main.addtag_withtag(f"popup", self.frm_popup_id)
-
-        frm_popup.bind("<Button-1>", lambda event: self.can_main.delete(self.frm_popup_id))
-        # frm_popup.bind("<Leave>", lambda event: self.can_main.delete(self.frm_popup_id))
-
-
-    def popup_toplevel_open(self, title, text):
-        frm_popup = tk.Toplevel(self)
-        frm_popup.title(title)
-        lbl_title = ttk.Label(frm_popup, text=title, font=('Mistral 18 bold'))
-        lbl_text = ttk.Label(frm_popup, text=text)
-
-        lbl_title.pack()
-        lbl_text.pack()
-
-        frm_popup.bind("<Button-1>", lambda event: frm_popup.destroy())
-
-
     def available_command_row_add(self, command):
         text_json = None
         label_text = None
@@ -299,14 +271,10 @@ class Mainwindow(tk.Tk):
                 label_text = command
         frm_row = ttk.Frame(self.frm_available_commands)
         lbl_command = ttk.Label(frm_row, text=label_text, cursor= "hand2")
-        lbl_info = ttk.Label(frm_row, image=self.image_info)
-        lbl_info.image = self.image_info
+        lbl_info = wg.Info(frm_row, self, label_text, command_description)
         lbl_info.pack(side=tk.LEFT)
         lbl_command.pack(side=tk.LEFT)
         lbl_command.bind("<Double-Button-1>", lambda event: self.used_command_add(command))
-        lbl_info.bind("<Enter>", lambda event: self.popup_open(label_text, command_description))
-        lbl_info.bind("<Leave>", lambda event: self.can_main.delete(self.frm_popup_id))
-        lbl_info.bind("<Button-1>", lambda event: self.popup_toplevel_open(label_text, command_description))
         frm_row.pack(fill=tk.X, expand=True)
 
 

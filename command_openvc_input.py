@@ -9,6 +9,8 @@ from enums import *
 class OpencvImread(bc.BaseCommand):
     def __init__(self, command_model, setting_master, display_master):
         super().__init__(command_model, setting_master, display_master)
+        info_label = "Filename"
+        info_description = "Name of file to be loaded."
         self.command_model_input = {}
         self.command_model_output = {"output": f"{self.command_model.command_name}.out"}
         self.command_model_properties = {
@@ -21,7 +23,7 @@ class OpencvImread(bc.BaseCommand):
         self.setting_widget_input = {}
         self.setting_widget_output = {}
         self.setting_widget_properties = {
-            "filename": wg.FwEntry(self.setting_widget, "Filename", self.command_model.properties["filename"], state=None),
+            "filename": wg.FwEntry(self.setting_widget, "Filename", self.command_model.properties["filename"], state=None, info_label=info_label, info_description=info_description),
             "flags": wg.FwCombobox(self.setting_widget, "Flags", ENUM_IMREAD_MODES, self.command_model.properties["flags"])
             }
 
