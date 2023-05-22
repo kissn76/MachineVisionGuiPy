@@ -1,23 +1,15 @@
 {
     "opencv_videocapture": {
-        "name": {
-            "en": "Video Capture"
-        },
-        "description": {
-            "en": "Video capturing from video files, image sequences or cameras."
-        },
+        "name": "Video Capture",
+        "description": "Video capturing from video files, image sequences or cameras.",
         "link": [
             "https://docs.opencv.org/4.7.0/d8/dfe/classcv_1_1VideoCapture.html#details",
             "https://docs.opencv.org/4.7.0/dd/d43/tutorial_py_video_display.html"
         ]
     },
     "opencv_imread": {
-        "name": {
-            "en": "Image Read"
-        },
-        "description": {
-            "en": "Loads an image from a file."
-        },
+        "name": "Image Read",
+        "description": "Loads an image from a file.",
         "link": [
             "https://docs.opencv.org/4.7.0/d4/da8/group__imgcodecs.html#ga288b8b3da0892bd651fce07b3bbd3a56",
             "https://docs.opencv.org/4.7.0/db/deb/tutorial_display_image.html"
