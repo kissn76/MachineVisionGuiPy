@@ -1,0 +1,33 @@
+{
+    "InterpolationFlags": {
+        "description": "interpolation algorithm",
+        "enumerator": {
+            "INTER_NEAREST": "nearest neighbor interpolation",
+            "INTER_LINEAR": "bilinear interpolation",
+            "INTER_CUBIC": "bicubic interpolation",
+            "INTER_AREA": "resampling using pixel area relation. It may be a preferred method for image decimation, as it gives moire'-free results. But when the image is zoomed, it is similar to the INTER_NEAREST method.",
+            "INTER_LANCZOS4": "Lanczos interpolation over 8x8 neighborhood",
+            "INTER_LINEAR_EXACT": "Bit exact bilinear interpolation",
+            "INTER_NEAREST_EXACT": "Bit exact nearest neighbor interpolation. This will produce same results as the nearest neighbor method in PIL, scikit-image or Matlab.",
+            "INTER_MAX": "mask for interpolation codes",
+            "WARP_FILL_OUTLIERS": "flag, fills all of the destination image pixels. If some of them correspond to outliers in the source image, they are set to zero",
+            "WARP_INVERSE_MAP": "flag, inverse transformation\nFor example, linearPolar or logPolar transforms:\nflag is not set: \\(dst( \\rho , \\phi ) = src(x,y)\\)\nflag is set: \\(dst(x,y) = src( \\rho , \\phi )\\)"
+        }
+    },
+    "InterpolationMasks": {
+        "description": "",
+        "enumerator": {
+            "INTER_BITS": "",
+            "INTER_BITS2": "",
+            "INTER_TAB_SIZE": "",
+            "INTER_TAB_SIZE2": ""
+        }
+    },
+    "WarpPolarMode": {
+        "description": "Specify the polar mapping mode.",
+        "enumerator": {
+            "WARP_POLAR_LINEAR": "Remaps an image to/from polar space.",
+            "WARP_POLAR_LOG": "Remaps an image to/from semilog-polar space."
+        }
+    }
+}

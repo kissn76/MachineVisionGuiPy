@@ -1,0 +1,75 @@
+{
+    "AdaptiveThresholdTypes": {
+        "description": "adaptive threshold algorithm",
+        "enumerator": {
+            "ADAPTIVE_THRESH_MEAN_C": "the threshold value \\(T(x,y)\\) is a mean of the \\(\\texttt{blockSize} \\times \\texttt{blockSize}\\) neighborhood of \\((x, y)\\) minus C",
+            "ADAPTIVE_THRESH_GAUSSIAN_C": "the threshold value \\(T(x, y)\\) is a weighted sum (cross-correlation with a Gaussian window) of the \\(\\texttt{blockSize} \\times \\texttt{blockSize}\\) neighborhood of \\((x, y)\\) minus C . The default sigma (standard deviation) is used for the specified blockSize . See getGaussianKernel"
+        }
+    },
+    "DistanceTransformLabelTypes": {
+        "description": "distanceTransform algorithm flags",
+        "enumerator": {
+            "DIST_LABEL_CCOMP": "each connected component of zeros in src (as well as all the non-zero pixels closest to the connected component) will be assigned the same label",
+            "DIST_LABEL_PIXEL": "each zero pixel (and all the non-zero pixels closest to it) gets its own label."
+        }
+    },
+    "DistanceTransformMasks": {
+        "description": "Mask size for distance transform.",
+        "enumerator": {
+            "DIST_MASK_3": "mask=3",
+            "DIST_MASK_5": "mask=5",
+            "DIST_MASK_PRECISE": ""
+        }
+    },
+    "DistanceTypes": {
+        "description": "Distance types for Distance Transform and M-estimators",
+        "enumerator": {
+            "DIST_USER": "User defined distance.",
+            "DIST_L1": "distance = |x1-x2| + |y1-y2|",
+            "DIST_L2": "the simple euclidean distance",
+            "DIST_C": "distance = max(|x1-x2|,|y1-y2|)",
+            "DIST_L12": "L1-L2 metric: distance = 2(sqrt(1+x*x/2) - 1))",
+            "DIST_FAIR": "distance = c^2(|x|/c-log(1+|x|/c)), c = 1.3998",
+            "DIST_WELSCH": "distance = c^2/2(1-exp(-(x/c)^2)), c = 2.9846",
+            "DIST_HUBER": "distance = |x|<c ? x^2/2 : c(|x|-c/2), c=1.345"
+        }
+    },
+    "FloodFillFlags": {
+        "description": "floodfill algorithm flags",
+        "enumerator": {
+            "FLOODFILL_FIXED_RANGE": "If set, the difference between the current pixel and seed pixel is considered. Otherwise, the difference between neighbor pixels is considered (that is, the range is floating).",
+            "FLOODFILL_MASK_ONLY": "If set, the function does not change the image ( newVal is ignored), and only fills the mask with the value specified in bits 8-16 of flags as described above. This option only make sense in function variants that have the mask parameter."
+        }
+    },
+    "GrabCutClasses": {
+        "description": "class of the pixel in GrabCut algorithm",
+        "enumerator": {
+            "GC_BGD": "an obvious background pixels",
+            "GC_FGD": "an obvious foreground (object) pixel",
+            "GC_PR_BGD": "a possible background pixel",
+            "GC_PR_FGD": "a possible foreground pixel"
+        }
+    },
+    "GrabCutModes": {
+        "description": "GrabCut algorithm flags.",
+        "enumerator": {
+            "GC_INIT_WITH_RECT": "The function initializes the state and the mask using the provided rectangle. After that it runs iterCount iterations of the algorithm.",
+            "GC_INIT_WITH_MASK": "The function initializes the state using the provided mask. Note that GC_INIT_WITH_RECT and GC_INIT_WITH_MASK can be combined. Then, all the pixels outside of the ROI are automatically initialized with GC_BGD .",
+            "GC_EVAL": "The value means that the algorithm should just resume.",
+            "GC_EVAL_FREEZE_MODEL": "The value means that the algorithm should just run the grabCut algorithm (a single iteration) with the fixed model"
+        }
+    },
+    "ThresholdTypes": {
+        "description": "type of the threshold operation",
+        "enumerator": {
+            "THRESH_BINARY": "\\[\\texttt{dst} (x,y) = \\fork{\\texttt{maxval}}{if \\(\\texttt{src}(x,y) > \\texttt{thresh}\\)}{0}{otherwise}\\]",
+            "THRESH_BINARY_INV": "\\[\\texttt{dst} (x,y) = \\fork{0}{if \\(\\texttt{src}(x,y) > \\texttt{thresh}\\)}{\\texttt{maxval}}{otherwise}\\]",
+            "THRESH_TRUNC": "\\[\\texttt{dst} (x,y) = \\fork{\\texttt{threshold}}{if \\(\\texttt{src}(x,y) > \\texttt{thresh}\\)}{\\texttt{src}(x,y)}{otherwise}\\]",
+            "THRESH_TOZERO": "\\[\\texttt{dst} (x,y) = \\fork{\\texttt{src}(x,y)}{if \\(\\texttt{src}(x,y) > \\texttt{thresh}\\)}{0}{otherwise}\\]",
+            "THRESH_TOZERO_INV": "\\[\\texttt{dst} (x,y) = \\fork{0}{if \\(\\texttt{src}(x,y) > \\texttt{thresh}\\)}{\\texttt{src}(x,y)}{otherwise}\\]",
+            "THRESH_MASK": "",
+            "THRESH_OTSU": "flag, use Otsu algorithm to choose the optimal threshold value",
+            "THRESH_TRIANGLE": "flag, use Triangle algorithm to choose the optimal threshold value"
+        }
+    }
+}
