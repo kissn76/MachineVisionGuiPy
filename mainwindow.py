@@ -258,7 +258,7 @@ class Mainwindow(tk.Tk):
         text_json = None
         label_text = None
         command_description = None
-        with open("lang/commands.json", "r") as fp:
+        with open("lang/commands_en.json", "r") as fp:
             text_json = json.load(fp)
         try:
             label_text = text_json[command]["name"][self.system_language]
