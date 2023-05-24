@@ -11,7 +11,7 @@
             }
         },
         "coords": [
-            234.0,
+            250.0,
             5.0
         ]
     },
@@ -24,13 +24,13 @@
                 "dst": "opencv_threshold.1.dst"
             },
             "properties": {
-                "thresh": 150,
-                "maxval": 255,
+                "thresh": 150.0,
+                "maxval": 255.0,
                 "type": 0
             }
         },
         "coords": [
-            235.0,
+            251.0,
             92.0
         ]
     },
@@ -47,11 +47,11 @@
                 "dsize_h": 0,
                 "fx": 0.3,
                 "fy": 0.3,
-                "interpolation": 0
+                "interpolation": 3
             }
         },
         "coords": [
-            236.0,
+            252.0,
             200.0
         ]
     }
