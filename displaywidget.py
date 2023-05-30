@@ -31,8 +31,6 @@ class DisplayWidget(ttk.Frame):
         frm_display_command.pack()
         frm_display_output.pack()
 
-        lbl_command_name.bind("<Button-1>", lambda event: self.show_setting_widget(self.command_name))
-
         for widget in self.widget_elements["properties"].values():
             widget.pack()
 
@@ -66,11 +64,6 @@ class DisplayWidget(ttk.Frame):
                 output_elements.update({f"{self.command_name}.{output_value}": lbl_out})
         except:
             pass
-
-
-    def show_setting_widget(self, command_name):
-        mw.setting_widgets_hide()
-        mw.setting_widget_show(command_name)
 
 
     def preview_set(self, output_name):

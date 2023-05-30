@@ -28,9 +28,12 @@ def setting_widget_show(command_name):
 class Mainwindow(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.image_move = ImageTk.PhotoImage(Image.open("./resources/icons/move_16.png"))
-        self.image_close = ImageTk.PhotoImage(Image.open("./resources/icons/close_16.png"))
-        self.image_info = ImageTk.PhotoImage(Image.open("./resources/icons/info_16.png"))
+        self.icon_size = 16
+        self.image_move = ImageTk.PhotoImage(Image.open(f"./resources/icons/move_{self.icon_size}.png"))
+        self.image_close = ImageTk.PhotoImage(Image.open(f"./resources/icons/close_{self.icon_size}.png"))
+        self.image_info = ImageTk.PhotoImage(Image.open(f"./resources/icons/info_{self.icon_size}.png"))
+        self.image_settings = ImageTk.PhotoImage(Image.open(f"./resources/icons/settings_{self.icon_size}.png"))
+        self.image_delete = ImageTk.PhotoImage(Image.open(f"./resources/icons/delete_{self.icon_size}.png"))
 
         self.system_language = "hu"
         self.backup_language = "en"
@@ -39,6 +42,8 @@ class Mainwindow(tk.Tk):
 
         self.can_main_width = 800
         self.can_main_height = 800
+        self.can_main_region_width = 4000
+        self.can_main_region_height = 4000
 
         self.available_commands = ["opencv_videocapture", "opencv_imread", "opencv_threshold", "opencv_gaussianblur", "opencv_resize", "opencv_canny", "tk_display"]
         self.image_list = {}
@@ -76,7 +81,7 @@ class Mainwindow(tk.Tk):
 
         self.frm_image = ttk.Frame(self)
 
-        self.can_main = tk.Canvas(self.frm_image, bg='blue', scrollregion=(0, 0, 4000, 4000))
+        self.can_main = tk.Canvas(self.frm_image, bg='blue', scrollregion=(0, 0, self.can_main_region_width, self.can_main_region_height))
         hbar=ttk.Scrollbar(self.frm_image, orient=tk.HORIZONTAL)
         hbar.grid(row=1, column=0, sticky="e, w")
         hbar.config(command=self.can_main.xview)
@@ -187,35 +192,29 @@ class Mainwindow(tk.Tk):
         x, y = event.x, event.y
         x = self.can_main.canvasx(x)
         y = self.can_main.canvasy(y)
-        self.can_main.addtag_overlapping('selected', x, y, x, y)
+        self.can_main.addtag_withtag('selected', tk.CURRENT)
+
+        tags = self.can_main.gettags('selected')
+        if len(tags) > 0:
+            tag = tags[0]
+            command_name = tag[0:tag.rfind('.')]
+            item_type_tag = tag[tag.rfind('.') + 1:]
+            if item_type_tag == "settings":
+                setting_widgets_hide()
+                setting_widget_show(command_name)
+            elif item_type_tag == "delete":
+                self.used_command_delete(command_name)
 
 
     def dnd_move_object(self, event):
-        mouse_x, mouse_y = event.x, event.y
-        canvas_x = self.can_main.canvasx(mouse_x)
-        canvas_y = self.can_main.canvasy(mouse_y)
-        if mouse_x > self.can_main_width:
-            self.can_main.xview_scroll(1, 'units')
-        if mouse_x < 1:
-            self.can_main.xview_scroll(-1, 'units')
-        if mouse_y > self.can_main_height:
-            self.can_main.yview_scroll(1, 'units')
-        if mouse_y < 1:
-            self.can_main.yview_scroll(-1, 'units')
-        if canvas_x < 8:
-            canvas_x = 8
-        if canvas_y  < 8:
-            canvas_y = 8
-        self.can_main.coords('selected', canvas_x - 8, canvas_y - 8)
-
-        box = self.can_main.bbox('selected')
-        if bool(box):
-            x0, y0, x1, y1 = box
-            tag = self.can_main.gettags('selected')[0]
-            tag = tag[0:tag.rfind('.')]
-            self.can_main.coords(tag, x1, y0)
-
-            self.connect_commands(tag)
+        tags = self.can_main.gettags('selected')
+        if len(tags) > 0:
+            tag = tags[0]
+            command_name_tag = tag[0:tag.rfind('.')]
+            item_type_tag = tag[tag.rfind('.') + 1:]
+            if item_type_tag == "move":
+                mouse_x, mouse_y = event.x, event.y
+                self.display_move(command_name_tag, mouse_x, mouse_y)
 
 
     def dnd_deselect_object(self, event):
@@ -279,10 +278,11 @@ class Mainwindow(tk.Tk):
 
 
     def used_command_add(self, command, setting=None):
-        coords = None
+        x = 100
+        y = 100
         if bool(setting):   # ha dict-ből töltünk be meglévő adatokat, tipikusan mentés visszatöltésekor
             model_setting = setting["model"]
-            coords = setting["coords"]
+            x, y = setting["coords"]
             command_obj = com.Command(command, self.frm_used_command_setting, self.can_main, setting=model_setting)
         else:   # új létrehozása
             command_obj = com.Command(command, self.frm_used_command_setting, self.can_main)
@@ -290,23 +290,70 @@ class Mainwindow(tk.Tk):
         # hozzáadás a végrehajtási listához
         used_command_list.update({command_obj.command_name: command_obj})
 
-        # display hozzáadás a canvas-hoz
-        id = self.can_main.create_image(100, 100, image=self.image_move, anchor="nw")
-        self.can_main.addtag_withtag(f"{command_obj.command_name}.move", id)
-        # ha betöltött elem, akkor mozgatás a mentett pozícióba a canvas-on
-        if bool(setting):
-            self.can_main.moveto(id, coords[0], coords[1])
+        self.display_create(command_obj.command_name, x, y)
 
-        x0, y0, x1, y1 = self.can_main.bbox(id)
+
+    def used_command_delete(self, command_name):
+        print(f"delete: {command_name}")
+
+
+    def display_create(self, command_name, x=100, y=100):
+        command_obj = used_command_list[command_name]
+        id_move = self.can_main.create_image(x, y, image=self.image_move, anchor="nw")
+        self.can_main.addtag_withtag(f"{command_obj.command_name}.move", id_move)
+
+        id_setting = self.can_main.create_image(x, y, image=self.image_settings, anchor="nw")
+        self.can_main.addtag_withtag(f"{command_obj.command_name}.settings", id_setting)
+
+        id_delete = self.can_main.create_image(x, y, image=self.image_delete, anchor="nw")
+        self.can_main.addtag_withtag(f"{command_obj.command_name}.delete", id_delete)
 
         frm_command = command_obj.frm_display_main
-        frm_command_id = self.can_main.create_window(x1, y0, window=frm_command, anchor="nw")
-        self.can_main.addtag_withtag(command_obj.command_name, frm_command_id)    # a canvas elem tag-ként megkapja a command_name-et, hogy egyedileg meghívható legyen később
+        id_frm = self.can_main.create_window(x, y, window=frm_command, anchor="nw")
+        self.can_main.addtag_withtag(command_obj.command_name, id_frm)    # a canvas elem tag-ként megkapja a command_name-et, hogy egyedileg meghívható legyen később
 
-        # csak újonnan hozzáadott parancsoknál legyen összekötés,
-        # mert a betöltöttnél még nem biztos, hogy megvan minden input és output elem
-        if not bool(setting):
-            self.connect_commands(command_obj.command_name)
+        frm_command.update()
+
+        id_background = self.can_main.create_rectangle(x, y, x, y, fill='red', outline='red')
+        self.can_main.addtag_withtag(f"{command_obj.command_name}.background", id_background)
+        self.can_main.tag_lower(id_background, id_move)
+
+        self.display_move(command_name, x, y)
+
+
+    def display_move(self, command_name, x, y):
+        canvas_x = self.can_main.canvasx(x)
+        canvas_y = self.can_main.canvasy(y)
+        if x > self.can_main_width:
+            self.can_main.xview_scroll(1, 'units')
+        if x < 1:
+            self.can_main.xview_scroll(-1, 'units')
+        if y > self.can_main_height:
+            self.can_main.yview_scroll(1, 'units')
+        if y < 1:
+            self.can_main.yview_scroll(-1, 'units')
+        if canvas_x < int(self.icon_size / 2):
+            canvas_x = int(self.icon_size / 2)
+        if canvas_x > self.can_main_region_width:
+            canvas_x = self.can_main_region_width - int(self.icon_size / 2)
+        if canvas_y < int(self.icon_size / 2):
+            canvas_y = int(self.icon_size / 2)
+        if canvas_y > self.can_main_region_height:
+            canvas_y = self.can_main_region_height - int(self.icon_size / 2)
+        self.can_main.coords(f"{command_name}.move", canvas_x - int(self.icon_size / 2), canvas_y - int(self.icon_size / 2))
+
+        box = self.can_main.bbox(f"{command_name}.move")
+        if bool(box):
+            move_x0, move_y0, move_x1, move_y1 = box
+            self.can_main.coords(command_name, move_x1, move_y0)
+            frm_command = used_command_list[command_name].frm_display_main
+            frm_width = frm_command.winfo_reqwidth()
+            frm_height = frm_command.winfo_reqheight()
+            self.can_main.coords(f"{command_name}.settings", move_x0, move_y1)
+            self.can_main.coords(f"{command_name}.delete", move_x0, move_y1 + self.icon_size)
+            self.can_main.coords(f"{command_name}.background", move_x0, move_y0, move_x1, move_y1 + self.icon_size * 2)
+
+            self.connect_commands(command_name)
 
 
     # megkeres minden parancsot, amelyik inputként használja az outputot
