@@ -10,6 +10,7 @@ import widgets as wg
 
 used_command_list = {}  # a végrehajtandó parancsok object-jeit tartalmazza
 preview_command = None
+clipboard_io = None
 
 # DEBUG
 process_counter = 0     # élesben nem kell
@@ -22,7 +23,20 @@ def setting_widgets_hide():
 
 
 def setting_widget_show(command_name):
+    setting_widgets_hide()
     used_command_list[command_name].frm_setting_main.pack()
+
+
+def copy_output(text):
+    global clipboard_io
+    clipboard_io = text
+    print("Clipboard:", clipboard_io)
+
+
+def preview_set(output_name):
+    global preview_command
+    preview_command = output_name
+    print("Preview:", preview_command)
 
 
 class Mainwindow(tk.Tk):
@@ -34,6 +48,7 @@ class Mainwindow(tk.Tk):
         self.image_info = ImageTk.PhotoImage(Image.open(f"./resources/icons/info_{self.icon_size}.png"))
         self.image_settings = ImageTk.PhotoImage(Image.open(f"./resources/icons/settings_{self.icon_size}.png"))
         self.image_delete = ImageTk.PhotoImage(Image.open(f"./resources/icons/delete_{self.icon_size}.png"))
+        self.image_picture = ImageTk.PhotoImage(Image.open(f"./resources/icons/picture_{self.icon_size}.png"))
 
         self.system_language = "hu"
         self.backup_language = "en"
@@ -194,17 +209,6 @@ class Mainwindow(tk.Tk):
         y = self.can_main.canvasy(y)
         self.can_main.addtag_withtag('selected', tk.CURRENT)
 
-        tags = self.can_main.gettags('selected')
-        if len(tags) > 0:
-            tag = tags[0]
-            command_name = tag[0:tag.rfind('.')]
-            item_type_tag = tag[tag.rfind('.') + 1:]
-            if item_type_tag == "settings":
-                setting_widgets_hide()
-                setting_widget_show(command_name)
-            elif item_type_tag == "delete":
-                self.used_command_delete(command_name)
-
 
     def dnd_move_object(self, event):
         tags = self.can_main.gettags('selected')
@@ -304,9 +308,11 @@ class Mainwindow(tk.Tk):
 
         id_setting = self.can_main.create_image(x, y, image=self.image_settings, anchor="nw")
         self.can_main.addtag_withtag(f"{command_obj.command_name}.settings", id_setting)
+        self.can_main.tag_bind(id_setting, '<Button-1>', lambda event: setting_widget_show(command_obj.command_name))
 
         id_delete = self.can_main.create_image(x, y, image=self.image_delete, anchor="nw")
         self.can_main.addtag_withtag(f"{command_obj.command_name}.delete", id_delete)
+        self.can_main.tag_bind(id_delete, '<Button-1>', lambda event: self.used_command_delete(command_obj.command_name))
 
         frm_command = command_obj.frm_display_main
         id_frm = self.can_main.create_window(x, y, window=frm_command, anchor="nw")
@@ -318,10 +324,28 @@ class Mainwindow(tk.Tk):
         self.can_main.addtag_withtag(f"{command_obj.command_name}.background", id_background)
         self.can_main.tag_lower(id_background, id_move)
 
+        def create_input(input_key):
+            id_input = self.can_main.create_image(0, 0, image=self.image_picture, anchor="nw")
+            self.can_main.addtag_withtag(f"{command_obj.command_name}.{input_key}", id_input)
+            self.can_main.tag_bind(id_input, '<Double-Button-1>', lambda event: command_obj.frm_display_main.paste_input(input_key))
+
+        for input_key, input_name in command_obj.command_model.input.items():
+            create_input(input_key)
+
+        def create_output(output_name):
+            id_output = self.can_main.create_image(0, 0, image=self.image_picture, anchor="nw")
+            self.can_main.addtag_withtag(output_name, id_output)
+            self.can_main.tag_bind(id_output, '<Double-Button-1>', lambda event: copy_output(output_name))
+            self.can_main.tag_bind(id_output, '<Button-1>', lambda event: preview_set(output_name))
+
+        for output_key, output_name in command_obj.command_model.output.items():
+            create_output(output_name)
+
         self.display_move(command_name, x, y)
 
 
     def display_move(self, command_name, x, y):
+        command_obj = used_command_list[command_name]
         canvas_x = self.can_main.canvasx(x)
         canvas_y = self.can_main.canvasy(y)
         if x > self.can_main_width:
@@ -342,16 +366,33 @@ class Mainwindow(tk.Tk):
             canvas_y = self.can_main_region_height - int(self.icon_size / 2)
         self.can_main.coords(f"{command_name}.move", canvas_x - int(self.icon_size / 2), canvas_y - int(self.icon_size / 2))
 
-        box = self.can_main.bbox(f"{command_name}.move")
-        if bool(box):
-            move_x0, move_y0, move_x1, move_y1 = box
+        move_box = self.can_main.bbox(f"{command_name}.move")
+        if bool(move_box):
+            move_x0, move_y0, move_x1, move_y1 = move_box
             self.can_main.coords(command_name, move_x1, move_y0)
+            frm_x0, frm_y0, frm_x1, frm_y1 = self.can_main.bbox(command_name)
             # frm_command = used_command_list[command_name].frm_display_main
             # frm_width = frm_command.winfo_reqwidth()
             # frm_height = frm_command.winfo_reqheight()
             self.can_main.coords(f"{command_name}.settings", move_x0, move_y1)
             self.can_main.coords(f"{command_name}.delete", move_x0, move_y1 + self.icon_size)
-            self.can_main.coords(f"{command_name}.background", move_x0, move_y0, move_x1, move_y1 + self.icon_size * 2)
+            delete_x0, delete_y0, delete_x1, delete_y1 = self.can_main.bbox(f"{command_name}.delete")
+
+            before_input_x0 = frm_x0
+            for input_key, input_name in command_obj.command_model.input.items():
+                self.can_main.coords(f"{command_obj.command_name}.{input_key}", before_input_x0, frm_y0 - self.icon_size)
+                _, _, before_input_x0, _ = self.can_main.bbox(f"{command_obj.command_name}.{input_key}")
+
+            background_y1 = delete_y1
+            before_output_x0 = frm_x0
+            for output_key, output_name in command_obj.command_model.output.items():
+                self.can_main.coords(output_name, before_output_x0, frm_y1)
+                output_x0, output_y0, before_output_x0, output_y1 = self.can_main.bbox(output_name)
+
+                if background_y1 < output_y1:
+                    background_y1 = output_y1
+
+            self.can_main.coords(f"{command_name}.background", move_x0, move_y0, frm_x1, background_y1)
 
             self.connect_commands(command_name)
 
