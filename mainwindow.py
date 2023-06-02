@@ -346,9 +346,9 @@ class Mainwindow(tk.Tk):
         if bool(box):
             move_x0, move_y0, move_x1, move_y1 = box
             self.can_main.coords(command_name, move_x1, move_y0)
-            frm_command = used_command_list[command_name].frm_display_main
-            frm_width = frm_command.winfo_reqwidth()
-            frm_height = frm_command.winfo_reqheight()
+            # frm_command = used_command_list[command_name].frm_display_main
+            # frm_width = frm_command.winfo_reqwidth()
+            # frm_height = frm_command.winfo_reqheight()
             self.can_main.coords(f"{command_name}.settings", move_x0, move_y1)
             self.can_main.coords(f"{command_name}.delete", move_x0, move_y1 + self.icon_size)
             self.can_main.coords(f"{command_name}.background", move_x0, move_y0, move_x1, move_y1 + self.icon_size * 2)
