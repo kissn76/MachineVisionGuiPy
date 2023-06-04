@@ -11,10 +11,7 @@ class OpencvThreshold(bc.BaseCommand):
         super().__init__(command_model, setting_master, display_master)
         # DEFAULT VALUES
         self.command_model_input = {"src": None}
-        self.command_model_output = {
-            "dst": f"{self.command_model.command_name}.dst",
-            "dst_2": f"{self.command_model.command_name}.dst_2222"
-            }
+        self.command_model_output = {"dst": f"{self.command_model.command_name}.dst"}
         self.command_model_properties = {
             "thresh": 150,
             "maxval": 255,

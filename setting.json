@@ -1,0 +1,57 @@
+{
+    "opencv_imread.0": {
+        "model": {
+            "input": {},
+            "output": {
+                "output": "opencv_imread.0.out"
+            },
+            "properties": {
+                "filename": "./resources/example/ocv_1.jpg",
+                "flags": 0
+            }
+        },
+        "coords": [
+            357.0,
+            28.0
+        ]
+    },
+    "opencv_threshold.1": {
+        "model": {
+            "input": {
+                "src": "opencv_imread.0.out"
+            },
+            "output": {
+                "dst": "opencv_threshold.1.dst"
+            },
+            "properties": {
+                "thresh": 150.0,
+                "maxval": 255.0,
+                "type": 1
+            }
+        },
+        "coords": [
+            356.0,
+            145.0
+        ]
+    },
+    "opencv_canny.2": {
+        "model": {
+            "input": {
+                "src": "opencv_threshold.1.dst"
+            },
+            "output": {
+                "dst": "opencv_canny.2.dst"
+            },
+            "properties": {
+                "threshold1": 100.0,
+                "threshold2": 200.0,
+                "apertureSize": 3,
+                "L2gradient": false
+            }
+        },
+        "coords": [
+            355.0,
+            264.0
+        ]
+    }
+}

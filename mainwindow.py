@@ -5,6 +5,7 @@ from tkinter import ttk
 from PIL import Image, ImageTk
 import json
 import command as com
+import maincanvas as mc
 import widgets as wg
 
 
@@ -39,21 +40,24 @@ def preview_set(output_name):
     print("Preview:", preview_command)
 
 
+# megkeresi minden parancs input kulcsát, amelyik értékként tartalmazza az outputot
+# tömbként adja vissza a canvas tag neveket
+def find_child_commands(output_name):
+    child_commands = []
+    for command_object in used_command_list.values():
+        keys = [k for k, v in command_object.command_model.input.items() if v == output_name]
+        if bool(keys):
+            for key in keys:
+                child_commands.append(f"{command_object.command_name}.{key}")
+
+    return child_commands
+
+
 class Mainwindow(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.icon_size = 16
-        self.image_move = ImageTk.PhotoImage(Image.open(f"./resources/icons/move_{self.icon_size}.png"))
-        self.image_close = ImageTk.PhotoImage(Image.open(f"./resources/icons/close_{self.icon_size}.png"))
-        self.image_info = ImageTk.PhotoImage(Image.open(f"./resources/icons/info_{self.icon_size}.png"))
-        self.image_settings = ImageTk.PhotoImage(Image.open(f"./resources/icons/settings_{self.icon_size}.png"))
-        self.image_delete = ImageTk.PhotoImage(Image.open(f"./resources/icons/delete_{self.icon_size}.png"))
-        self.image_picture = ImageTk.PhotoImage(Image.open(f"./resources/icons/picture_{self.icon_size}.png"))
-
         self.system_language = "hu"
         self.backup_language = "en"
-
-        self.lines = {}
 
         self.can_main_width = 800
         self.can_main_height = 800
@@ -96,25 +100,40 @@ class Mainwindow(tk.Tk):
 
         self.frm_image = ttk.Frame(self)
 
-        self.can_main = tk.Canvas(self.frm_image, bg='blue', scrollregion=(0, 0, self.can_main_region_width, self.can_main_region_height))
-        hbar=ttk.Scrollbar(self.frm_image, orient=tk.HORIZONTAL)
-        hbar.grid(row=1, column=0, sticky="e, w")
-        hbar.config(command=self.can_main.xview)
-        vbar=ttk.Scrollbar(self.frm_image, orient=tk.VERTICAL)
-        vbar.grid(row=0, column=1, sticky="n, s")
-        vbar.config(command=self.can_main.yview)
-        self.can_main.config(width=self.can_main_width, height=self.can_main_height)
-        self.can_main.config(xscrollcommand=hbar.set, yscrollcommand=vbar.set)
-        self.can_main.grid(row=0, column=0, sticky="n, s, w, e")
+        self.can_main = mc.MainCanvas(self.frm_image, bg='blue', can_main_width=self.can_main_width, can_main_height=self.can_main_height, can_main_region_width=self.can_main_region_width, can_main_region_height=self.can_main_region_height)
 
-        self.can_main.bind('<Button-1>', self.dnd_select_object)
+        self.can_main.grid(row=0, column=0, sticky="n, s, w, e")
 
         self.frm_config.grid(row=0, column=0, sticky="n, s, w, e")
         self.frm_image.grid(row=0, column=1, sticky="n, s, w, e")
 
         # elérhető parancsok gui frame feltöltése
         for available_command in self.available_commands:
-            self.available_command_row_add(available_command)
+            def add(available_command):
+                text_json = None
+                label_text = None
+                command_description = None
+                with open("lang/commands_en.json", "r") as fp:
+                    text_json = json.load(fp)
+                try:
+                    label_text = text_json[available_command]["name"][self.system_language]
+                    command_description = text_json[available_command]["description"][self.system_language]
+                except:
+                    try:
+                        label_text = text_json[available_command]["name"][self.backup_language]
+                        command_description = text_json[available_command]["description"][self.backup_language]
+                    except:
+                        label_text = available_command
+                frm_row = ttk.Frame(self.frm_available_commands)
+                lbl_command = ttk.Label(frm_row, text=label_text, cursor= "hand2")
+                lbl_info = wg.Info(frm_row, self, label_text, command_description)
+                lbl_info.pack(side=tk.LEFT)
+                lbl_command.pack(side=tk.LEFT)
+                lbl_command.bind("<Double-Button-1>", lambda event: self.used_command_add(available_command))
+                frm_row.pack(fill=tk.X, expand=True)
+
+            add(available_command)
+
 
         # előzőleg elmentett munka betöltése
         setting = self.setting_load()
@@ -123,7 +142,7 @@ class Mainwindow(tk.Tk):
                 self.used_command_add(command_name, command_setting)
 
             for command_name in used_command_list.keys():
-                self.connect_commands(command_name)
+                self.can_main.connect_commands(command_name)
 
 
     def preview_set(self):
@@ -199,88 +218,6 @@ class Mainwindow(tk.Tk):
         self.btn_run_continous.configure(state="enabled")
 
 
-    # DRAG & DROP metódusok
-    def dnd_select_object(self, event):
-        self.can_main.bind('<Motion>', self.dnd_move_object)
-        self.can_main.bind('<ButtonRelease-1>', self.dnd_deselect_object)
-
-        x, y = event.x, event.y
-        x = self.can_main.canvasx(x)
-        y = self.can_main.canvasy(y)
-        self.can_main.addtag_withtag('selected', tk.CURRENT)
-
-
-    def dnd_move_object(self, event):
-        tags = self.can_main.gettags('selected')
-        if len(tags) > 0:
-            tag = tags[0]
-            command_name_tag = tag[0:tag.rfind('.')]
-            item_type_tag = tag[tag.rfind('.') + 1:]
-            if item_type_tag == "move":
-                mouse_x, mouse_y = event.x, event.y
-                self.display_move(command_name_tag, mouse_x, mouse_y)
-
-
-    def dnd_deselect_object(self, event):
-        self.can_main.dtag('selected')    # removes the 'selected' tag
-        self.can_main.unbind('<Motion>')
-    # DRAG & DROP metódusok END
-
-
-    # connect commands with line
-    def connect_commands(self, command_name):
-        if not command_name in used_command_list.keys():
-            return
-
-        command_x0, command_y0, command_x1, command_y1 = self.can_main.bbox(command_name)
-
-        for output_name in used_command_list[command_name].command_model.output.values():
-            children = self.find_child_commands(output_name)
-            for child in children:
-                line_name = f"{output_name}-{child}"
-                child_x0, child_y0, child_x1, child_y1 = self.can_main.bbox(child)
-                if line_name in self.lines.keys():
-                    self.can_main.coords(self.lines[line_name], command_x0, command_y1, child_x0, child_y0)
-                else:
-                    line = self.can_main.create_line(command_x0, command_y1, child_x0, child_y0, fill="green", width=2)
-                    self.lines.update({line_name: line})
-
-        for input_name in used_command_list[command_name].command_model.input.values():
-            if bool(input_name):
-                input_command = input_name[:input_name.rfind('.')]
-                line_name = f"{input_name}-{command_name}"
-                parent_x0, parent_y0, parent_x1, parent_y1 = self.can_main.bbox(input_command)
-                if line_name in self.lines.keys():
-                    self.can_main.coords(self.lines[line_name], command_x0, command_y0, parent_x0, parent_y1)
-                else:
-                    line = self.can_main.create_line(command_x0, command_y0, parent_x0, parent_y1, fill="green", width=2)
-                    self.lines.update({line_name: line})
-
-
-    def available_command_row_add(self, command):
-        text_json = None
-        label_text = None
-        command_description = None
-        with open("lang/commands_en.json", "r") as fp:
-            text_json = json.load(fp)
-        try:
-            label_text = text_json[command]["name"][self.system_language]
-            command_description = text_json[command]["description"][self.system_language]
-        except:
-            try:
-                label_text = text_json[command]["name"][self.backup_language]
-                command_description = text_json[command]["description"][self.backup_language]
-            except:
-                label_text = command
-        frm_row = ttk.Frame(self.frm_available_commands)
-        lbl_command = ttk.Label(frm_row, text=label_text, cursor= "hand2")
-        lbl_info = wg.Info(frm_row, self, label_text, command_description)
-        lbl_info.pack(side=tk.LEFT)
-        lbl_command.pack(side=tk.LEFT)
-        lbl_command.bind("<Double-Button-1>", lambda event: self.used_command_add(command))
-        frm_row.pack(fill=tk.X, expand=True)
-
-
     def used_command_add(self, command, setting=None):
         x = 100
         y = 100
@@ -294,117 +231,7 @@ class Mainwindow(tk.Tk):
         # hozzáadás a végrehajtási listához
         used_command_list.update({command_obj.command_name: command_obj})
 
-        self.display_create(command_obj.command_name, x, y)
-
-
-    def used_command_delete(self, command_name):
-        print(f"delete: {command_name}")
-
-
-    def display_create(self, command_name, x=100, y=100):
-        command_obj = used_command_list[command_name]
-        id_move = self.can_main.create_image(x, y, image=self.image_move, anchor="nw")
-        self.can_main.addtag_withtag(f"{command_obj.command_name}.move", id_move)
-
-        id_setting = self.can_main.create_image(x, y, image=self.image_settings, anchor="nw")
-        self.can_main.addtag_withtag(f"{command_obj.command_name}.settings", id_setting)
-        self.can_main.tag_bind(id_setting, '<Button-1>', lambda event: setting_widget_show(command_obj.command_name))
-
-        id_delete = self.can_main.create_image(x, y, image=self.image_delete, anchor="nw")
-        self.can_main.addtag_withtag(f"{command_obj.command_name}.delete", id_delete)
-        self.can_main.tag_bind(id_delete, '<Button-1>', lambda event: self.used_command_delete(command_obj.command_name))
-
-        frm_command = command_obj.frm_display_main
-        id_frm = self.can_main.create_window(x, y, window=frm_command, anchor="nw")
-        self.can_main.addtag_withtag(command_obj.command_name, id_frm)    # a canvas elem tag-ként megkapja a command_name-et, hogy egyedileg meghívható legyen később
-
-        frm_command.update()
-
-        id_background = self.can_main.create_rectangle(x, y, x, y, fill='red', outline='red')
-        self.can_main.addtag_withtag(f"{command_obj.command_name}.background", id_background)
-        self.can_main.tag_lower(id_background, id_move)
-
-        def create_input(input_key):
-            id_input = self.can_main.create_image(0, 0, image=self.image_picture, anchor="nw")
-            self.can_main.addtag_withtag(f"{command_obj.command_name}.{input_key}", id_input)
-            self.can_main.tag_bind(id_input, '<Double-Button-1>', lambda event: command_obj.frm_display_main.paste_input(input_key))
-
-        for input_key, input_name in command_obj.command_model.input.items():
-            create_input(input_key)
-
-        def create_output(output_name):
-            id_output = self.can_main.create_image(0, 0, image=self.image_picture, anchor="nw")
-            self.can_main.addtag_withtag(output_name, id_output)
-            self.can_main.tag_bind(id_output, '<Double-Button-1>', lambda event: copy_output(output_name))
-            self.can_main.tag_bind(id_output, '<Button-1>', lambda event: preview_set(output_name))
-
-        for output_key, output_name in command_obj.command_model.output.items():
-            create_output(output_name)
-
-        self.display_move(command_name, x, y)
-
-
-    def display_move(self, command_name, x, y):
-        command_obj = used_command_list[command_name]
-        canvas_x = self.can_main.canvasx(x)
-        canvas_y = self.can_main.canvasy(y)
-        if x > self.can_main_width:
-            self.can_main.xview_scroll(1, 'units')
-        if x < 1:
-            self.can_main.xview_scroll(-1, 'units')
-        if y > self.can_main_height:
-            self.can_main.yview_scroll(1, 'units')
-        if y < 1:
-            self.can_main.yview_scroll(-1, 'units')
-        if canvas_x < int(self.icon_size / 2):
-            canvas_x = int(self.icon_size / 2)
-        if canvas_x > self.can_main_region_width:
-            canvas_x = self.can_main_region_width - int(self.icon_size / 2)
-        if canvas_y < int(self.icon_size / 2):
-            canvas_y = int(self.icon_size / 2)
-        if canvas_y > self.can_main_region_height:
-            canvas_y = self.can_main_region_height - int(self.icon_size / 2)
-        self.can_main.coords(f"{command_name}.move", canvas_x - int(self.icon_size / 2), canvas_y - int(self.icon_size / 2))
-
-        move_box = self.can_main.bbox(f"{command_name}.move")
-        if bool(move_box):
-            move_x0, move_y0, move_x1, move_y1 = move_box
-            self.can_main.coords(command_name, move_x1, move_y0)
-            frm_x0, frm_y0, frm_x1, frm_y1 = self.can_main.bbox(command_name)
-            # frm_command = used_command_list[command_name].frm_display_main
-            # frm_width = frm_command.winfo_reqwidth()
-            # frm_height = frm_command.winfo_reqheight()
-            self.can_main.coords(f"{command_name}.settings", move_x0, move_y1)
-            self.can_main.coords(f"{command_name}.delete", move_x0, move_y1 + self.icon_size)
-            delete_x0, delete_y0, delete_x1, delete_y1 = self.can_main.bbox(f"{command_name}.delete")
-
-            before_input_x0 = frm_x0
-            for input_key, input_name in command_obj.command_model.input.items():
-                self.can_main.coords(f"{command_obj.command_name}.{input_key}", before_input_x0, frm_y0 - self.icon_size)
-                _, _, before_input_x0, _ = self.can_main.bbox(f"{command_obj.command_name}.{input_key}")
-
-            background_y1 = delete_y1
-            before_output_x0 = frm_x0
-            for output_key, output_name in command_obj.command_model.output.items():
-                self.can_main.coords(output_name, before_output_x0, frm_y1)
-                output_x0, output_y0, before_output_x0, output_y1 = self.can_main.bbox(output_name)
-
-                if background_y1 < output_y1:
-                    background_y1 = output_y1
-
-            self.can_main.coords(f"{command_name}.background", move_x0, move_y0, frm_x1, background_y1)
-
-            self.connect_commands(command_name)
-
-
-    # megkeres minden parancsot, amelyik inputként használja az outputot
-    def find_child_commands(self, output_name):
-        child_commands = []
-        for command_object in used_command_list.values():
-            if output_name in command_object.command_model.input.values():
-                child_commands.append(command_object.command_name)
-
-        return child_commands
+        self.can_main.display_create(command_obj.command_name, x, y)
 
 
     def next_image(self):
@@ -458,7 +285,7 @@ class Mainwindow(tk.Tk):
         for command_name, command_object in used_command_list.items():
             if not bool(command_object.command_model.input):
                 for output in command_object.command_model.output.values():
-                    command_queue.extend(self.find_child_commands(output))
+                    command_queue.extend(find_child_commands(output))
                 command_object.update()
                 command_object.run(self.image_list)
         # 2. Ha ennek a parancsnak egyéb inputja is van, ami még nem futott le, akkor várakozási sorba marad.
@@ -466,12 +293,13 @@ class Mainwindow(tk.Tk):
         # 3. A 2. pont iterálása, amíg minden parancs le nem futott.
         while len(command_queue) > 0:
             for command_name in command_queue:
-                command_object = used_command_list[command_name]
+                command_name_trimmed = command_name[:command_name.rfind('.')]
+                command_object = used_command_list[command_name_trimmed]
                 command_object_inputs = command_object.command_model.input.values()
                 command_object_outputs = command_object.command_model.output.values()
 
                 for output in command_object_outputs:
-                    command_queue.extend(self.find_child_commands(output))
+                    command_queue.extend(find_child_commands(output))
 
                 if all(input in self.image_list.keys() for input in command_object_inputs): # ha a parancs összes inputja benne van a már létező parancskimenetek listájában
                     command_object.update()
