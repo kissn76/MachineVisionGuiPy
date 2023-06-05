@@ -4,28 +4,18 @@ import tkinter as tk
 from tkinter import ttk
 from PIL import Image, ImageTk
 import json
+import commandcontainer as cc
 import command as com
 import maincanvas as mc
 import widgets as wg
 
 
-used_command_list = {}  # a végrehajtandó parancsok object-jeit tartalmazza
 preview_command = None
 clipboard_io = None
 
 # DEBUG
 process_counter = 0     # élesben nem kell
 # DEBUG END
-
-
-def setting_widgets_hide():
-    for command_obj in used_command_list.values():
-        command_obj.frm_setting_main.pack_forget()
-
-
-def setting_widget_show(command_name):
-    setting_widgets_hide()
-    used_command_list[command_name].frm_setting_main.pack()
 
 
 def copy_output(text):
@@ -38,19 +28,6 @@ def preview_set(output_name):
     global preview_command
     preview_command = output_name
     print("Preview:", preview_command)
-
-
-# megkeresi minden parancs input kulcsát, amelyik értékként tartalmazza az outputot
-# tömbként adja vissza a canvas tag neveket
-def find_child_commands(output_name):
-    child_commands = []
-    for command_object in used_command_list.values():
-        keys = [k for k, v in command_object.command_model.input.items() if v == output_name]
-        if bool(keys):
-            for key in keys:
-                child_commands.append(f"{command_object.command_name}.{key}")
-
-    return child_commands
 
 
 class Mainwindow(tk.Tk):
@@ -67,6 +44,8 @@ class Mainwindow(tk.Tk):
         self.available_commands = ["opencv_videocapture", "opencv_imread", "opencv_threshold", "opencv_gaussianblur", "opencv_resize", "opencv_canny", "tk_display"]
         self.image_list = {}
         self.run_contimous = False
+
+        self.command_container = cc.CommandContainer()
 
         self.frm_config = ttk.Frame(self)
         self.frm_popup_id = None
@@ -100,7 +79,7 @@ class Mainwindow(tk.Tk):
 
         self.frm_image = ttk.Frame(self)
 
-        self.can_main = mc.MainCanvas(self.frm_image, bg='blue', can_main_width=self.can_main_width, can_main_height=self.can_main_height, can_main_region_width=self.can_main_region_width, can_main_region_height=self.can_main_region_height)
+        self.can_main = mc.MainCanvas(self.frm_image, command_container=self.command_container, bg='blue', can_main_width=self.can_main_width, can_main_height=self.can_main_height, can_main_region_width=self.can_main_region_width, can_main_region_height=self.can_main_region_height)
 
         self.can_main.grid(row=0, column=0, sticky="n, s, w, e")
 
@@ -141,7 +120,7 @@ class Mainwindow(tk.Tk):
             for command_name, command_setting in setting.items():
                 self.used_command_add(command_name, command_setting)
 
-            for command_name in used_command_list.keys():
+            for command_name in self.command_container.keys():
                 self.can_main.connect_commands(command_name)
 
 
@@ -179,7 +158,7 @@ class Mainwindow(tk.Tk):
     def setting_save(self):
         setting = {}
         # model setting
-        for command_name, command_obj in used_command_list.items():
+        for command_name, command_obj in self.command_container.items():
             model_input = command_obj.command_model.input
             model_output = command_obj.command_model.output
             model_properties = command_obj.command_model.properties
@@ -229,7 +208,7 @@ class Mainwindow(tk.Tk):
             command_obj = com.Command(command, self.frm_used_command_setting, self.can_main)
 
         # hozzáadás a végrehajtási listához
-        used_command_list.update({command_obj.command_name: command_obj})
+        self.command_container.append(command_obj.command_name, command_obj)
 
         self.can_main.display_create(command_obj.command_name, x, y)
 
@@ -247,10 +226,9 @@ class Mainwindow(tk.Tk):
         ##
         # Parancsok lefuttatása helyes sorrendben
         ##
-        checked = {}
-        def find_own_output(command_name, input_name):
+        def find_own_output(checked, command_name, input_name):
             # megkeressük, hogy az input_name melyik parancs outputja
-            parent_command_object = used_command_list[input_name[0:input_name.rfind('.')]]
+            parent_command_object = self.command_container.get_object(input_name[0:input_name.rfind('.')])
             if bool(parent_command_object):
                 if parent_command_object.command_name in checked[command_name]:
                     print("Az inputja ugyanaz, mint az outputja:", command_name)
@@ -258,23 +236,24 @@ class Mainwindow(tk.Tk):
                 else:
                     checked[command_name].append(parent_command_object.command_name)
                     for parent_command_input in parent_command_object.command_model.input.values():
-                        ret = find_own_output(command_name, parent_command_input)
+                        ret = find_own_output(checked, command_name, parent_command_input)
                         if not ret:
                             return False
             return True
 
         # 0. Hibák felderítése
         # 0.1 Megkeresünk minden olyan parancsot, amelyiknek nincs bemenete, de kéne, hogy legyen.
-        for command_name, command_object in used_command_list.items():
+        for command_name, command_object in self.command_container.items():
             if None in command_object.command_model.input.values():
                 print("Error - command has empty input:", command_name, "-", command_object.command_model.input)
                 return False
         # 0.2 Megkeresünk minden olyan parancsot, amelyiknek az inputja a saját outputja, akár más parancsokon keresztűl is.
-        for command_name, command_object in used_command_list.items():
+        checked = {}
+        for command_name, command_object in self.command_container.items():
             for command_input in command_object.command_model.input.values():
                 checked.clear()
                 checked.update({command_name: [command_name]})
-                ret = find_own_output(command_name, command_input)
+                ret = find_own_output(checked, command_name, command_input)
                 if not ret:
                     return False
         #
@@ -282,10 +261,10 @@ class Mainwindow(tk.Tk):
         # Input parancsok megkeresése, végrehejtása.
         # Az outputjaikat használó parancsok kigyűjtése.
         command_queue = []
-        for command_name, command_object in used_command_list.items():
+        for command_name, command_object in self.command_container.items():
             if not bool(command_object.command_model.input):
                 for output in command_object.command_model.output.values():
-                    command_queue.extend(find_child_commands(output))
+                    command_queue.extend(self.command_container.find_input_keys(output))
                 command_object.update()
                 command_object.run(self.image_list)
         # 2. Ha ennek a parancsnak egyéb inputja is van, ami még nem futott le, akkor várakozási sorba marad.
@@ -294,12 +273,12 @@ class Mainwindow(tk.Tk):
         while len(command_queue) > 0:
             for command_name in command_queue:
                 command_name_trimmed = command_name[:command_name.rfind('.')]
-                command_object = used_command_list[command_name_trimmed]
+                command_object = self.command_container.get_object(command_name_trimmed)
                 command_object_inputs = command_object.command_model.input.values()
                 command_object_outputs = command_object.command_model.output.values()
 
                 for output in command_object_outputs:
-                    command_queue.extend(find_child_commands(output))
+                    command_queue.extend(self.command_container.find_input_keys(output))
 
                 if all(input in self.image_list.keys() for input in command_object_inputs): # ha a parancs összes inputja benne van a már létező parancskimenetek listájában
                     command_object.update()

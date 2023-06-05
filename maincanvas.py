@@ -5,8 +5,10 @@ import mainwindow as mw
 
 
 class MainCanvas(tk.Canvas):
-    def __init__(self, master, bg, can_main_width, can_main_height, can_main_region_width, can_main_region_height):
+    def __init__(self, master, command_container, bg, can_main_width, can_main_height, can_main_region_width, can_main_region_height):
         super().__init__(master, bg=bg, scrollregion=(0, 0, can_main_region_width, can_main_region_height))
+
+        self.command_container = command_container
 
         self.lines = {}
 
@@ -64,12 +66,12 @@ class MainCanvas(tk.Canvas):
 
     # connect commands with line
     def connect_commands(self, command_name):
-        if not command_name in mw.used_command_list.keys():
+        if not command_name in self.command_container.keys():
             return
 
-        for output_name in mw.used_command_list[command_name].command_model.output.values():
+        for output_name in self.command_container.get_object(command_name).command_model.output.values():
             output_x0, output_y0, output_x1, output_y1 = self.bbox(output_name)
-            children = mw.find_child_commands(output_name)
+            children = self.command_container.find_input_keys(output_name)
             for child in children:
                 line_name = f"{output_name}-{child}"
                 child_x0, child_y0, child_x1, child_y1 = self.bbox(child)
@@ -81,7 +83,7 @@ class MainCanvas(tk.Canvas):
                     line = self.create_line(x0, output_y1, x1, child_y0, fill="green", width=2)
                     self.lines.update({line_name: line})
 
-        for input_key, input_name in mw.used_command_list[command_name].command_model.input.items():
+        for input_key, input_name in self.command_container.get_object(command_name).command_model.input.items():
             if bool(input_name):
                 line_name = f"{input_name}-{command_name}.{input_key}"
                 parent_x0, parent_y0, parent_x1, parent_y1 = self.bbox(input_name)
@@ -100,13 +102,13 @@ class MainCanvas(tk.Canvas):
 
 
     def display_create(self, command_name, x=100, y=100):
-        command_obj = mw.used_command_list[command_name]
+        command_obj = self.command_container.get_object(command_name)
         id_move = self.create_image(x, y, image=self.image_move, anchor="nw")
         self.addtag_withtag(f"{command_obj.command_name}.move", id_move)
 
         id_setting = self.create_image(x, y, image=self.image_settings, anchor="nw")
         self.addtag_withtag(f"{command_obj.command_name}.settings", id_setting)
-        self.tag_bind(id_setting, '<Button-1>', lambda event: mw.setting_widget_show(command_obj.command_name))
+        self.tag_bind(id_setting, '<Button-1>', lambda event: self.command_container.setting_widget_show(command_obj.command_name))
 
         id_delete = self.create_image(x, y, image=self.image_delete, anchor="nw")
         self.addtag_withtag(f"{command_obj.command_name}.delete", id_delete)
@@ -139,7 +141,7 @@ class MainCanvas(tk.Canvas):
 
 
     def paste_input(self, command_name, input_key):
-        command_obj = mw.used_command_list[command_name]
+        command_obj = self.command_container.get_object(command_name)
         if not bool(mw.clipboard_io):
             print("Empty clipboard")
         else:
@@ -157,7 +159,7 @@ class MainCanvas(tk.Canvas):
 
 
     def display_move(self, command_name, x, y):
-        command_obj = mw.used_command_list[command_name]
+        command_obj = self.command_container.get_object(command_name)
         canvas_x = self.canvasx(x)
         canvas_y = self.canvasy(y)
         if x > self.can_main_width:
