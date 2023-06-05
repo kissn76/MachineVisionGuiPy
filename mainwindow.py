@@ -10,11 +10,6 @@ import maincanvas as mc
 import widgets as wg
 
 
-# DEBUG
-process_counter = 0     # élesben nem kell
-# DEBUG END
-
-
 class Mainwindow(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -29,6 +24,7 @@ class Mainwindow(tk.Tk):
         self.available_commands = ["opencv_videocapture", "opencv_imread", "opencv_threshold", "opencv_gaussianblur", "opencv_resize", "opencv_canny", "tk_display"]
         self.image_list = {}
         self.run_contimous = False
+        self.process_counter = 0
 
         self.command_container = cc.CommandContainer()
 
@@ -40,7 +36,7 @@ class Mainwindow(tk.Tk):
         ttk.Button(frm_button, text="Run once", command=self.next_image).grid(row=0, column=1)
         self.btn_run_continous = ttk.Button(frm_button, text="Run continous", command=self.continous_run_start)
         self.btn_run_continous.grid(row=0, column=2)
-        self.lbl_counter = ttk.Label(frm_button, text=process_counter)
+        self.lbl_counter = ttk.Label(frm_button, text=self.process_counter)
         self.lbl_counter.grid(row=0, column=3)
         ttk.Button(frm_button, text="Stop", command=self.continous_run_stop).grid(row=0, column=4)
 
@@ -106,7 +102,7 @@ class Mainwindow(tk.Tk):
                 self.used_command_add(command_name, command_setting)
 
             for command_name in self.command_container.keys():
-                self.can_main.connect_commands(command_name)
+                self.can_main.io_widgets_connect(command_name)
 
 
     def preview_set(self):
@@ -195,16 +191,12 @@ class Mainwindow(tk.Tk):
         # hozzáadás a végrehajtási listához
         self.command_container.append(command_obj.command_name, command_obj)
 
-        self.can_main.display_create(command_obj.command_name, x, y)
+        self.can_main.widget_create(command_obj.command_name, x, y)
 
 
     def next_image(self):
-        # DEBUG
-        global process_counter
-        # print(process_counter, "run process")
-        process_counter += 1
-        self.lbl_counter.configure(text=process_counter)
-        # DEBUG END
+        self.process_counter += 1
+        self.lbl_counter.configure(text=self.process_counter)
 
         self.image_list.clear()
 

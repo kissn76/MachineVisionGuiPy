@@ -1,7 +1,5 @@
 import cv2
 import basecommand as bc
-import settingwidget as sw
-import displaywidget as dw
 import widgets as wg
 from enums import *
 
@@ -27,12 +25,6 @@ class OpencvThreshold(bc.BaseCommand):
             }
 
         self.set_setting_widget()
-
-        # self.display_widget_input = {}
-        # self.display_widget_output = {}
-        # self.display_widget_properties = {}
-
-        self.set_display_widget()
 
 
     def run(self, images):
@@ -81,12 +73,6 @@ class OpencvGaussianblur(bc.BaseCommand):
 
         self.set_setting_widget()
 
-        # self.display_widget_input = {}
-        # self.display_widget_output = {}
-        # self.display_widget_properties = {}
-
-        self.set_display_widget()
-
 
     def run(self, images):
         src = self.command_model.input["src"]
@@ -133,12 +119,6 @@ class OpencvCanny(bc.BaseCommand):
             }
 
         self.set_setting_widget()
-
-        # self.display_widget_input = {}
-        # self.display_widget_output = {}
-        # self.display_widget_properties = {}
-
-        self.set_display_widget()
 
 
     def run(self, images):
@@ -187,12 +167,6 @@ class OpencvResize(bc.BaseCommand):
             }
 
         self.set_setting_widget()
-
-        # self.display_widget_input = {}
-        # self.display_widget_output = {}
-        # self.display_widget_properties = {}
-
-        self.set_display_widget()
 
 
     def run(self, images):

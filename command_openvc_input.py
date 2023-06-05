@@ -29,12 +29,6 @@ class OpencvImread(bc.BaseCommand):
 
         self.set_setting_widget()
 
-        # self.display_widget_input = {}
-        # self.display_widget_output = {}
-        # self.display_widget_properties = {}
-
-        self.set_display_widget()
-
 
     def run(self, images):
         filename = self.command_model.properties["filename"]
@@ -75,12 +69,6 @@ class OpencvVideoCapture(bc.BaseCommand):
 
         ttk.Button(self.setting_widget, text="Connect", command=self.camera_connect).pack()
         ttk.Button(self.setting_widget, text="Disconnect", command=self.camera_disconnect).pack()
-
-        # self.display_widget_input = {}
-        # self.display_widget_output = {}
-        # self.display_widget_properties = {}
-
-        self.set_display_widget()
 
 
     def camera_connect(self):

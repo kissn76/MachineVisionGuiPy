@@ -9,7 +9,6 @@ class Command():
         self.command_name = self.command_model.command_name
         self.command_object = None
         self.frm_setting_main = None
-        self.frm_display_main = None
         self.run = None
 
         if self.command_name.startswith("opencv_videocapture"):
@@ -26,12 +25,7 @@ class Command():
             self.command_object = cop.OpencvCanny(self.command_model, setting_master, display_master)
 
         if bool(self.command_object):
-            # setting widget
             self.frm_setting_main = self.command_object.setting_widget_get()
-
-            # display widget
-            self.frm_display_main = self.command_object.display_widget_get()
-
             self.run = self.command_object.run
 
 

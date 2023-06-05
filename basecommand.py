@@ -1,5 +1,4 @@
 import settingwidget as sw
-import displaywidget as dw
 
 
 class BaseCommand():
@@ -36,11 +35,6 @@ class BaseCommand():
 
     def set_setting_widget(self):
         self.setting_widget.set(self.setting_widget_input, self.setting_widget_output, self.setting_widget_properties)
-
-
-    def set_display_widget(self):
-        self.display_widget = dw.DisplayWidget(self.display_master, self.command_model)
-        self.display_widget.set(self.display_widget_input, self.display_widget_output, self.display_widget_properties)
 
 
     def setting_widget_get(self):

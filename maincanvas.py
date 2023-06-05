@@ -35,13 +35,13 @@ class MainCanvas(tk.Canvas):
         self.image_settings = ImageTk.PhotoImage(Image.open(f"./resources/icons/settings_{self.icon_size}.png"))
         self.image_delete = ImageTk.PhotoImage(Image.open(f"./resources/icons/delete_{self.icon_size}.png"))
         self.image_picture = ImageTk.PhotoImage(Image.open(f"./resources/icons/picture_{self.icon_size}.png"))
-        self.bind('<Button-1>', self.dnd_select_object)
+        self.bind('<Button-1>', self.widget_dnd_select)
 
 
     # DRAG & DROP metódusok
-    def dnd_select_object(self, event):
-        self.bind('<Motion>', self.dnd_move_object)
-        self.bind('<ButtonRelease-1>', self.dnd_deselect_object)
+    def widget_dnd_select(self, event):
+        self.bind('<Motion>', self.widget_dnd_move)
+        self.bind('<ButtonRelease-1>', self.widget_dnd_deselect)
 
         x, y = event.x, event.y
         x = self.canvasx(x)
@@ -49,7 +49,7 @@ class MainCanvas(tk.Canvas):
         self.addtag_withtag('selected', tk.CURRENT)
 
 
-    def dnd_move_object(self, event):
+    def widget_dnd_move(self, event):
         tags = self.gettags('selected')
         if len(tags) > 0:
             tag = tags[0]
@@ -57,17 +57,79 @@ class MainCanvas(tk.Canvas):
             item_type_tag = tag[tag.rfind('.') + 1:]
             if item_type_tag == "move":
                 mouse_x, mouse_y = event.x, event.y
-                self.display_move(command_name_tag, mouse_x, mouse_y)
+                self.widget_move(command_name_tag, mouse_x, mouse_y)
 
 
-    def dnd_deselect_object(self, event):
+    def widget_dnd_deselect(self, event):
         self.dtag('selected')    # removes the 'selected' tag
         self.unbind('<Motion>')
+
+
+    def widget_move(self, command_name, x, y):
+        command_obj = self.command_container.get_object(command_name)
+        canvas_x = self.canvasx(x)
+        canvas_y = self.canvasy(y)
+        if x > self.can_main_width:
+            self.xview_scroll(1, 'units')
+        if x < 1:
+            self.xview_scroll(-1, 'units')
+        if y > self.can_main_height:
+            self.yview_scroll(1, 'units')
+        if y < 1:
+            self.yview_scroll(-1, 'units')
+        if canvas_x < int(self.icon_size / 2):
+            canvas_x = int(self.icon_size / 2)
+        if canvas_x > self.can_main_region_width:
+            canvas_x = self.can_main_region_width - int(self.icon_size / 2)
+        if canvas_y < int(self.icon_size / 2):
+            canvas_y = int(self.icon_size / 2)
+        if canvas_y > self.can_main_region_height:
+            canvas_y = self.can_main_region_height - int(self.icon_size / 2)
+
+        self.coords(f"{command_name}.move", canvas_x - int(self.icon_size / 2), canvas_y - int(self.icon_size / 2))
+        move_box = self.bbox(f"{command_name}.move")
+
+        if bool(move_box):
+            move_x0, move_y0, move_x1, move_y1 = move_box
+            self.coords(f"{command_name}.settings", move_x0, move_y1)
+            self.coords(f"{command_name}.delete", move_x0, move_y1 + self.icon_size)
+            _, _, _, delete_y1 = self.bbox(f"{command_name}.delete")
+
+            command_y0 = move_y0
+            background_x1 = move_x1
+            before_input_x0 = move_x1
+            for input_key in command_obj.command_model.input.keys():
+                command_y0 = move_y1
+                self.coords(f"{command_name}.{input_key}", before_input_x0, move_y0)
+                _, _, before_input_x0, _ = self.bbox(f"{command_name}.{input_key}")
+
+                if background_x1 < before_input_x0:
+                    background_x1 = before_input_x0
+
+            self.coords(command_name, move_x1, command_y0)
+            name_x0, _, name_x1, name_y1 = self.bbox(command_name)
+            if background_x1 < name_x1:
+                background_x1 = name_x1
+
+            background_y1 = delete_y1
+            before_output_x0 = name_x0
+            for output_name in command_obj.command_model.output.values():
+                self.coords(output_name, before_output_x0, name_y1)
+                _, _, before_output_x0, output_y1 = self.bbox(output_name)
+
+                if background_y1 < output_y1:
+                    background_y1 = output_y1
+                if background_x1 < before_output_x0:
+                    background_x1 = before_output_x0
+
+            self.coords(f"{command_name}.background", move_x0, move_y0, background_x1, background_y1)
+
+            self.io_widgets_connect(command_name)
     # DRAG & DROP metódusok END
 
 
     # connect commands with line
-    def connect_commands(self, command_name):
+    def io_widgets_connect(self, command_name):
         if not command_name in self.command_container.keys():
             return
 
@@ -99,11 +161,11 @@ class MainCanvas(tk.Canvas):
                     self.lines.update({line_name: line})
 
 
-    def used_command_delete(self, command_name):
+    def widget_delete(self, command_name):
         print(f"delete: {command_name}")
 
 
-    def display_create(self, command_name, x=100, y=100):
+    def widget_create(self, command_name, x=100, y=100):
         command_obj = self.command_container.get_object(command_name)
         id_move = self.create_image(x, y, image=self.image_move, anchor="nw")
         self.addtag_withtag(f"{command_obj.command_name}.move", id_move)
@@ -114,32 +176,29 @@ class MainCanvas(tk.Canvas):
 
         id_delete = self.create_image(x, y, image=self.image_delete, anchor="nw")
         self.addtag_withtag(f"{command_obj.command_name}.delete", id_delete)
-        self.tag_bind(id_delete, '<Button-1>', lambda event: self.used_command_delete(command_obj.command_name))
+        self.tag_bind(id_delete, '<Button-1>', lambda event: self.widget_delete(command_obj.command_name))
 
-        frm_command = command_obj.frm_display_main
-        id_frm = self.create_window(x, y, window=frm_command, anchor="nw")
-        self.addtag_withtag(command_obj.command_name, id_frm)    # a canvas elem tag-ként megkapja a command_name-et, hogy egyedileg meghívható legyen később
-
-        frm_command.update()
-
-        id_background = self.create_rectangle(x, y, x, y, fill='red', outline='red')
-        self.addtag_withtag(f"{command_obj.command_name}.background", id_background)
-        self.tag_lower(id_background, id_move)
-
-        for input_key, input_name in command_obj.command_model.input.items():
+        for input_key in command_obj.command_model.input.keys():
             id_input = self.create_image(0, 0, image=self.image_picture, anchor="nw")
             self.addtag_withtag(f"{command_obj.command_name}.{input_key}", id_input)
             self.tag_bind(id_input, '<Double-Button-1>', lambda event: self.paste_input(command_obj.command_name, input_key))
             self.tag_bind(id_input, '<Enter>', lambda event: print(self.gettags(f"{command_obj.command_name}.{input_key}")))
 
-        for output_key, output_name in command_obj.command_model.output.items():
+        id_command = self.create_text(x, y, text=command_obj.command_name, anchor="nw")
+        self.addtag_withtag(command_obj.command_name, id_command)
+
+        for output_name in command_obj.command_model.output.values():
             id_output = self.create_image(0, 0, image=self.image_picture, anchor="nw")
             self.addtag_withtag(output_name, id_output)
             self.tag_bind(id_output, '<Double-Button-1>', lambda event: self.copy_output(output_name))
             self.tag_bind(id_output, '<Button-1>', lambda event: self.preview_set(output_name))
             self.tag_bind(id_output, '<Enter>', lambda event: print(self.gettags(output_name)))
 
-        self.display_move(command_name, x, y)
+        id_background = self.create_rectangle(x, y, x, y, fill='red', outline='red')
+        self.addtag_withtag(f"{command_obj.command_name}.background", id_background)
+        self.tag_lower(id_background, id_move)
+
+        self.widget_move(command_name, x, y)
 
 
     def paste_input(self, command_name, input_key):
@@ -155,7 +214,7 @@ class MainCanvas(tk.Canvas):
                     self.lines.pop(line_name)
 
                 command_obj.command_model.input[input_key] = self.clipboard_io
-                self.connect_commands(command_name)
+                self.io_widgets_connect(command_name)
             else:
                 print("Error: nem lehet a saját maga inputja!")
 
@@ -168,56 +227,3 @@ class MainCanvas(tk.Canvas):
     def preview_set(self, output_name):
         self.preview_command = output_name
         print("Preview:", self.preview_command)
-
-
-    def display_move(self, command_name, x, y):
-        command_obj = self.command_container.get_object(command_name)
-        canvas_x = self.canvasx(x)
-        canvas_y = self.canvasy(y)
-        if x > self.can_main_width:
-            self.xview_scroll(1, 'units')
-        if x < 1:
-            self.xview_scroll(-1, 'units')
-        if y > self.can_main_height:
-            self.yview_scroll(1, 'units')
-        if y < 1:
-            self.yview_scroll(-1, 'units')
-        if canvas_x < int(self.icon_size / 2):
-            canvas_x = int(self.icon_size / 2)
-        if canvas_x > self.can_main_region_width:
-            canvas_x = self.can_main_region_width - int(self.icon_size / 2)
-        if canvas_y < int(self.icon_size / 2):
-            canvas_y = int(self.icon_size / 2)
-        if canvas_y > self.can_main_region_height:
-            canvas_y = self.can_main_region_height - int(self.icon_size / 2)
-        self.coords(f"{command_name}.move", canvas_x - int(self.icon_size / 2), canvas_y - int(self.icon_size / 2))
-
-        move_box = self.bbox(f"{command_name}.move")
-        if bool(move_box):
-            move_x0, move_y0, move_x1, move_y1 = move_box
-            self.coords(command_name, move_x1, move_y0)
-            frm_x0, frm_y0, frm_x1, frm_y1 = self.bbox(command_name)
-            # frm_command = mw.used_command_list[command_name].frm_display_main
-            # frm_width = frm_command.winfo_reqwidth()
-            # frm_height = frm_command.winfo_reqheight()
-            self.coords(f"{command_name}.settings", move_x0, move_y1)
-            self.coords(f"{command_name}.delete", move_x0, move_y1 + self.icon_size)
-            delete_x0, delete_y0, delete_x1, delete_y1 = self.bbox(f"{command_name}.delete")
-
-            before_input_x0 = frm_x0
-            for input_key, input_name in command_obj.command_model.input.items():
-                self.coords(f"{command_obj.command_name}.{input_key}", before_input_x0, frm_y0 - self.icon_size)
-                _, _, before_input_x0, _ = self.bbox(f"{command_obj.command_name}.{input_key}")
-
-            background_y1 = delete_y1
-            before_output_x0 = frm_x0
-            for output_key, output_name in command_obj.command_model.output.items():
-                self.coords(output_name, before_output_x0, frm_y1)
-                output_x0, output_y0, before_output_x0, output_y1 = self.bbox(output_name)
-
-                if background_y1 < output_y1:
-                    background_y1 = output_y1
-
-            self.coords(f"{command_name}.background", move_x0, move_y0, frm_x1, background_y1)
-
-            self.connect_commands(command_name)
