@@ -10,24 +10,9 @@ import maincanvas as mc
 import widgets as wg
 
 
-preview_command = None
-clipboard_io = None
-
 # DEBUG
 process_counter = 0     # élesben nem kell
 # DEBUG END
-
-
-def copy_output(text):
-    global clipboard_io
-    clipboard_io = text
-    print("Clipboard:", clipboard_io)
-
-
-def preview_set(output_name):
-    global preview_command
-    preview_command = output_name
-    print("Preview:", preview_command)
 
 
 class Mainwindow(tk.Tk):
@@ -75,7 +60,6 @@ class Mainwindow(tk.Tk):
 
         self.lbl_preview_name.pack()
         self.lbl_preview.pack()
-        self.preview_set()
 
         self.frm_image = ttk.Frame(self)
 
@@ -113,6 +97,7 @@ class Mainwindow(tk.Tk):
 
             add(available_command)
 
+        self.preview_set()
 
         # előzőleg elmentett munka betöltése
         setting = self.setting_load()
@@ -126,13 +111,13 @@ class Mainwindow(tk.Tk):
 
     def preview_set(self):
         image = None
-        if not bool(preview_command):
+        if not bool(self.can_main.preview_command):
             image = "./resources/gears_400.jpg"
             if Path(image).is_file():
                 image = cv2.imread(image)
         else:
             try:
-                image = self.image_list[preview_command]
+                image = self.image_list[self.can_main.preview_command]
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             except:
                 image = "./resources/gears_400.jpg"
@@ -148,10 +133,10 @@ class Mainwindow(tk.Tk):
         self.lbl_preview.configure(image=imagetk)
         self.lbl_preview.image = imagetk
 
-        if not bool(preview_command):
+        if not bool(self.can_main.preview_command):
             name = "None"
         else:
-            name = preview_command
+            name = self.can_main.preview_command
         self.lbl_preview_name.configure(text=name)
 
 

@@ -1,12 +1,14 @@
 import tkinter as tk
 from tkinter import ttk
 from PIL import Image, ImageTk
-import mainwindow as mw
 
 
 class MainCanvas(tk.Canvas):
     def __init__(self, master, command_container, bg, can_main_width, can_main_height, can_main_region_width, can_main_region_height):
         super().__init__(master, bg=bg, scrollregion=(0, 0, can_main_region_width, can_main_region_height))
+
+        self.preview_command = None
+        self.clipboard_io = None
 
         self.command_container = command_container
 
@@ -133,8 +135,8 @@ class MainCanvas(tk.Canvas):
         for output_key, output_name in command_obj.command_model.output.items():
             id_output = self.create_image(0, 0, image=self.image_picture, anchor="nw")
             self.addtag_withtag(output_name, id_output)
-            self.tag_bind(id_output, '<Double-Button-1>', lambda event: mw.copy_output(output_name))
-            self.tag_bind(id_output, '<Button-1>', lambda event: mw.preview_set(output_name))
+            self.tag_bind(id_output, '<Double-Button-1>', lambda event: self.copy_output(output_name))
+            self.tag_bind(id_output, '<Button-1>', lambda event: self.preview_set(output_name))
             self.tag_bind(id_output, '<Enter>', lambda event: print(self.gettags(output_name)))
 
         self.display_move(command_name, x, y)
@@ -142,20 +144,30 @@ class MainCanvas(tk.Canvas):
 
     def paste_input(self, command_name, input_key):
         command_obj = self.command_container.get_object(command_name)
-        if not bool(mw.clipboard_io):
+        if not bool(self.clipboard_io):
             print("Empty clipboard")
         else:
-            if not mw.clipboard_io in command_obj.command_model.output.values():
+            if not self.clipboard_io in command_obj.command_model.output.values():
                 # vonal törlése a gui-n, ha már volt beállított input
                 if bool(command_obj.command_model.input[input_key]):
                     line_name = f"{command_obj.command_model.input[input_key]}-{command_name}.{input_key}"
                     self.delete(self.lines[line_name])
                     self.lines.pop(line_name)
 
-                command_obj.command_model.input[input_key] = mw.clipboard_io
+                command_obj.command_model.input[input_key] = self.clipboard_io
                 self.connect_commands(command_name)
             else:
                 print("Error: nem lehet a saját maga inputja!")
+
+
+    def copy_output(self, text):
+        self.clipboard_io = text
+        print("Clipboard:", self.clipboard_io)
+
+
+    def preview_set(self, output_name):
+        self.preview_command = output_name
+        print("Preview:", self.preview_command)
 
 
     def display_move(self, command_name, x, y):
