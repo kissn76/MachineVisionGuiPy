@@ -39,13 +39,9 @@ class MainCanvas(tk.Canvas):
 
 
     # DRAG & DROP metódusok
-    def widget_dnd_select(self, event):
+    def widget_dnd_select(self, move):
         self.bind('<Motion>', self.widget_dnd_move)
         self.bind('<ButtonRelease-1>', self.widget_dnd_deselect)
-
-        x, y = event.x, event.y
-        x = self.canvasx(x)
-        y = self.canvasy(y)
         self.addtag_withtag('selected', tk.CURRENT)
 
 
@@ -66,6 +62,7 @@ class MainCanvas(tk.Canvas):
 
 
     def widget_move(self, command_name, x, y):
+        padding = 4
         command_obj = self.command_container.get_object(command_name)
         canvas_x = self.canvasx(x)
         canvas_y = self.canvasy(y)
@@ -91,30 +88,31 @@ class MainCanvas(tk.Canvas):
 
         if bool(move_box):
             move_x0, move_y0, move_x1, move_y1 = move_box
-            self.coords(f"{command_name}.settings", move_x0, move_y1)
-            self.coords(f"{command_name}.delete", move_x0, move_y1 + self.icon_size)
-            _, _, _, delete_y1 = self.bbox(f"{command_name}.delete")
+            self.coords(f"{command_name}.settings", move_x0, move_y1 + padding)
+            settings_x0, settings_y0, settings_x1, settings_y1 = self.bbox(f"{command_name}.settings")
+            self.coords(f"{command_name}.delete", settings_x0, settings_y1 + padding)
+            delete_x0, delete_y0, delete_x1_, delete_y1 = self.bbox(f"{command_name}.delete")
 
-            command_y0 = move_y0
+            command_y0 = move_y0 - padding
             background_x1 = move_x1
             before_input_x0 = move_x1
             for input_key in command_obj.command_model.input.keys():
                 command_y0 = move_y1
-                self.coords(f"{command_name}.{input_key}", before_input_x0, move_y0)
+                self.coords(f"{command_name}.{input_key}", before_input_x0 + padding, move_y0)
                 _, _, before_input_x0, _ = self.bbox(f"{command_name}.{input_key}")
 
                 if background_x1 < before_input_x0:
                     background_x1 = before_input_x0
 
-            self.coords(command_name, move_x1, command_y0)
+            self.coords(command_name, move_x1 + padding, command_y0 + padding)
             name_x0, _, name_x1, name_y1 = self.bbox(command_name)
             if background_x1 < name_x1:
                 background_x1 = name_x1
 
             background_y1 = delete_y1
-            before_output_x0 = name_x0
+            before_output_x0 = move_x1
             for output_name in command_obj.command_model.output.values():
-                self.coords(output_name, before_output_x0, name_y1)
+                self.coords(output_name, before_output_x0 + padding, name_y1 + padding)
                 _, _, before_output_x0, output_y1 = self.bbox(output_name)
 
                 if background_y1 < output_y1:
@@ -122,7 +120,7 @@ class MainCanvas(tk.Canvas):
                 if background_x1 < before_output_x0:
                     background_x1 = before_output_x0
 
-            self.coords(f"{command_name}.background", move_x0, move_y0, background_x1, background_y1)
+            self.coords(f"{command_name}.background", move_x0 - padding, move_y0 - padding, background_x1 + padding, background_y1 + padding)
 
             self.io_widgets_connect(command_name)
     # DRAG & DROP metódusok END
@@ -190,7 +188,7 @@ class MainCanvas(tk.Canvas):
         for output_name in command_obj.command_model.output.values():
             id_output = self.create_image(0, 0, image=self.image_picture, anchor="nw")
             self.addtag_withtag(output_name, id_output)
-            self.tag_bind(id_output, '<Double-Button-1>', lambda event: self.copy_output(output_name))
+            self.tag_bind(id_output, '<Double-Button-1>', lambda event: self.copy_output(event, output_name))
             self.tag_bind(id_output, '<Button-1>', lambda event: self.preview_set(output_name))
             self.tag_bind(id_output, '<Enter>', lambda event: print(self.gettags(output_name)))
 
@@ -219,11 +217,27 @@ class MainCanvas(tk.Canvas):
                 print("Error: nem lehet a saját maga inputja!")
 
 
-    def copy_output(self, text):
+    def copy_output(self, event, text):
+        x0, y0, x1, y1 = self.bbox(tk.CURRENT)
+
+        self.delete("clipboard")
+
+        id_background = self.create_rectangle(x0, y0, x1, y1, fill='blue')
+        self.addtag_withtag("clipboard", id_background)
+        self.tag_lower(id_background, tk.CURRENT)
+
         self.clipboard_io = text
         print("Clipboard:", self.clipboard_io)
 
 
     def preview_set(self, output_name):
+        x0, y0, x1, y1 = self.bbox(tk.CURRENT)
+
+        self.delete("preview")
+
+        id_background = self.create_rectangle(x0 - 2, y0 - 2, x1 + 2, y1 + 2, outline='yellow')
+        self.addtag_withtag("preview", id_background)
+        self.tag_lower(id_background, tk.CURRENT)
+
         self.preview_command = output_name
         print("Preview:", self.preview_command)
