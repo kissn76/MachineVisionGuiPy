@@ -190,7 +190,7 @@ class MainCanvas(tk.Canvas):
             self.addtag_withtag(output_name, id_output)
             self.tag_bind(id_output, '<Double-Button-1>', lambda event: self.copy_output(event, output_name))
             self.tag_bind(id_output, '<Button-1>', lambda event: self.preview_set(output_name))
-            self.tag_bind(id_output, '<Enter>', lambda event: print(self.gettags(output_name)))
+            self.tag_bind(id_output, '<Enter>', lambda event: self.popup_create(event, output_name))
 
         id_background = self.create_rectangle(x, y, x, y, fill='red', outline='red')
         self.addtag_withtag(f"{command_obj.command_name}.background", id_background)
@@ -239,5 +239,8 @@ class MainCanvas(tk.Canvas):
         self.addtag_withtag("preview", id_background)
         self.tag_lower(id_background, tk.CURRENT)
 
-        self.preview_command = output_name
-        print("Preview:", self.preview_command)
+
+    def popup_create(self, event, text):
+        self.delete("popup")
+        id_command = self.create_text(event.x, event.y, text=text, anchor="nw")
+        self.addtag_withtag("popup", id_command)
