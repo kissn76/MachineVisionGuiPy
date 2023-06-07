@@ -1,11 +1,14 @@
 import tkinter as tk
 from tkinter import ttk
 from PIL import Image, ImageTk
+from time import time, sleep
 
 
 class MainCanvas(tk.Canvas):
     def __init__(self, master, command_container, bg, can_main_width, can_main_height, can_main_region_width, can_main_region_height):
         super().__init__(master, bg=bg, scrollregion=(0, 0, can_main_region_width, can_main_region_height))
+
+        self.test_counter = 0
 
         self.preview_command = None
         self.clipboard_io = None
@@ -180,7 +183,8 @@ class MainCanvas(tk.Canvas):
             id_input = self.create_image(0, 0, image=self.image_picture, anchor="nw")
             self.addtag_withtag(f"{command_obj.command_name}.{input_key}", id_input)
             self.tag_bind(id_input, '<Double-Button-1>', lambda event: self.paste_input(command_obj.command_name, input_key))
-            self.tag_bind(id_input, '<Enter>', lambda event: print(self.gettags(f"{command_obj.command_name}.{input_key}")))
+            self.tag_bind(id_input, '<Enter>', lambda event: self.popup_create(event, id_input, f"{command_obj.command_name}.{input_key}"))
+            # self.tag_bind(id_input, '<Leave>', self.popup_delete)
 
         id_command = self.create_text(x, y, text=command_obj.command_name, anchor="nw")
         self.addtag_withtag(command_obj.command_name, id_command)
@@ -190,7 +194,8 @@ class MainCanvas(tk.Canvas):
             self.addtag_withtag(output_name, id_output)
             self.tag_bind(id_output, '<Double-Button-1>', lambda event: self.copy_output(event, output_name))
             self.tag_bind(id_output, '<Button-1>', lambda event: self.preview_set(output_name))
-            self.tag_bind(id_output, '<Enter>', lambda event: self.popup_create(event, output_name))
+            self.tag_bind(id_output, '<Enter>', lambda event: self.popup_create(event, id_output, output_name))
+            self.tag_bind(id_output, '<Leave>', self.popup_delete)
 
         id_background = self.create_rectangle(x, y, x, y, fill='red', outline='red')
         self.addtag_withtag(f"{command_obj.command_name}.background", id_background)
@@ -240,7 +245,22 @@ class MainCanvas(tk.Canvas):
         self.tag_lower(id_background, tk.CURRENT)
 
 
-    def popup_create(self, event, text):
-        self.delete("popup")
-        id_command = self.create_text(event.x, event.y, text=text, anchor="nw")
-        self.addtag_withtag("popup", id_command)
+    def popup_create(self, event, id, text):
+        self.popup_delete()
+
+        x0, y0, x1, y1 = self.bbox(id)
+
+        id_text = self.create_text(x1 + 6, y0 - 6, text=text, anchor="nw")
+        self.addtag_withtag("popup", id_text)
+        text_x0, text_y0, text_x1, text_y1 = self.bbox(id_text)
+
+        id_background = self.create_rectangle(text_x0 - 6, text_y0 - 6, text_x1 + 6, text_y1 + 6, fill='yellow', outline='yellow')
+        self.addtag_withtag("popup_background", id_background)
+        self.tag_lower(id_background, id_text)
+
+
+    def popup_delete(self, event=None):
+        print("Delete", self.test_counter)
+        self.test_counter += 1
+        # self.delete("popup_background")
+        # self.delete("popup")
