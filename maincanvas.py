@@ -8,8 +8,6 @@ class MainCanvas(tk.Canvas):
     def __init__(self, master, command_container, bg, can_main_width, can_main_height, can_main_region_width, can_main_region_height):
         super().__init__(master, bg=bg, scrollregion=(0, 0, can_main_region_width, can_main_region_height))
 
-        self.test_counter = 0
-
         self.preview_command = None
         self.clipboard_io = None
 
@@ -163,7 +161,19 @@ class MainCanvas(tk.Canvas):
 
 
     def widget_delete(self, command_name):
-        print(f"delete: {command_name}")
+        self.delete(command_name)
+        print(self.command_container)
+        del self.command_container[command_name]
+        print(self.command_container)
+
+        todelete = []
+        for line_key, line in self.lines.items():
+            if command_name in line_key:
+                self.delete(line)
+                todelete.append(line_key)
+
+        for line_key in todelete:
+            del self.lines[line_key]
 
 
     def widget_create(self, command_name, x=100, y=100):
@@ -183,18 +193,18 @@ class MainCanvas(tk.Canvas):
             id_input = self.create_image(0, 0, image=self.image_picture, anchor="nw")
             self.addtag_withtag(f"{command_obj.command_name}.{input_key}", id_input)
             self.tag_bind(id_input, '<Double-Button-1>', lambda event: self.paste_input(command_obj.command_name, input_key))
-            self.tag_bind(id_input, '<Enter>', lambda event: self.popup_create(event, id_input, f"{command_obj.command_name}.{input_key}"))
+            self.tag_bind(id_input, '<Enter>', lambda event: self.popup_create(event, id_input, input_key))
             self.tag_bind(id_input, '<Leave>', self.popup_delete)
 
         id_command = self.create_text(x, y, text=command_obj.command_name, anchor="nw")
         self.addtag_withtag(command_obj.command_name, id_command)
 
-        for output_name in command_obj.command_model.output.values():
+        for key, output_name in command_obj.command_model.output.items():
             id_output = self.create_image(0, 0, image=self.image_picture, anchor="nw")
             self.addtag_withtag(output_name, id_output)
             self.tag_bind(id_output, '<Double-Button-1>', lambda event: self.copy_output(event, output_name))
             self.tag_bind(id_output, '<Button-1>', lambda event: self.preview_set(output_name))
-            self.tag_bind(id_output, '<Enter>', lambda event: self.popup_create(event, id_output, output_name))
+            self.tag_bind(id_output, '<Enter>', lambda event: self.popup_create(event, id_output, key))
             self.tag_bind(id_output, '<Leave>', self.popup_delete)
 
         id_background = self.create_rectangle(x, y, x, y, fill='red', outline='red')
