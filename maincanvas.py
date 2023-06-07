@@ -184,7 +184,7 @@ class MainCanvas(tk.Canvas):
             self.addtag_withtag(f"{command_obj.command_name}.{input_key}", id_input)
             self.tag_bind(id_input, '<Double-Button-1>', lambda event: self.paste_input(command_obj.command_name, input_key))
             self.tag_bind(id_input, '<Enter>', lambda event: self.popup_create(event, id_input, f"{command_obj.command_name}.{input_key}"))
-            # self.tag_bind(id_input, '<Leave>', self.popup_delete)
+            self.tag_bind(id_input, '<Leave>', self.popup_delete)
 
         id_command = self.create_text(x, y, text=command_obj.command_name, anchor="nw")
         self.addtag_withtag(command_obj.command_name, id_command)
@@ -250,17 +250,14 @@ class MainCanvas(tk.Canvas):
 
         x0, y0, x1, y1 = self.bbox(id)
 
-        id_text = self.create_text(x1 + 6, y0 - 6, text=text, anchor="nw")
+        id_text = self.create_text(x1 + 12, y0 - 6, text=text, anchor="nw")
         self.addtag_withtag("popup", id_text)
-        text_x0, text_y0, text_x1, text_y1 = self.bbox(id_text)
 
+        text_x0, text_y0, text_x1, text_y1 = self.bbox("popup")
         id_background = self.create_rectangle(text_x0 - 6, text_y0 - 6, text_x1 + 6, text_y1 + 6, fill='yellow', outline='yellow')
-        self.addtag_withtag("popup_background", id_background)
+        self.addtag_withtag("popup", id_background)
         self.tag_lower(id_background, id_text)
 
 
     def popup_delete(self, event=None):
-        print("Delete", self.test_counter)
-        self.test_counter += 1
-        self.delete("popup_background")
         self.delete("popup")
