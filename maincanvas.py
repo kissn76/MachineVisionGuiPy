@@ -105,8 +105,8 @@ class MainCanvas(tk.Canvas):
                 if background_x1 < before_input_x0:
                     background_x1 = before_input_x0
 
-            self.coords(command_name, move_x1 + padding, command_y0 + padding)
-            name_x0, _, name_x1, name_y1 = self.bbox(command_name)
+            self.coords(f"{command_name}.command", move_x1 + padding, command_y0 + padding)
+            name_x0, _, name_x1, name_y1 = self.bbox(f"{command_name}.command")
             if background_x1 < name_x1:
                 background_x1 = name_x1
 
@@ -114,7 +114,9 @@ class MainCanvas(tk.Canvas):
             before_output_x0 = move_x1
             for output_name in command_obj.command_model.output.values():
                 self.coords(output_name, before_output_x0 + padding, name_y1 + padding)
-                _, _, before_output_x0, output_y1 = self.bbox(output_name)
+                output_x0, output_y0, before_output_x0, output_y1 = self.bbox(output_name)
+                self.coords(f"{output_name}.clipboard", output_x0, output_y0, before_output_x0, output_y1)
+                self.coords(f"{output_name}.preview", output_x0 - 2, output_y0 - 2, before_output_x0 + 2, output_y1 + 2)
 
                 if background_y1 < output_y1:
                     background_y1 = output_y1
@@ -162,9 +164,10 @@ class MainCanvas(tk.Canvas):
 
     def widget_delete(self, command_name):
         self.delete(command_name)
-        print(self.command_container)
+
+        # TODO Törölni az összes input-ból az outputjait
+
         del self.command_container[command_name]
-        print(self.command_container)
 
         todelete = []
         for line_key, line in self.lines.items():
@@ -180,35 +183,42 @@ class MainCanvas(tk.Canvas):
         command_obj = self.command_container.get_object(command_name)
         id_move = self.create_image(x, y, image=self.image_move, anchor="nw")
         self.addtag_withtag(f"{command_obj.command_name}.move", id_move)
+        self.addtag_withtag(command_obj.command_name, id_move)
 
         id_setting = self.create_image(x, y, image=self.image_settings, anchor="nw")
         self.addtag_withtag(f"{command_obj.command_name}.settings", id_setting)
+        self.addtag_withtag(command_obj.command_name, id_setting)
         self.tag_bind(id_setting, '<Button-1>', lambda event: self.command_container.setting_widget_show(command_obj.command_name))
 
         id_delete = self.create_image(x, y, image=self.image_delete, anchor="nw")
         self.addtag_withtag(f"{command_obj.command_name}.delete", id_delete)
+        self.addtag_withtag(command_obj.command_name, id_delete)
         self.tag_bind(id_delete, '<Button-1>', lambda event: self.widget_delete(command_obj.command_name))
 
         for input_key in command_obj.command_model.input.keys():
             id_input = self.create_image(0, 0, image=self.image_picture, anchor="nw")
             self.addtag_withtag(f"{command_obj.command_name}.{input_key}", id_input)
+            self.addtag_withtag(command_obj.command_name, id_input)
             self.tag_bind(id_input, '<Double-Button-1>', lambda event: self.paste_input(command_obj.command_name, input_key))
             self.tag_bind(id_input, '<Enter>', lambda event: self.popup_create(event, id_input, input_key))
             self.tag_bind(id_input, '<Leave>', self.popup_delete)
 
         id_command = self.create_text(x, y, text=command_obj.command_name, anchor="nw")
+        self.addtag_withtag(f"{command_obj.command_name}.command", id_command)
         self.addtag_withtag(command_obj.command_name, id_command)
 
         for key, output_name in command_obj.command_model.output.items():
             id_output = self.create_image(0, 0, image=self.image_picture, anchor="nw")
             self.addtag_withtag(output_name, id_output)
-            self.tag_bind(id_output, '<Double-Button-1>', lambda event: self.copy_output(event, output_name))
-            self.tag_bind(id_output, '<Button-1>', lambda event: self.preview_set(output_name))
+            self.addtag_withtag(command_obj.command_name, id_output)
+            self.tag_bind(id_output, '<Double-Button-1>', lambda event: self.copy_output(event, command_obj.command_name, output_name))
+            self.tag_bind(id_output, '<Button-1>', lambda event: self.preview_set(command_obj.command_name, output_name))
             self.tag_bind(id_output, '<Enter>', lambda event: self.popup_create(event, id_output, key))
             self.tag_bind(id_output, '<Leave>', self.popup_delete)
 
         id_background = self.create_rectangle(x, y, x, y, fill='red', outline='red')
         self.addtag_withtag(f"{command_obj.command_name}.background", id_background)
+        self.addtag_withtag(command_obj.command_name, id_background)
         self.tag_lower(id_background, id_move)
 
         self.widget_move(command_name, x, y)
@@ -223,8 +233,15 @@ class MainCanvas(tk.Canvas):
                 # vonal törlése a gui-n, ha már volt beállított input
                 if bool(command_obj.command_model.input[input_key]):
                     line_name = f"{command_obj.command_model.input[input_key]}-{command_name}.{input_key}"
-                    self.delete(self.lines[line_name])
-                    self.lines.pop(line_name)
+                    try:
+                        self.delete(self.lines[line_name])
+                    except:
+                        pass
+
+                    try:
+                        del self.lines[line_name]
+                    except:
+                        pass
 
                 command_obj.command_model.input[input_key] = self.clipboard_io
                 self.io_widgets_connect(command_name)
@@ -232,26 +249,30 @@ class MainCanvas(tk.Canvas):
                 print("Error: nem lehet a saját maga inputja!")
 
 
-    def copy_output(self, event, text):
+    def copy_output(self, event, command_name, text):
         x0, y0, x1, y1 = self.bbox(tk.CURRENT)
 
         self.delete("clipboard")
 
         id_background = self.create_rectangle(x0, y0, x1, y1, fill='blue')
         self.addtag_withtag("clipboard", id_background)
+        self.addtag_withtag(command_name, id_background)
+        self.addtag_withtag(f"{text}.clipboard", id_background)
         self.tag_lower(id_background, tk.CURRENT)
 
         self.clipboard_io = text
         print("Clipboard:", self.clipboard_io)
 
 
-    def preview_set(self, output_name):
+    def preview_set(self, command_name, output_name):
         x0, y0, x1, y1 = self.bbox(tk.CURRENT)
 
         self.delete("preview")
 
         id_background = self.create_rectangle(x0 - 2, y0 - 2, x1 + 2, y1 + 2, outline='yellow')
         self.addtag_withtag("preview", id_background)
+        self.addtag_withtag(command_name, id_background)
+        self.addtag_withtag(f"{output_name}.preview", id_background)
         self.tag_lower(id_background, tk.CURRENT)
 
 
