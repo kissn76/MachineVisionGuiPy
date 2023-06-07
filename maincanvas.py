@@ -262,5 +262,5 @@ class MainCanvas(tk.Canvas):
     def popup_delete(self, event=None):
         print("Delete", self.test_counter)
         self.test_counter += 1
-        # self.delete("popup_background")
-        # self.delete("popup")
+        self.delete("popup_background")
+        self.delete("popup")
