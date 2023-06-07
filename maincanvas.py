@@ -165,7 +165,13 @@ class MainCanvas(tk.Canvas):
     def widget_delete(self, command_name):
         self.delete(command_name)
 
-        # TODO Törölni az összes input-ból az outputjait
+        # Törölni az összes input-ból az outputjait
+        command_obj = self.command_container.get_object(command_name)
+        for output in command_obj.command_model.output.values():
+            for command in self.command_container.values():
+                for input_key, input_value in command.command_model.input.items():
+                    if output == input_value:
+                        command.command_model.input[input_key] = None
 
         del self.command_container[command_name]
 
@@ -265,8 +271,8 @@ class MainCanvas(tk.Canvas):
 
 
     def preview_set(self, command_name, output_name):
+        self.preview_command = output_name
         x0, y0, x1, y1 = self.bbox(tk.CURRENT)
-
         self.delete("preview")
 
         id_background = self.create_rectangle(x0 - 2, y0 - 2, x1 + 2, y1 + 2, outline='yellow')
