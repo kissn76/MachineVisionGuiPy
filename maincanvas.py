@@ -151,15 +151,18 @@ class MainCanvas(tk.Canvas):
         for input_key, input_name in self.command_container.get_object(command_name).command_model.input.items():
             if bool(input_name):
                 line_name = f"{input_name}-{command_name}.{input_key}"
-                parent_x0, parent_y0, parent_x1, parent_y1 = self.bbox(input_name)
-                input_x0, input_y0, input_x1, input_y1 = self.bbox(f"{command_name}.{input_key}")
-                x0 = int(input_x0 + (input_x1 - input_x0) / 2)
-                x1 = int(parent_x0 + (parent_x1 - parent_x0) / 2)
-                if line_name in self.lines.keys():
-                    self.coords(self.lines[line_name], x0, input_y0, x1, parent_y1)
-                else:
-                    line = self.create_line(x0, input_y0, x1, parent_y1, fill="green", width=2)
-                    self.lines.update({line_name: line})
+                try:
+                    parent_x0, parent_y0, parent_x1, parent_y1 = self.bbox(input_name)
+                    input_x0, input_y0, input_x1, input_y1 = self.bbox(f"{command_name}.{input_key}")
+                    x0 = int(input_x0 + (input_x1 - input_x0) / 2)
+                    x1 = int(parent_x0 + (parent_x1 - parent_x0) / 2)
+                    if line_name in self.lines.keys():
+                        self.coords(self.lines[line_name], x0, input_y0, x1, parent_y1)
+                    else:
+                        line = self.create_line(x0, input_y0, x1, parent_y1, fill="green", width=2)
+                        self.lines.update({line_name: line})
+                except:
+                    pass
 
 
     def widget_delete(self, command_name):
@@ -202,25 +205,31 @@ class MainCanvas(tk.Canvas):
         self.tag_bind(id_delete, '<Button-1>', lambda event: self.widget_delete(command_obj.command_name))
 
         for input_key in command_obj.command_model.input.keys():
-            id_input = self.create_image(0, 0, image=self.image_picture, anchor="nw")
-            self.addtag_withtag(f"{command_obj.command_name}.{input_key}", id_input)
-            self.addtag_withtag(command_obj.command_name, id_input)
-            self.tag_bind(id_input, '<Double-Button-1>', lambda event: self.paste_input(command_obj.command_name, input_key))
-            self.tag_bind(id_input, '<Enter>', lambda event: self.popup_create(event, id_input, input_key))
-            self.tag_bind(id_input, '<Leave>', self.popup_delete)
+            def add(input_key):
+                id_input = self.create_image(0, 0, image=self.image_picture, anchor="nw")
+                self.addtag_withtag(f"{command_obj.command_name}.{input_key}", id_input)
+                self.addtag_withtag(command_obj.command_name, id_input)
+                self.tag_bind(id_input, '<Double-Button-1>', lambda event: self.paste_input(command_obj.command_name, input_key))
+                self.tag_bind(id_input, '<Enter>', lambda event: self.popup_create(event, id_input, input_key))
+                self.tag_bind(id_input, '<Leave>', self.popup_delete)
+
+            add(input_key)
 
         id_command = self.create_text(x, y, text=command_obj.command_name, anchor="nw")
         self.addtag_withtag(f"{command_obj.command_name}.command", id_command)
         self.addtag_withtag(command_obj.command_name, id_command)
 
         for key, output_name in command_obj.command_model.output.items():
-            id_output = self.create_image(0, 0, image=self.image_picture, anchor="nw")
-            self.addtag_withtag(output_name, id_output)
-            self.addtag_withtag(command_obj.command_name, id_output)
-            self.tag_bind(id_output, '<Double-Button-1>', lambda event: self.copy_output(event, command_obj.command_name, output_name))
-            self.tag_bind(id_output, '<Button-1>', lambda event: self.preview_set(command_obj.command_name, output_name))
-            self.tag_bind(id_output, '<Enter>', lambda event: self.popup_create(event, id_output, key))
-            self.tag_bind(id_output, '<Leave>', self.popup_delete)
+            def add(key, output_name):
+                id_output = self.create_image(0, 0, image=self.image_picture, anchor="nw")
+                self.addtag_withtag(output_name, id_output)
+                self.addtag_withtag(command_obj.command_name, id_output)
+                self.tag_bind(id_output, '<Double-Button-1>', lambda event: self.copy_output(event, command_obj.command_name, output_name))
+                self.tag_bind(id_output, '<Button-1>', lambda event: self.preview_set(command_obj.command_name, output_name))
+                self.tag_bind(id_output, '<Enter>', lambda event: self.popup_create(event, id_output, key))
+                self.tag_bind(id_output, '<Leave>', self.popup_delete)
+
+            add(key, output_name)
 
         id_background = self.create_rectangle(x, y, x, y, fill='red', outline='red')
         self.addtag_withtag(f"{command_obj.command_name}.background", id_background)

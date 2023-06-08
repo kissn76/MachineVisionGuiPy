@@ -49,8 +49,14 @@ class OpencvGaussianblur(bc.BaseCommand):
     def __init__(self, command_model, setting_master, display_master):
         super().__init__(command_model, setting_master, display_master)
         # DEFAULT VALUES
-        self.command_model_input = {"src": None}
-        self.command_model_output = {"dst": f"{self.command_model.command_name}.dst"}
+        self.command_model_input = {
+                                    "src": None,
+                                    "src_2": None
+                                    }
+        self.command_model_output = {
+                                    "dst": f"{self.command_model.command_name}.dst",
+                                    "dst_2": f"{self.command_model.command_name}.dst2"
+                                    }
         self.command_model_properties = {
                 "ksize_w": 3,
                 "ksize_h": 3,

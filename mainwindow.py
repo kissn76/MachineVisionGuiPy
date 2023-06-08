@@ -147,10 +147,16 @@ class Mainwindow(tk.Tk):
 
         # position of canvas elements
         for id in self.can_main.find_all():
-            try:
-                setting[self.can_main.gettags(id)[0]].update({"coords": self.can_main.coords(id)})
-            except:
-                pass
+            tag = self.can_main.gettags(id)
+            if bool(tag):
+                tag = tag[0]
+                command_name = tag[:tag.rfind('.')]
+                widget_func = tag[tag.rfind('.') + 1:]
+                if widget_func == "move":
+                    try:
+                        setting[command_name].update({"coords": self.can_main.coords(id)})
+                    except:
+                        pass
 
         with open("setting.json", "w") as fp:
             json.dump(setting, fp, indent=4)
@@ -248,6 +254,7 @@ class Mainwindow(tk.Tk):
                             command_queue.append(input[:input.rfind('.')])
                     command_object.update()
                     command_object.run(self.image_list)
+                    print(command_name)
         # 2. Ha ennek a parancsnak egyéb inputja is van, ami még nem futott le, akkor várakozási sorba marad.
         # Ha minden inputja megvan, végrehajtjuk.
         # 3. A 2. pont iterálása, amíg minden parancs le nem futott.
@@ -267,6 +274,7 @@ class Mainwindow(tk.Tk):
                     if all(input in self.image_list.keys() for input in command_object_inputs): # ha a parancs összes inputja benne van a már létező parancskimenetek listájában
                         command_object.update()
                         ret = command_object.run(self.image_list)
+                        print(command_name)
                         if ret:
                             command_queue.remove(command_name)
 

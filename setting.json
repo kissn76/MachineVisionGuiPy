@@ -7,40 +7,40 @@
             },
             "properties": {
                 "filename": "./resources/example/ocv_1.jpg",
-                "flags": 0
+                "flags": -1
             }
         },
         "coords": [
-            357.0,
-            28.0
+            349.0,
+            17.0
         ]
     },
-    "opencv_threshold.1": {
+    "opencv_threshold.2": {
         "model": {
             "input": {
                 "src": "opencv_imread.0.out"
             },
             "output": {
-                "dst": "opencv_threshold.1.dst"
+                "dst": "opencv_threshold.2.dst"
             },
             "properties": {
                 "thresh": 150.0,
                 "maxval": 255.0,
-                "type": 1
+                "type": 0
             }
         },
         "coords": [
-            356.0,
-            145.0
+            348.0,
+            137.0
         ]
     },
-    "opencv_canny.2": {
+    "opencv_canny.3": {
         "model": {
             "input": {
-                "src": "opencv_threshold.1.dst"
+                "src": "opencv_threshold.2.dst"
             },
             "output": {
-                "dst": "opencv_canny.2.dst"
+                "dst": "opencv_canny.3.dst"
             },
             "properties": {
                 "threshold1": 100.0,
@@ -50,8 +50,114 @@
             }
         },
         "coords": [
-            355.0,
-            264.0
+            348.0,
+            253.0
+        ]
+    },
+    "opencv_imread.4": {
+        "model": {
+            "input": {},
+            "output": {
+                "output": "opencv_imread.4.out"
+            },
+            "properties": {
+                "filename": "./resources/example/ocv_1.jpg",
+                "flags": -1
+            }
+        },
+        "coords": [
+            587.0,
+            18.0
+        ]
+    },
+    "opencv_gaussianblur.5": {
+        "model": {
+            "input": {
+                "src": "opencv_canny.3.dst",
+                "src_2": "opencv_imread.4.out"
+            },
+            "output": {
+                "dst": "opencv_gaussianblur.5.dst",
+                "dst_2": "opencv_gaussianblur.5.dst2"
+            },
+            "properties": {
+                "ksize_w": 3,
+                "ksize_h": 3,
+                "sigmaX": 0.0,
+                "sigmaY": 0.0,
+                "borderType": 4
+            }
+        },
+        "coords": [
+            348.0,
+            416.0
+        ]
+    },
+    "opencv_gaussianblur.7": {
+        "model": {
+            "input": {
+                "src": "opencv_canny.3.dst",
+                "src_2": "opencv_imread.4.out"
+            },
+            "output": {
+                "dst": "opencv_gaussianblur.7.dst",
+                "dst_2": "opencv_gaussianblur.7.dst2"
+            },
+            "properties": {
+                "ksize_w": 3,
+                "ksize_h": 3,
+                "sigmaX": 0.0,
+                "sigmaY": 0.0,
+                "borderType": 4
+            }
+        },
+        "coords": [
+            568.0,
+            415.0
+        ]
+    },
+    "opencv_gaussianblur.8": {
+        "model": {
+            "input": {
+                "src": "opencv_gaussianblur.5.dst",
+                "src_2": "opencv_resize.9.dst"
+            },
+            "output": {
+                "dst": "opencv_gaussianblur.8.dst",
+                "dst_2": "opencv_gaussianblur.8.dst2"
+            },
+            "properties": {
+                "ksize_w": 3,
+                "ksize_h": 3,
+                "sigmaX": 0.0,
+                "sigmaY": 0.0,
+                "borderType": 4
+            }
+        },
+        "coords": [
+            472.0,
+            690.0
+        ]
+    },
+    "opencv_resize.9": {
+        "model": {
+            "input": {
+                "src": "opencv_gaussianblur.7.dst"
+            },
+            "output": {
+                "dst": "opencv_resize.9.dst"
+            },
+            "properties": {
+                "dsize_w": 0,
+                "dsize_h": 0,
+                "fx": 0.3,
+                "fy": 0.3,
+                "interpolation": 0
+            }
+        },
+        "coords": [
+            568.0,
+            529.0
         ]
     }
 }
