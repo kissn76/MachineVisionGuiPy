@@ -209,7 +209,7 @@ class Mainwindow(tk.Tk):
         ##
         # Parancsok lefuttatása helyes sorrendben
         ##
-        def find_own_output(checked, command_name, input_name):
+        def find_parent_output(checked, command_name, input_name):
             # megkeressük, hogy az input_name melyik parancs outputja
             parent_command_object = self.command_container.get_object(input_name[0:input_name.rfind('.')])
             if bool(parent_command_object):
@@ -219,7 +219,7 @@ class Mainwindow(tk.Tk):
                 else:
                     checked[command_name].append(parent_command_object.command_name)
                     for parent_command_input in parent_command_object.command_model.input.values():
-                        ret = find_own_output(checked, command_name, parent_command_input)
+                        ret = find_parent_output(checked, command_name, parent_command_input)
                         if not ret:
                             return False
             return True
@@ -231,21 +231,21 @@ class Mainwindow(tk.Tk):
                 print("Error - command has empty input:", command_name, "-", command_object.command_model.input)
                 ok = False
         # 0.2 Megkeresünk minden olyan parancsot, amelyiknek az inputja a saját outputja, akár más parancsokon keresztűl is.
-        checked = {}
         if ok:
+            checked = {}
             for command_name, command_object in self.command_container.items():
                 for command_input in command_object.command_model.input.values():
                     checked.clear()
                     checked.update({command_name: [command_name]})
-                    ret = find_own_output(checked, command_name, command_input)
+                    ret = find_parent_output(checked, command_name, command_input)
                     if not ret:
                         ok = False
-        #
-        # 1. Input parancsok megkeresése, végrehejtása
-        # Input parancsok megkeresése, végrehejtása.
-        # Az outputjaikat használó parancsok kigyűjtése.
-        command_queue = []
         if ok:
+            #
+            # 1. Input parancsok megkeresése, végrehejtása
+            # Input parancsok megkeresése, végrehejtása.
+            # Az outputjaikat használó parancsok kigyűjtése.
+            command_queue = []
             for command_name, command_object in self.command_container.items():
                 if not bool(command_object.command_model.input):
                     for output in command_object.command_model.output.values():
@@ -255,10 +255,10 @@ class Mainwindow(tk.Tk):
                     command_object.update()
                     command_object.run(self.image_list)
                     print(command_name)
-        # 2. Ha ennek a parancsnak egyéb inputja is van, ami még nem futott le, akkor várakozási sorba marad.
-        # Ha minden inputja megvan, végrehajtjuk.
-        # 3. A 2. pont iterálása, amíg minden parancs le nem futott.
-        if ok:
+
+            # 2. Ha ennek a parancsnak egyéb inputja is van, ami még nem futott le, akkor várakozási sorba marad.
+            # Ha minden inputja megvan, végrehajtjuk.
+            # 3. A 2. pont iterálása, amíg minden parancs le nem futott.
             while len(command_queue) > 0:
                 for command_name in command_queue:
                     command_object = self.command_container.get_object(command_name)
@@ -280,6 +280,7 @@ class Mainwindow(tk.Tk):
 
         if not ok:
             self.continous_run_stop()
+            return False
 
         self.preview_set()
 
