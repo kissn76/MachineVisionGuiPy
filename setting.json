@@ -11,8 +11,8 @@
             }
         },
         "coords": [
-            349.0,
-            17.0
+            341.0,
+            9.0
         ]
     },
     "opencv_threshold.2": {
@@ -30,8 +30,8 @@
             }
         },
         "coords": [
-            348.0,
-            137.0
+            340.0,
+            129.0
         ]
     },
     "opencv_canny.3": {
@@ -50,8 +50,8 @@
             }
         },
         "coords": [
-            348.0,
-            253.0
+            340.0,
+            245.0
         ]
     },
     "opencv_imread.4": {
@@ -66,8 +66,8 @@
             }
         },
         "coords": [
-            587.0,
-            18.0
+            579.0,
+            10.0
         ]
     },
     "opencv_gaussianblur.5": {
@@ -89,15 +89,15 @@
             }
         },
         "coords": [
-            348.0,
-            416.0
+            340.0,
+            408.0
         ]
     },
     "opencv_gaussianblur.7": {
         "model": {
             "input": {
                 "src": "opencv_canny.3.dst",
-                "src_2": "opencv_imread.4.out"
+                "src_2": "opencv_resize.10.dst"
             },
             "output": {
                 "dst": "opencv_gaussianblur.7.dst",
@@ -112,8 +112,8 @@
             }
         },
         "coords": [
-            568.0,
-            415.0
+            560.0,
+            407.0
         ]
     },
     "opencv_gaussianblur.8": {
@@ -135,8 +135,8 @@
             }
         },
         "coords": [
-            472.0,
-            690.0
+            464.0,
+            682.0
         ]
     },
     "opencv_resize.9": {
@@ -156,8 +156,29 @@
             }
         },
         "coords": [
-            568.0,
-            529.0
+            560.0,
+            521.0
+        ]
+    },
+    "opencv_resize.10": {
+        "model": {
+            "input": {
+                "src": "opencv_imread.4.out"
+            },
+            "output": {
+                "dst": "opencv_resize.10.dst"
+            },
+            "properties": {
+                "dsize_w": 0,
+                "dsize_h": 0,
+                "fx": 0.3,
+                "fy": 0.3,
+                "interpolation": 0
+            }
+        },
+        "coords": [
+            588.0,
+            228.0
         ]
     }
 }

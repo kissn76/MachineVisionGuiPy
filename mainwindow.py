@@ -27,6 +27,7 @@ class Mainwindow(tk.Tk):
         self.process_counter = 0
 
         self.command_container = cc.CommandContainer()
+        self.command_queue = []
 
         self.frm_config = ttk.Frame(self)
         self.frm_popup_id = None
@@ -199,13 +200,10 @@ class Mainwindow(tk.Tk):
         self.can_main.widget_create(command_obj.command_name, x, y)
 
 
-    def next_image(self):
+    def sort_commands(self):
         ok = True
-        self.process_counter += 1
-        self.lbl_counter.configure(text=self.process_counter)
-
-        self.image_list.clear()
-
+        image_list = {}
+        command_queue = []
         ##
         # Parancsok lefuttatása helyes sorrendben
         ##
@@ -245,22 +243,23 @@ class Mainwindow(tk.Tk):
             # 1. Input parancsok megkeresése, végrehejtása
             # Input parancsok megkeresése, végrehejtása.
             # Az outputjaikat használó parancsok kigyűjtése.
-            command_queue = []
+            command_queue_tmp = []
             for command_name, command_object in self.command_container.items():
                 if not bool(command_object.command_model.input):
                     for output in command_object.command_model.output.values():
                         inputs = self.command_container.find_input_keys(output)
                         for input in inputs:
-                            command_queue.append(input[:input.rfind('.')])
+                            command_queue_tmp.append(input[:input.rfind('.')])
+                            if not command_name in command_queue:
+                                command_queue.append(command_name)
                     command_object.update()
-                    command_object.run(self.image_list)
-                    print(command_name)
+                    command_object.run(image_list)
 
             # 2. Ha ennek a parancsnak egyéb inputja is van, ami még nem futott le, akkor várakozási sorba marad.
             # Ha minden inputja megvan, végrehajtjuk.
             # 3. A 2. pont iterálása, amíg minden parancs le nem futott.
-            while len(command_queue) > 0:
-                for command_name in command_queue:
+            while len(command_queue_tmp) > 0:
+                for command_name in command_queue_tmp:
                     command_object = self.command_container.get_object(command_name)
                     command_object_inputs = command_object.command_model.input.values()
                     command_object_outputs = command_object.command_model.output.values()
@@ -269,16 +268,35 @@ class Mainwindow(tk.Tk):
                         inputs = None
                         inputs = self.command_container.find_input_keys(output)
                         for input in inputs:
-                            command_queue.append(input[:input.rfind('.')])
+                            command_queue_tmp.append(input[:input.rfind('.')])
 
-                    if all(input in self.image_list.keys() for input in command_object_inputs): # ha a parancs összes inputja benne van a már létező parancskimenetek listájában
+                    if all(input in image_list.keys() for input in command_object_inputs): # ha a parancs összes inputja benne van a már létező parancskimenetek listájában
                         command_object.update()
-                        ret = command_object.run(self.image_list)
-                        print(command_name)
+                        ret = command_object.run(image_list)
                         if ret:
-                            command_queue.remove(command_name)
+                            command_queue_tmp.remove(command_name)
+                            if not command_name in command_queue:
+                                command_queue.append(command_name)
 
-        if not ok:
+            self.command_queue = command_queue
+            return True
+        else:
+            self.command_queue.clear()
+            return False
+
+
+
+    def next_image(self):
+        self.process_counter += 1
+        self.lbl_counter.configure(text=self.process_counter)
+
+        self.image_list.clear()
+
+        self.sort_commands()
+
+        if bool(self.command_queue):
+            pass
+        else:
             self.continous_run_stop()
             return False
 
