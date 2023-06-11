@@ -295,7 +295,10 @@ class Mainwindow(tk.Tk):
         self.sort_commands()
 
         if bool(self.command_queue):
-            pass
+            for command in self.command_queue:
+                command_obj = self.command_container.get_object(command)
+                command_obj.update()
+                command_obj.run(self.image_list)
         else:
             self.continous_run_stop()
             return False
