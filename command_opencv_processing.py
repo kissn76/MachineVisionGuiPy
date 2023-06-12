@@ -51,11 +51,9 @@ class OpencvGaussianblur(bc.BaseCommand):
         # DEFAULT VALUES
         self.command_model_input = {
                                     "src": None,
-                                    "src_2": None
                                     }
         self.command_model_output = {
                                     "dst": f"{self.command_model.command_name}.dst",
-                                    "dst_2": f"{self.command_model.command_name}.dst2"
                                     }
         self.command_model_properties = {
                 "ksize_w": 3,

@@ -119,6 +119,9 @@ class MainCanvas(tk.Canvas):
 
             self.coords(f"{command_name}.command", move_x1 + padding, command_y0 + padding)
             name_x0, _, name_x1, name_y1 = self.bbox(f"{command_name}.command")
+
+            self.coords(f"{command_name}.display_widget", move_x1 + padding, name_y1 + padding)
+
             if background_x1 < name_x1:
                 background_x1 = name_x1
 
@@ -230,6 +233,12 @@ class MainCanvas(tk.Canvas):
         id_command = self.create_text(x, y, text=command_obj.command_name, anchor="nw")
         self.addtag_withtag(f"{command_obj.command_name}.command", id_command)
         self.addtag_withtag(command_obj.command_name, id_command)
+
+        dv = command_obj.command_object.display_widget_get()
+        if bool(dv):
+            id_display_widget = self.create_window(x, y, window=dv, anchor="nw")
+            self.addtag_withtag(f"{command_obj.command_name}.display_widget", id_display_widget)
+            self.addtag_withtag(command_obj.command_name, id_display_widget)
 
         for key, output_name in command_obj.command_model.output.items():
             def add(key, output_name):

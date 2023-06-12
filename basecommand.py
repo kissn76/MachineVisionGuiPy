@@ -1,4 +1,5 @@
 import settingwidget as sw
+from tkinter import ttk
 
 
 class BaseCommand():
@@ -16,7 +17,7 @@ class BaseCommand():
         self.setting_widget_output = {}
         self.setting_widget_properties = {}
 
-        self.display_widget = None
+        self.display_widget = ttk.Frame(self.display_master)
         self.display_widget_input = {}
         self.display_widget_output = {}
         self.display_widget_properties = {}
@@ -35,6 +36,13 @@ class BaseCommand():
 
     def set_setting_widget(self):
         self.setting_widget.set(self.setting_widget_input, self.setting_widget_output, self.setting_widget_properties)
+
+
+    def set_display_widget(self):
+        for widget in self.display_widget_properties.values():
+            if bool(widget):
+                widget.pack()
+
 
 
     def setting_widget_get(self):

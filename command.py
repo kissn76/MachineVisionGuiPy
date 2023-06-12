@@ -1,6 +1,7 @@
 import commandmodel as cm
 import command_openvc_input as coi
 import command_opencv_processing as cop
+import command_tk as ctk
 
 
 class Command():
@@ -23,6 +24,8 @@ class Command():
             self.command_object = cop.OpencvResize(self.command_model, setting_master, display_master)
         elif self.command_name.startswith("opencv_canny"):
             self.command_object = cop.OpencvCanny(self.command_model, setting_master, display_master)
+        elif self.command_name.startswith("tk_display"):
+            self.command_object = ctk.TkDisplay(self.command_model, setting_master, display_master)
 
         if bool(self.command_object):
             self.frm_setting_main = self.command_object.setting_widget_get()

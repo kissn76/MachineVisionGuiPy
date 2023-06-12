@@ -11,17 +11,17 @@
             }
         },
         "coords": [
-            341.0,
-            9.0
+            447.0,
+            13.0
         ]
     },
-    "opencv_threshold.2": {
+    "opencv_threshold.1": {
         "model": {
             "input": {
                 "src": "opencv_imread.0.out"
             },
             "output": {
-                "dst": "opencv_threshold.2.dst"
+                "dst": "opencv_threshold.1.dst"
             },
             "properties": {
                 "thresh": 150.0,
@@ -30,155 +30,115 @@
             }
         },
         "coords": [
-            340.0,
-            129.0
+            446.0,
+            106.0
         ]
     },
-    "opencv_canny.3": {
+    "opencv_gaussianblur.2": {
         "model": {
             "input": {
-                "src": "opencv_threshold.2.dst"
+                "src": "opencv_threshold.1.dst"
             },
             "output": {
-                "dst": "opencv_canny.3.dst"
+                "dst": "opencv_gaussianblur.2.dst"
             },
             "properties": {
-                "threshold1": 100.0,
-                "threshold2": 200.0,
+                "ksize_w": 3,
+                "ksize_h": 129,
+                "sigmaX": 0.0,
+                "sigmaY": 0.0,
+                "borderType": 4
+            }
+        },
+        "coords": [
+            445.0,
+            202.0
+        ]
+    },
+    "opencv_resize.3": {
+        "model": {
+            "input": {
+                "src": "opencv_canny.4.dst"
+            },
+            "output": {
+                "dst": "opencv_resize.3.dst"
+            },
+            "properties": {
+                "dsize_w": 0,
+                "dsize_h": 0,
+                "fx": 0.3,
+                "fy": 0.3,
+                "interpolation": 3
+            }
+        },
+        "coords": [
+            444.0,
+            392.0
+        ]
+    },
+    "opencv_canny.4": {
+        "model": {
+            "input": {
+                "src": "opencv_gaussianblur.2.dst"
+            },
+            "output": {
+                "dst": "opencv_canny.4.dst"
+            },
+            "properties": {
+                "threshold1": 0.0,
+                "threshold2": 0.0,
                 "apertureSize": 3,
                 "L2gradient": false
             }
         },
         "coords": [
-            340.0,
-            245.0
+            445.0,
+            297.0
         ]
     },
-    "opencv_imread.4": {
-        "model": {
-            "input": {},
-            "output": {
-                "output": "opencv_imread.4.out"
-            },
-            "properties": {
-                "filename": "./resources/example/ocv_1.jpg",
-                "flags": -1
-            }
-        },
-        "coords": [
-            579.0,
-            10.0
-        ]
-    },
-    "opencv_gaussianblur.5": {
+    "tk_display.5": {
         "model": {
             "input": {
-                "src": "opencv_canny.3.dst",
-                "src_2": "opencv_imread.4.out"
+                "src": "opencv_imread.0.out"
             },
-            "output": {
-                "dst": "opencv_gaussianblur.5.dst",
-                "dst_2": "opencv_gaussianblur.5.dst2"
-            },
+            "output": {},
             "properties": {
-                "ksize_w": 3,
-                "ksize_h": 3,
-                "sigmaX": 0.0,
-                "sigmaY": 0.0,
-                "borderType": 4
+                "factor": 0.1
             }
         },
         "coords": [
-            340.0,
-            408.0
+            61.0,
+            169.0
         ]
     },
-    "opencv_gaussianblur.7": {
+    "tk_display.6": {
         "model": {
             "input": {
-                "src": "opencv_canny.3.dst",
-                "src_2": "opencv_resize.10.dst"
+                "src": "opencv_threshold.1.dst"
             },
-            "output": {
-                "dst": "opencv_gaussianblur.7.dst",
-                "dst_2": "opencv_gaussianblur.7.dst2"
-            },
+            "output": {},
             "properties": {
-                "ksize_w": 3,
-                "ksize_h": 3,
-                "sigmaX": 0.0,
-                "sigmaY": 0.0,
-                "borderType": 4
+                "factor": 0.1
             }
         },
         "coords": [
-            560.0,
-            407.0
+            54.0,
+            357.0
         ]
     },
-    "opencv_gaussianblur.8": {
+    "tk_display.7": {
         "model": {
             "input": {
-                "src": "opencv_gaussianblur.5.dst",
-                "src_2": "opencv_resize.9.dst"
+                "src": "opencv_gaussianblur.2.dst"
             },
-            "output": {
-                "dst": "opencv_gaussianblur.8.dst",
-                "dst_2": "opencv_gaussianblur.8.dst2"
-            },
+            "output": {},
             "properties": {
-                "ksize_w": 3,
-                "ksize_h": 3,
-                "sigmaX": 0.0,
-                "sigmaY": 0.0,
-                "borderType": 4
+                "factor": 0.1
             }
         },
         "coords": [
-            464.0,
-            682.0
-        ]
-    },
-    "opencv_resize.9": {
-        "model": {
-            "input": {
-                "src": "opencv_gaussianblur.7.dst"
-            },
-            "output": {
-                "dst": "opencv_resize.9.dst"
-            },
-            "properties": {
-                "dsize_w": 0,
-                "dsize_h": 0,
-                "fx": 0.3,
-                "fy": 0.3,
-                "interpolation": 0
-            }
-        },
-        "coords": [
-            560.0,
-            521.0
-        ]
-    },
-    "opencv_resize.10": {
-        "model": {
-            "input": {
-                "src": "opencv_imread.4.out"
-            },
-            "output": {
-                "dst": "opencv_resize.10.dst"
-            },
-            "properties": {
-                "dsize_w": 0,
-                "dsize_h": 0,
-                "fx": 0.3,
-                "fy": 0.3,
-                "interpolation": 0
-            }
-        },
-        "coords": [
-            588.0,
-            228.0
+            52.0,
+            534.0
         ]
     }
 }
