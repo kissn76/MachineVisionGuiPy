@@ -34,7 +34,7 @@ class Mainwindow(tk.Tk):
 
         frm_button = ttk.Frame(self.frm_config)
         ttk.Button(frm_button, text="Save", command=self.setting_save).grid(row=0, column=0)
-        ttk.Button(frm_button, text="Run once", command=self.next_image).grid(row=0, column=1)
+        ttk.Button(frm_button, text="Run once", command=self.once_run).grid(row=0, column=1)
         self.btn_run_continous = ttk.Button(frm_button, text="Run continous", command=self.continous_run_start)
         self.btn_run_continous.grid(row=0, column=2)
         self.lbl_counter = ttk.Label(frm_button, text=self.process_counter)
@@ -173,7 +173,14 @@ class Mainwindow(tk.Tk):
         return setting
 
 
+    def once_run(self):
+        self.sort_commands()
+        self.continous_run_stop()
+        self.next_image()
+
+
     def continous_run_start(self):
+        self.sort_commands()
         self.run_contimous = True
         self.btn_run_continous.configure(state="disabled")
         self.next_image()
@@ -185,6 +192,7 @@ class Mainwindow(tk.Tk):
 
 
     def used_command_add(self, command, setting=None):
+        self.continous_run_stop()
         x = 100
         y = 100
         if bool(setting):   # ha dict-ből töltünk be meglévő adatokat, tipikusan mentés visszatöltésekor
@@ -201,6 +209,7 @@ class Mainwindow(tk.Tk):
 
 
     def sort_commands(self):
+        self.can_main.canvas_disable()
         ok = True
         image_list = {}
         command_queue = []
@@ -279,11 +288,11 @@ class Mainwindow(tk.Tk):
                                 command_queue.append(command_name)
 
             self.command_queue = command_queue
-            return True
         else:
             self.command_queue.clear()
-            return False
 
+        self.can_main.canvas_enable()
+        return ok
 
 
     def next_image(self):
@@ -292,11 +301,13 @@ class Mainwindow(tk.Tk):
 
         self.image_list.clear()
 
-        self.sort_commands()
-
         if bool(self.command_queue):
             for command in self.command_queue:
-                command_obj = self.command_container.get_object(command)
+                try:
+                    command_obj = self.command_container.get_object(command)
+                except KeyError: # Futás közben törölve lett az objektum
+                    self.continous_run_stop()
+                    return False
                 command_obj.update()
                 command_obj.run(self.image_list)
         else:

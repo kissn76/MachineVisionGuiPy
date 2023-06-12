@@ -39,6 +39,18 @@ class MainCanvas(tk.Canvas):
         self.bind('<Button-1>', self.widget_dnd_select)
 
 
+    def canvas_disable(self):
+        overlay = self.create_rectangle(0, 0, self.can_main_region_width, self.can_main_region_height, fill='gray', outline='gray')
+        self.addtag_withtag("overlay", overlay)
+        self.tag_raise("overlay")
+        self.configure(state="disabled")
+
+
+    def canvas_enable(self):
+        self.configure(state="normal")
+        self.delete("overlay")
+
+
     # DRAG & DROP metódusok
     def widget_dnd_select(self, move):
         self.bind('<Motion>', self.widget_dnd_move)
