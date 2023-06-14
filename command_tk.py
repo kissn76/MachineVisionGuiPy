@@ -23,11 +23,10 @@ class TkDisplay(bc.BaseCommand):
         self.set_setting_widget()
 
         self.display_widget_properties = {
-            "image": wg.FwImage(self.display_widget, None)
+            "image": wg.FwImage(self.display_widget, None, scale_factor=self.command_model.properties["factor"])
             }
 
         self.set_display_widget()
-
 
 
     def run(self, images):
@@ -36,9 +35,8 @@ class TkDisplay(bc.BaseCommand):
 
         try:
             if bool(src) and len(images[src]) > 0:
+                self.display_widget_properties["image"].set_scale_factor(factor)
                 image = images[src]
-                image = cv2.resize(image, None, fx=factor, fy=factor)
-                # image = cv2.resize(image, dsize=(125, 100))
                 self.display_widget_properties["image"].set(image)
                 return True
         except:

@@ -110,15 +110,22 @@ class FwCheckbutton(ttk.Frame):
 
 
 class FwImage(ttk.Frame):
-    def __init__(self, master, name, default_image="resources/gears_400.jpg"):
+    def __init__(self, master, name, scale_factor=1.0, default_image="resources/gears_400.jpg"):
         super().__init__(master)
+        self.scale_factor = scale_factor
 
         self.lbl_image = ttk.Label(self)
         self.lbl_image.pack()
 
-        imagetk = ImageTk.PhotoImage(Image.open(default_image))
+        image = Image.open(default_image)
+        image = image.resize((int(image.width * self.scale_factor), int(image.height * self.scale_factor)))
+        imagetk = ImageTk.PhotoImage(image)
         self.lbl_image.configure(image=imagetk)
         self.lbl_image.image = imagetk
+
+
+    def set_scale_factor(self, scale_factor):
+        self.scale_factor = scale_factor
 
 
     def get(self):
@@ -127,7 +134,9 @@ class FwImage(ttk.Frame):
 
     def set(self, image):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        imagetk = ImageTk.PhotoImage(image=Image.fromarray(image))
+        image_tmp = Image.fromarray(image)
+        image_tmp = image_tmp.resize((int(image_tmp.width * self.scale_factor), int(image_tmp.height * self.scale_factor)))
+        imagetk = ImageTk.PhotoImage(image=image_tmp)
         self.lbl_image.configure(image=imagetk)
         self.lbl_image.image = imagetk
 

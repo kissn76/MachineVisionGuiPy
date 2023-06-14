@@ -118,7 +118,7 @@ class OpencvCanny(bc.BaseCommand):
         self.setting_widget_properties = {
             "threshold1": wg.FwScale(self.setting_widget, "Threshold 1", 0, 255, self.command_model.properties["threshold1"]),
             "threshold2": wg.FwScale(self.setting_widget, "Threshold 2", 0, 255, self.command_model.properties["threshold2"]),
-            "apertureSize": wg.FwScale(self.setting_widget, "Aperture size", 0, 255, self.command_model.properties["apertureSize"], value_type=int),
+            "apertureSize": wg.FwScale(self.setting_widget, "Aperture size", 3, 7, self.command_model.properties["apertureSize"], value_type=int),
             "L2gradient": wg.FwCheckbutton(self.setting_widget, "L2 gradient", "L2gradient", self.command_model.properties["L2gradient"])
             }
 

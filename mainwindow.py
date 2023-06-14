@@ -233,18 +233,18 @@ class Mainwindow(tk.Tk):
 
         # 0. Hibák felderítése
         # 0.1 Megkeresünk minden olyan parancsot, amelyiknek nincs bemenete, de kéne, hogy legyen.
-        for command_name, command_object in self.command_container.items():
-            if None in command_object.command_model.input.values():
-                print("Error - command has empty input:", command_name, "-", command_object.command_model.input)
+        for command_name_1, command_object_1 in self.command_container.items():
+            if None in command_object_1.command_model.input.values():
+                print("Error - command has empty input:", command_name_1, "-", command_object_1.command_model.input)
                 ok = False
         # 0.2 Megkeresünk minden olyan parancsot, amelyiknek az inputja a saját outputja, akár más parancsokon keresztűl is.
         if ok:
             checked = {}
-            for command_name, command_object in self.command_container.items():
-                for command_input in command_object.command_model.input.values():
+            for command_name_2, command_object_2 in self.command_container.items():
+                for command_input_2 in command_object_2.command_model.input.values():
                     checked.clear()
-                    checked.update({command_name: [command_name]})
-                    ret = find_parent_output(checked, command_name, command_input)
+                    checked.update({command_name_2: [command_name_2]})
+                    ret = find_parent_output(checked, command_name_2, command_input_2)
                     if not ret:
                         ok = False
         if ok:
@@ -253,39 +253,41 @@ class Mainwindow(tk.Tk):
             # Input parancsok megkeresése, végrehejtása.
             # Az outputjaikat használó parancsok kigyűjtése.
             command_queue_tmp = []
-            for command_name, command_object in self.command_container.items():
-                if not bool(command_object.command_model.input):
-                    for output in command_object.command_model.output.values():
-                        inputs = self.command_container.find_input_keys(output)
-                        for input in inputs:
-                            command_queue_tmp.append(input[:input.rfind('.')])
-                            if not command_name in command_queue:
-                                command_queue.append(command_name)
-                    command_object.update()
-                    command_object.run(image_list)
+            for command_name_3, command_object_3 in self.command_container.items():
+                if not bool(command_object_3.command_model.input):
+                    for output_3 in command_object_3.command_model.output.values():
+                        inputs_3 = self.command_container.find_input_keys(output_3)
+                        for input_3 in inputs_3:
+                            command_queue_tmp.append(input_3[:input_3.rfind('.')])
+                            if not command_name_3 in command_queue:
+                                command_queue.append(command_name_3)
+                    command_object_3.update()
+                    command_object_3.run(image_list)
 
             # 2. Ha ennek a parancsnak egyéb inputja is van, ami még nem futott le, akkor várakozási sorba marad.
             # Ha minden inputja megvan, végrehajtjuk.
             # 3. A 2. pont iterálása, amíg minden parancs le nem futott.
             while len(command_queue_tmp) > 0:
-                for command_name in command_queue_tmp:
-                    command_object = self.command_container.get_object(command_name)
-                    command_object_inputs = command_object.command_model.input.values()
-                    command_object_outputs = command_object.command_model.output.values()
+                for command_name_4 in command_queue_tmp:
+                    command_object_4 = self.command_container.get_object(command_name_4)
+                    command_object_4_inputs = command_object_4.command_model.input.values()
+                    command_object_4_outputs = command_object_4.command_model.output.values()
 
-                    for output in command_object_outputs:
-                        inputs = None
-                        inputs = self.command_container.find_input_keys(output)
-                        for input in inputs:
-                            command_queue_tmp.append(input[:input.rfind('.')])
+                    for output_4 in command_object_4_outputs:
+                        inputs_4 = None
+                        inputs_4 = self.command_container.find_input_keys(output_4)
+                        for input_4 in inputs_4:
+                            cn_4 = input_4[:input_4.rfind('.')]
+                            if not cn_4 in command_queue_tmp:
+                                command_queue_tmp.append(cn_4)
 
-                    if all(input in image_list.keys() for input in command_object_inputs): # ha a parancs összes inputja benne van a már létező parancskimenetek listájában
-                        command_object.update()
-                        ret = command_object.run(image_list)
+                    if all(input_4_1 in image_list.keys() for input_4_1 in command_object_4_inputs): # ha a parancs összes inputja benne van a már létező parancskimenetek listájában
+                        command_object_4.update()
+                        ret = command_object_4.run(image_list)
                         if ret:
-                            command_queue_tmp.remove(command_name)
-                            if not command_name in command_queue:
-                                command_queue.append(command_name)
+                            command_queue_tmp.remove(command_name_4)
+                            if not command_name_4 in command_queue:
+                                command_queue.append(command_name_4)
 
             self.command_queue = command_queue
         else:
