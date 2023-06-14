@@ -26,9 +26,9 @@ class MainCanvas(tk.Canvas):
 
         self.can_main_region_width = can_main_region_width
         self.can_main_region_height = can_main_region_height
-        self.can_main_width = can_main_width
-        self.can_main_height = can_main_height
 
+        self.canvas_grid_size = 12
+        self.padding = 4
         self.icon_size = 16
         self.image_move = ImageTk.PhotoImage(Image.open(f"./resources/icons/move_{self.icon_size}.png"))
         self.image_close = ImageTk.PhotoImage(Image.open(f"./resources/icons/close_{self.icon_size}.png"))
@@ -75,52 +75,54 @@ class MainCanvas(tk.Canvas):
 
 
     def widget_move(self, command_name, x, y):
-        padding = 4
         command_obj = self.command_container.get_object(command_name)
         canvas_x = self.canvasx(x)
         canvas_y = self.canvasy(y)
-        if x > self.can_main_width:
+        if x > self.winfo_width():
             self.xview_scroll(1, 'units')
         if x < 1:
             self.xview_scroll(-1, 'units')
-        if y > self.can_main_height:
+        if y > self.winfo_height():
             self.yview_scroll(1, 'units')
         if y < 1:
             self.yview_scroll(-1, 'units')
-        if canvas_x < int(self.icon_size / 2):
-            canvas_x = int(self.icon_size / 2)
+
+        canvas_x = int(int(canvas_x / self.canvas_grid_size) * self.canvas_grid_size)
+        canvas_y = int(int(canvas_y / self.canvas_grid_size) * self.canvas_grid_size)
         if canvas_x > self.can_main_region_width:
             canvas_x = self.can_main_region_width - int(self.icon_size / 2)
-        if canvas_y < int(self.icon_size / 2):
-            canvas_y = int(self.icon_size / 2)
+        if canvas_x <= int(self.icon_size / 2) + self.padding:
+            canvas_x = int(self.icon_size / 2) + self.padding
         if canvas_y > self.can_main_region_height:
             canvas_y = self.can_main_region_height - int(self.icon_size / 2)
+        if canvas_y <= int(self.icon_size / 2) + self.padding:
+            canvas_y = int(self.icon_size / 2) + self.padding
 
         self.coords(f"{command_name}.move", canvas_x - int(self.icon_size / 2), canvas_y - int(self.icon_size / 2))
         move_box = self.bbox(f"{command_name}.move")
 
         if bool(move_box):
             move_x0, move_y0, move_x1, move_y1 = move_box
-            self.coords(f"{command_name}.settings", move_x0, move_y1 + padding)
+            self.coords(f"{command_name}.settings", move_x0, move_y1 + self.padding)
             settings_x0, settings_y0, settings_x1, settings_y1 = self.bbox(f"{command_name}.settings")
-            self.coords(f"{command_name}.delete", settings_x0, settings_y1 + padding)
+            self.coords(f"{command_name}.delete", settings_x0, settings_y1 + self.padding)
             delete_x0, delete_y0, delete_x1_, delete_y1 = self.bbox(f"{command_name}.delete")
 
-            command_y0 = move_y0 - padding
+            command_y0 = move_y0 - self.padding
             background_x1 = move_x1
             before_input_x0 = move_x1
             for input_key in command_obj.command_model.input.keys():
                 command_y0 = move_y1
-                self.coords(f"{command_name}.{input_key}", before_input_x0 + padding, move_y0)
+                self.coords(f"{command_name}.{input_key}", before_input_x0 + self.padding, move_y0)
                 _, _, before_input_x0, _ = self.bbox(f"{command_name}.{input_key}")
 
                 if background_x1 < before_input_x0:
                     background_x1 = before_input_x0
 
-            self.coords(f"{command_name}.command", move_x1 + padding, command_y0 + padding)
+            self.coords(f"{command_name}.command", move_x1 + self.padding, command_y0 + self.padding)
             name_x0, _, name_x1, name_y1 = self.bbox(f"{command_name}.command")
 
-            self.coords(f"{command_name}.display_widget", move_x1 + padding, name_y1 + padding)
+            self.coords(f"{command_name}.display_widget", move_x1 + self.padding, name_y1 + self.padding)
 
             if background_x1 < name_x1:
                 background_x1 = name_x1
@@ -128,7 +130,7 @@ class MainCanvas(tk.Canvas):
             background_y1 = delete_y1
             before_output_x0 = move_x1
             for output_name in command_obj.command_model.output.values():
-                self.coords(output_name, before_output_x0 + padding, name_y1 + padding)
+                self.coords(output_name, before_output_x0 + self.padding, name_y1 + self.padding)
                 output_x0, output_y0, before_output_x0, output_y1 = self.bbox(output_name)
                 self.coords(f"{output_name}.clipboard", output_x0, output_y0, before_output_x0, output_y1)
                 self.coords(f"{output_name}.preview", output_x0 - 2, output_y0 - 2, before_output_x0 + 2, output_y1 + 2)
@@ -138,7 +140,7 @@ class MainCanvas(tk.Canvas):
                 if background_x1 < before_output_x0:
                     background_x1 = before_output_x0
 
-            self.coords(f"{command_name}.background", move_x0 - padding, move_y0 - padding, background_x1 + padding, background_y1 + padding)
+            self.coords(f"{command_name}.background", move_x0 - self.padding, move_y0 - self.padding, background_x1 + self.padding, background_y1 + self.padding)
 
             self.io_widgets_connect(command_name)
     # DRAG & DROP metódusok END

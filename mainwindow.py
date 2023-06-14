@@ -16,7 +16,7 @@ class Mainwindow(tk.Tk):
         self.system_language = "hu"
         self.backup_language = "en"
 
-        self.can_main_width = 800
+        self.can_main_width = 1000
         self.can_main_height = 800
         self.can_main_region_width = 4000
         self.can_main_region_height = 4000
@@ -66,6 +66,11 @@ class Mainwindow(tk.Tk):
 
         self.frm_config.grid(row=0, column=0, sticky="n, s, w, e")
         self.frm_image.grid(row=0, column=1, sticky="n, s, w, e")
+
+        self.frm_image.rowconfigure(0, weight=1)
+        self.frm_image.columnconfigure(0, weight=1)
+        self.rowconfigure(0, weight=1)
+        self.columnconfigure(1, weight=1)
 
         # elérhető parancsok gui frame feltöltése
         for available_command in self.available_commands:
