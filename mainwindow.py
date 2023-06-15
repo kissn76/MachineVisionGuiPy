@@ -29,6 +29,20 @@ class Mainwindow(tk.Tk):
         self.command_container = cc.CommandContainer()
         self.command_queue = []
 
+        menubar = tk.Menu(self)
+
+        filemenu = tk.Menu(menubar, tearoff=0)
+        filemenu.add_command(label="New", command=())
+        filemenu.add_command(label="Open", command=())
+        filemenu.add_command(label="Save", command=())
+        filemenu.add_command(label="Save as...", command=())
+        filemenu.add_command(label="Close", command=())
+        filemenu.add_separator()
+        filemenu.add_command(label="Exit", command=())
+        menubar.add_cascade(label="File", menu=filemenu)
+
+        self.config(menu=menubar)
+
         self.frm_config = ttk.Frame(self)
         self.frm_popup_id = None
 
