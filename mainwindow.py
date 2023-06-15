@@ -38,7 +38,7 @@ class Mainwindow(tk.Tk):
         filemenu.add_command(label="Save as...", command=())
         filemenu.add_command(label="Close", command=())
         filemenu.add_separator()
-        filemenu.add_command(label="Exit", command=())
+        filemenu.add_command(label="Exit", command=self.quit)
         menubar.add_cascade(label="File", menu=filemenu)
 
         self.config(menu=menubar)
