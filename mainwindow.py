@@ -2,8 +2,10 @@ import cv2
 from pathlib import Path
 import tkinter as tk
 from tkinter import ttk
+from tkinter import filedialog
 from PIL import Image, ImageTk
 import json
+import commandmodel as cm
 import commandcontainer as cc
 import command as com
 import maincanvas as mc
@@ -13,13 +15,15 @@ import widgets as wg
 class Mainwindow(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.system_language = "hu"
         self.backup_language = "en"
-
+        self.system_language = self.backup_language
         self.can_main_width = 1000
         self.can_main_height = 800
         self.can_main_region_width = 4000
         self.can_main_region_height = 4000
+        self.project_directory = "projects"
+        self.project_name = f"./{self.project_directory}/project_default.json"
+        self.setting_load("setting.json")
 
         self.available_commands = ["opencv_videocapture", "opencv_imread", "opencv_threshold", "opencv_gaussianblur", "opencv_resize", "opencv_canny", "tk_display"]
         self.image_list = {}
@@ -33,8 +37,8 @@ class Mainwindow(tk.Tk):
 
         filemenu = tk.Menu(menubar, tearoff=0)
         filemenu.add_command(label="New", command=())
-        filemenu.add_command(label="Open", command=())
-        filemenu.add_command(label="Save", command=())
+        filemenu.add_command(label="Open", command=self.project_open)
+        filemenu.add_command(label="Save", command=self.setting_save)
         filemenu.add_command(label="Save as...", command=())
         filemenu.add_command(label="Close", command=())
         filemenu.add_separator()
@@ -47,7 +51,7 @@ class Mainwindow(tk.Tk):
         self.frm_popup_id = None
 
         frm_button = ttk.Frame(self.frm_config)
-        ttk.Button(frm_button, text="Save", command=self.setting_save).grid(row=0, column=0)
+        ttk.Button(frm_button, text="Save", command=self.project_save).grid(row=0, column=0)
         ttk.Button(frm_button, text="Run once", command=self.once_run).grid(row=0, column=1)
         self.btn_run_continous = ttk.Button(frm_button, text="Run continous", command=self.continous_run_start)
         self.btn_run_continous.grid(row=0, column=2)
@@ -73,16 +77,29 @@ class Mainwindow(tk.Tk):
         self.lbl_preview.pack()
 
         self.frm_image = ttk.Frame(self)
+        self.notebook = ttk.Notebook(self.frm_image)
+        self.notebook.grid(row=0, column=0, sticky="n, s, w, e")
 
-        self.can_main = mc.MainCanvas(self.frm_image, command_container=self.command_container, bg='blue', can_main_width=self.can_main_width, can_main_height=self.can_main_height, can_main_region_width=self.can_main_region_width, can_main_region_height=self.can_main_region_height)
+        self.frm_can_main1 = ttk.Frame(self.notebook)
+        self.can_main1 = mc.MainCanvas(self.frm_can_main1, command_container=self.command_container, bg='blue', can_main_width=self.can_main_width, can_main_height=self.can_main_height, can_main_region_width=self.can_main_region_width, can_main_region_height=self.can_main_region_height)
+        self.can_main1.grid(row=0, column=0, sticky="n, s, w, e")
+        self.notebook.add(self.frm_can_main1, text='can_main1')
 
-        self.can_main.grid(row=0, column=0, sticky="n, s, w, e")
+        self.frm_can_main2 = ttk.Frame(self.notebook)
+        self.can_main2 = mc.MainCanvas(self.frm_can_main2, command_container=self.command_container, bg='blue', can_main_width=self.can_main_width, can_main_height=self.can_main_height, can_main_region_width=self.can_main_region_width, can_main_region_height=self.can_main_region_height)
+        self.can_main2.grid(row=0, column=0, sticky="n, s, w, e")
+        self.notebook.add(self.frm_can_main2, text='can_main2')
+
+        # self.can_main = mc.MainCanvas(self.frm_image, command_container=self.command_container, bg='blue', can_main_width=self.can_main_width, can_main_height=self.can_main_height, can_main_region_width=self.can_main_region_width, can_main_region_height=self.can_main_region_height)
+        # self.can_main.grid(row=0, column=0, sticky="n, s, w, e")
 
         self.frm_config.grid(row=0, column=0, sticky="n, s, w, e")
         self.frm_image.grid(row=0, column=1, sticky="n, s, w, e")
 
         self.frm_image.rowconfigure(0, weight=1)
         self.frm_image.columnconfigure(0, weight=1)
+        self.notebook.rowconfigure(0, weight=1)
+        self.notebook.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
         self.columnconfigure(1, weight=1)
 
@@ -98,11 +115,7 @@ class Mainwindow(tk.Tk):
                     label_text = text_json[available_command]["name"][self.system_language]
                     command_description = text_json[available_command]["description"][self.system_language]
                 except:
-                    try:
-                        label_text = text_json[available_command]["name"][self.backup_language]
-                        command_description = text_json[available_command]["description"][self.backup_language]
-                    except:
-                        label_text = available_command
+                    label_text = available_command
                 frm_row = ttk.Frame(self.frm_available_commands)
                 lbl_command = ttk.Label(frm_row, text=label_text, cursor= "hand2")
                 lbl_info = wg.Info(frm_row, self, label_text, command_description)
@@ -113,16 +126,10 @@ class Mainwindow(tk.Tk):
 
             add(available_command)
 
-        self.preview_set()
+        # self.preview_set()
 
         # előzőleg elmentett munka betöltése
-        setting = self.setting_load()
-        if bool(setting):
-            for command_name, command_setting in setting.items():
-                self.used_command_add(command_name, command_setting)
-
-            for command_name in self.command_container.keys():
-                self.can_main.io_widgets_connect(command_name)
+        # self.project_load()
 
 
     def preview_set(self):
@@ -155,15 +162,78 @@ class Mainwindow(tk.Tk):
         self.lbl_preview_name.configure(text=name)
 
 
-    def setting_save(self):
+    def setting_save(self, setting_name="setting.json"):
         setting = {}
+        setting.update({"system_language": self.system_language})
+
+        canvas = {}
+        canvas.update({"main_width": self.can_main_width})
+        canvas.update({"main_height": self.can_main_height})
+        canvas.update({"region_width": self.can_main_region_width})
+        canvas.update({"region_height": self.can_main_region_height})
+        setting.update({"canvas": canvas})
+
+        project = {}
+        project.update({"name": self.project_name})
+        setting.update({"project": project})
+
+        with open(setting_name, "w") as fp:
+            json.dump(setting, fp, indent=4)
+
+
+    def setting_load(self, setting_name="setting.json"):
+        setting = {}
+        try:
+            with open(setting_name, "r") as fp:
+                setting = json.load(fp)
+        except:
+            pass
+
+        try:
+            self.system_language = setting["system_language"]
+        except:
+            pass
+
+        try:
+            self.can_main_width = setting["canvas"]["main_width"]
+        except:
+            pass
+
+        try:
+            self.can_main_height = setting["canvas"]["main_height"]
+        except:
+            pass
+
+        try:
+            self.can_main_region_width = setting["canvas"]["region_width"]
+        except:
+            pass
+
+        try:
+            self.can_main_region_height = setting["canvas"]["region_height"]
+        except:
+            pass
+
+        try:
+            self.project_name = setting["project"]["name"]
+        except:
+            pass
+
+
+    def project_open(self):
+        self.project_name = filedialog.askopenfilename(initialdir=self.project_directory, filetypes=[("Json files", "*.json")])
+        self.project_load()
+
+
+    def project_save(self):
+        project = {}
         # model setting
         for command_name, command_obj in self.command_container.items():
             model_input = command_obj.command_model.input
             model_output = command_obj.command_model.output
             model_properties = command_obj.command_model.properties
             model = {"input": model_input, "output": model_output, "properties": model_properties}
-            setting.update({command_name: {"model": model}})
+            project.update({command_name: {"model": model}})
 
         # position of canvas elements
         for id in self.can_main.find_all():
@@ -174,22 +244,35 @@ class Mainwindow(tk.Tk):
                 widget_func = tag[tag.rfind('.') + 1:]
                 if widget_func == "move":
                     try:
-                        setting[command_name].update({"coords": self.can_main.coords(id)})
+                        project[command_name].update({"coords": self.can_main.coords(id)})
                     except:
                         pass
 
-        with open("setting.json", "w") as fp:
-            json.dump(setting, fp, indent=4)
+        with open(self.project_name, "w") as fp:
+            json.dump(project, fp, indent=4)
 
 
-    def setting_load(self):
+    def project_load(self):
+        project = {}
         try:
-            with open("setting.json", "r") as fp:
-                setting = json.load(fp)
+            with open(self.project_name, "r") as fp:
+                project = json.load(fp)
         except:
-            setting = {}
+            pass
 
-        return setting
+        if bool(project):
+            # reset project, delete canvas elements
+            self.can_main.delete("all")
+            self.command_container.clear()
+            for widget in self.frm_used_command_setting.winfo_children():
+                widget.pack_forget()
+            # cm.command_counter = 0
+
+            for command_name, command_setting in project.items():
+                self.used_command_add(command_name, command_setting)
+
+            for command_name in self.command_container.keys():
+                self.can_main.io_widgets_connect(command_name)
 
 
     def once_run(self):

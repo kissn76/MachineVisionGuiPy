@@ -1,0 +1,174 @@
+{
+    "opencv_imread.0": {
+        "model": {
+            "input": {},
+            "output": {
+                "output": "opencv_imread.0.out"
+            },
+            "properties": {
+                "filename": "./resources/example/ocv_1.jpg",
+                "flags": 0
+            }
+        },
+        "coords": [
+            376.0,
+            4.0
+        ]
+    },
+    "opencv_threshold.1": {
+        "model": {
+            "input": {
+                "src": "opencv_imread.0.out"
+            },
+            "output": {
+                "dst": "opencv_threshold.1.dst"
+            },
+            "properties": {
+                "thresh": 146.0,
+                "maxval": 255.0,
+                "type": 0
+            }
+        },
+        "coords": [
+            376.0,
+            160.0
+        ]
+    },
+    "opencv_gaussianblur.2": {
+        "model": {
+            "input": {
+                "src": "opencv_threshold.1.dst"
+            },
+            "output": {
+                "dst": "opencv_gaussianblur.2.dst"
+            },
+            "properties": {
+                "ksize_w": 139,
+                "ksize_h": 129,
+                "sigmaX": 0.0,
+                "sigmaY": 0.0,
+                "borderType": 4
+            }
+        },
+        "coords": [
+            376.0,
+            316.0
+        ]
+    },
+    "opencv_resize.3": {
+        "model": {
+            "input": {
+                "src": "opencv_canny.4.dst"
+            },
+            "output": {
+                "dst": "opencv_resize.3.dst"
+            },
+            "properties": {
+                "dsize_w": 0,
+                "dsize_h": 0,
+                "fx": 0.5,
+                "fy": 0.2,
+                "interpolation": 3
+            }
+        },
+        "coords": [
+            376.0,
+            628.0
+        ]
+    },
+    "opencv_canny.4": {
+        "model": {
+            "input": {
+                "src": "opencv_gaussianblur.2.dst"
+            },
+            "output": {
+                "dst": "opencv_canny.4.dst"
+            },
+            "properties": {
+                "threshold1": 12.0,
+                "threshold2": 0.0,
+                "apertureSize": 3,
+                "L2gradient": false
+            }
+        },
+        "coords": [
+            376.0,
+            472.0
+        ]
+    },
+    "tk_display.5": {
+        "model": {
+            "input": {
+                "src": "opencv_imread.0.out"
+            },
+            "output": {},
+            "properties": {
+                "factor": 0.1
+            }
+        },
+        "coords": [
+            568.0,
+            4.0
+        ]
+    },
+    "tk_display.6": {
+        "model": {
+            "input": {
+                "src": "opencv_threshold.1.dst"
+            },
+            "output": {},
+            "properties": {
+                "factor": 0.1
+            }
+        },
+        "coords": [
+            568.0,
+            160.0
+        ]
+    },
+    "tk_display.7": {
+        "model": {
+            "input": {
+                "src": "opencv_gaussianblur.2.dst"
+            },
+            "output": {},
+            "properties": {
+                "factor": 0.1
+            }
+        },
+        "coords": [
+            568.0,
+            316.0
+        ]
+    },
+    "tk_display.8": {
+        "model": {
+            "input": {
+                "src": "opencv_canny.4.dst"
+            },
+            "output": {},
+            "properties": {
+                "factor": 0.1
+            }
+        },
+        "coords": [
+            568.0,
+            472.0
+        ]
+    },
+    "tk_display.9": {
+        "model": {
+            "input": {
+                "src": "opencv_resize.3.dst"
+            },
+            "output": {},
+            "properties": {
+                "factor": 0.1
+            }
+        },
+        "coords": [
+            568.0,
+            628.0
+        ]
+    }
+}
