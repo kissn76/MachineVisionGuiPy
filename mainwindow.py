@@ -15,9 +15,10 @@ import project
 class Mainwindow(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.opened_projects = []
+        self.projects_opened = []
         self.projects = {}
         self.project_directory = "projects"
+        self.project_actual = None
 
         self.backup_language = "en"
         self.system_language = self.backup_language
@@ -33,11 +34,11 @@ class Mainwindow(tk.Tk):
         menubar = tk.Menu(self)
 
         filemenu = tk.Menu(menubar, tearoff=0)
-        filemenu.add_command(label="New", command=())
-        filemenu.add_command(label="Open", command=())
-        filemenu.add_command(label="Save", command=self.setting_save)
-        filemenu.add_command(label="Save as...", command=())
-        filemenu.add_command(label="Close", command=())
+        filemenu.add_command(label="New project", command=self.project_add)
+        filemenu.add_command(label="Open project", command=())
+        filemenu.add_command(label="Save project", command=())
+        filemenu.add_command(label="Save project as...", command=())
+        filemenu.add_command(label="Close project", command=())
         filemenu.add_separator()
         filemenu.add_command(label="Exit", command=self.quit)
         menubar.add_cascade(label="File", menu=filemenu)
@@ -107,7 +108,7 @@ class Mainwindow(tk.Tk):
                 lbl_info = wg.Info(frm_row, self, label_text, command_description)
                 lbl_info.pack(side=tk.LEFT)
                 lbl_command.pack(side=tk.LEFT)
-                lbl_command.bind("<Double-Button-1>", lambda event: self.used_command_add(available_command))
+                lbl_command.bind("<Double-Button-1>", lambda event: self.projects[self.project_actual].used_command_add(available_command))
                 frm_row.pack(fill=tk.X, expand=True)
 
             add(available_command)
@@ -117,7 +118,7 @@ class Mainwindow(tk.Tk):
         # előzőleg elmentett munka betöltése
         # self.project_load()
 
-        for proj in self.opened_projects:
+        for proj in self.projects_opened:
             self.project_add(proj["filepath"])
 
 
@@ -155,9 +156,8 @@ class Mainwindow(tk.Tk):
         tab_name = self.notebook.select()
         tab_id = self.notebook.index(tab_name)
         tab_text = self.notebook.tab(tab_name, "text")
-        print(tab_name)
-        print(tab_id)
-        print(tab_text)
+        self.project_actual = tab_text
+        print(self.project_actual)
 
 
     def setting_save(self, setting_name="setting.json"):
@@ -172,7 +172,7 @@ class Mainwindow(tk.Tk):
         setting.update({"canvas": canvas})
 
         projects = []
-        for proj_name in self.opened_projects:
+        for proj_name in self.projects_opened:
             proj = {}
             proj.update({"filepath": proj_name})
             projects.append(proj)
@@ -216,7 +216,7 @@ class Mainwindow(tk.Tk):
             pass
 
         try:
-            self.opened_projects = setting["projects"]
+            self.projects_opened = setting["projects"]
         except:
             pass
 
@@ -226,14 +226,11 @@ class Mainwindow(tk.Tk):
         self.project_add(project_name)
 
 
-    def project_add(self, filepath=None):
-        frm_can_main = ttk.Frame(self.notebook)
-        proj_obj = project.Project(master=frm_can_main, filepath=filepath)
-        can_main = proj_obj.can_main
-        can_main.grid(row=0, column=0, sticky="n, s, w, e")
-
-        if not bool(filepath):
-            filepath = "New"
-
-        self.notebook.add(frm_can_main, text=filepath)
-        self.projects.update({filepath: proj_obj})
+    def project_add(self, filepath="New"):
+        if not filepath in self.projects.keys():
+            frm_can_main = ttk.Frame(self.notebook)
+            proj_obj = project.Project(master=frm_can_main, filepath=filepath)
+            can_main = proj_obj.can_main
+            can_main.grid(row=0, column=0, sticky="n, s, w, e")
+            self.notebook.add(frm_can_main, text=filepath)
+            self.projects.update({filepath: proj_obj})
