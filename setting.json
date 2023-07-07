@@ -6,7 +6,9 @@
         "region_width": 4000,
         "region_height": 4000
     },
-    "project": {
-        "name": "./projects/project_default.json"
-    }
+    "projects": [
+        {
+            "filepath": "./projects/project_default.json"
+        }
+    ]
 }

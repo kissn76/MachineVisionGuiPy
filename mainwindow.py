@@ -6,38 +6,35 @@ from tkinter import filedialog
 from PIL import Image, ImageTk
 import json
 import commandmodel as cm
-import commandcontainer as cc
 import command as com
 import maincanvas as mc
 import widgets as wg
+import project
 
 
 class Mainwindow(tk.Tk):
     def __init__(self):
         super().__init__()
+        self.opened_projects = []
+        self.projects = {}
+        self.project_directory = "projects"
+
         self.backup_language = "en"
         self.system_language = self.backup_language
         self.can_main_width = 1000
         self.can_main_height = 800
         self.can_main_region_width = 4000
         self.can_main_region_height = 4000
-        self.project_directory = "projects"
-        self.project_name = f"./{self.project_directory}/project_default.json"
         self.setting_load("setting.json")
 
         self.available_commands = ["opencv_videocapture", "opencv_imread", "opencv_threshold", "opencv_gaussianblur", "opencv_resize", "opencv_canny", "tk_display"]
-        self.image_list = {}
         self.run_contimous = False
-        self.process_counter = 0
-
-        self.command_container = cc.CommandContainer()
-        self.command_queue = []
 
         menubar = tk.Menu(self)
 
         filemenu = tk.Menu(menubar, tearoff=0)
         filemenu.add_command(label="New", command=())
-        filemenu.add_command(label="Open", command=self.project_open)
+        filemenu.add_command(label="Open", command=())
         filemenu.add_command(label="Save", command=self.setting_save)
         filemenu.add_command(label="Save as...", command=())
         filemenu.add_command(label="Close", command=())
@@ -51,13 +48,13 @@ class Mainwindow(tk.Tk):
         self.frm_popup_id = None
 
         frm_button = ttk.Frame(self.frm_config)
-        ttk.Button(frm_button, text="Save", command=self.project_save).grid(row=0, column=0)
-        ttk.Button(frm_button, text="Run once", command=self.once_run).grid(row=0, column=1)
-        self.btn_run_continous = ttk.Button(frm_button, text="Run continous", command=self.continous_run_start)
-        self.btn_run_continous.grid(row=0, column=2)
-        self.lbl_counter = ttk.Label(frm_button, text=self.process_counter)
-        self.lbl_counter.grid(row=0, column=3)
-        ttk.Button(frm_button, text="Stop", command=self.continous_run_stop).grid(row=0, column=4)
+        # ttk.Button(frm_button, text="Save", command=self.project_save).grid(row=0, column=0)
+        # ttk.Button(frm_button, text="Run once", command=self.once_run).grid(row=0, column=1)
+        # self.btn_run_continous = ttk.Button(frm_button, text="Run continous", command=self.continous_run_start)
+        # self.btn_run_continous.grid(row=0, column=2)
+        # self.lbl_counter = ttk.Label(frm_button, text=self.process_counter)
+        # self.lbl_counter.grid(row=0, column=3)
+        # ttk.Button(frm_button, text="Stop", command=self.continous_run_stop).grid(row=0, column=4)
 
         self.frm_available_commands = ttk.LabelFrame(self.frm_config, text="Available commands")
         self.frm_used_command_setting = ttk.LabelFrame(self.frm_config, text="Command setting")
@@ -79,19 +76,6 @@ class Mainwindow(tk.Tk):
         self.frm_image = ttk.Frame(self)
         self.notebook = ttk.Notebook(self.frm_image)
         self.notebook.grid(row=0, column=0, sticky="n, s, w, e")
-
-        self.frm_can_main1 = ttk.Frame(self.notebook)
-        self.can_main1 = mc.MainCanvas(self.frm_can_main1, command_container=self.command_container, bg='blue', can_main_width=self.can_main_width, can_main_height=self.can_main_height, can_main_region_width=self.can_main_region_width, can_main_region_height=self.can_main_region_height)
-        self.can_main1.grid(row=0, column=0, sticky="n, s, w, e")
-        self.notebook.add(self.frm_can_main1, text='can_main1')
-
-        self.frm_can_main2 = ttk.Frame(self.notebook)
-        self.can_main2 = mc.MainCanvas(self.frm_can_main2, command_container=self.command_container, bg='blue', can_main_width=self.can_main_width, can_main_height=self.can_main_height, can_main_region_width=self.can_main_region_width, can_main_region_height=self.can_main_region_height)
-        self.can_main2.grid(row=0, column=0, sticky="n, s, w, e")
-        self.notebook.add(self.frm_can_main2, text='can_main2')
-
-        # self.can_main = mc.MainCanvas(self.frm_image, command_container=self.command_container, bg='blue', can_main_width=self.can_main_width, can_main_height=self.can_main_height, can_main_region_width=self.can_main_region_width, can_main_region_height=self.can_main_region_height)
-        # self.can_main.grid(row=0, column=0, sticky="n, s, w, e")
 
         self.frm_config.grid(row=0, column=0, sticky="n, s, w, e")
         self.frm_image.grid(row=0, column=1, sticky="n, s, w, e")
@@ -130,6 +114,9 @@ class Mainwindow(tk.Tk):
 
         # előzőleg elmentett munka betöltése
         # self.project_load()
+
+        for proj in self.opened_projects:
+            self.project_add(proj["filepath"])
 
 
     def preview_set(self):
@@ -173,9 +160,12 @@ class Mainwindow(tk.Tk):
         canvas.update({"region_height": self.can_main_region_height})
         setting.update({"canvas": canvas})
 
-        project = {}
-        project.update({"name": self.project_name})
-        setting.update({"project": project})
+        projects = []
+        for proj_name in self.opened_projects:
+            proj = {}
+            proj.update({"filepath": proj_name})
+            projects.append(proj)
+        setting.update({"projects": projects})
 
         with open(setting_name, "w") as fp:
             json.dump(setting, fp, indent=4)
@@ -215,210 +205,24 @@ class Mainwindow(tk.Tk):
             pass
 
         try:
-            self.project_name = setting["project"]["name"]
+            self.opened_projects = setting["projects"]
         except:
             pass
 
 
     def project_open(self):
-        self.project_name = filedialog.askopenfilename(initialdir=self.project_directory, filetypes=[("Json files", "*.json")])
-        self.project_load()
+        project_name = filedialog.askopenfilename(initialdir=self.project_directory, filetypes=[("Json files", "*.json")])
+        self.project_add(project_name)
 
 
-    def project_save(self):
-        project = {}
-        # model setting
-        for command_name, command_obj in self.command_container.items():
-            model_input = command_obj.command_model.input
-            model_output = command_obj.command_model.output
-            model_properties = command_obj.command_model.properties
-            model = {"input": model_input, "output": model_output, "properties": model_properties}
-            project.update({command_name: {"model": model}})
+    def project_add(self, filepath=None):
+        frm_can_main = ttk.Frame(self.notebook)
+        proj_obj = project.Project(master=frm_can_main, filepath=filepath)
+        can_main = proj_obj.can_main
+        can_main.grid(row=0, column=0, sticky="n, s, w, e")
 
-        # position of canvas elements
-        for id in self.can_main.find_all():
-            tag = self.can_main.gettags(id)
-            if bool(tag):
-                tag = tag[0]
-                command_name = tag[:tag.rfind('.')]
-                widget_func = tag[tag.rfind('.') + 1:]
-                if widget_func == "move":
-                    try:
-                        project[command_name].update({"coords": self.can_main.coords(id)})
-                    except:
-                        pass
+        if not bool(filepath):
+            filepath = "New"
 
-        with open(self.project_name, "w") as fp:
-            json.dump(project, fp, indent=4)
-
-
-    def project_load(self):
-        project = {}
-        try:
-            with open(self.project_name, "r") as fp:
-                project = json.load(fp)
-        except:
-            pass
-
-        if bool(project):
-            # reset project, delete canvas elements
-            self.can_main.delete("all")
-            self.command_container.clear()
-            for widget in self.frm_used_command_setting.winfo_children():
-                widget.pack_forget()
-            # cm.command_counter = 0
-
-            for command_name, command_setting in project.items():
-                self.used_command_add(command_name, command_setting)
-
-            for command_name in self.command_container.keys():
-                self.can_main.io_widgets_connect(command_name)
-
-
-    def once_run(self):
-        self.sort_commands()
-        self.continous_run_stop()
-        self.next_image()
-
-
-    def continous_run_start(self):
-        self.sort_commands()
-        self.run_contimous = True
-        self.btn_run_continous.configure(state="disabled")
-        self.next_image()
-
-
-    def continous_run_stop(self):
-        self.run_contimous = False
-        self.btn_run_continous.configure(state="enabled")
-
-
-    def used_command_add(self, command, setting=None):
-        self.continous_run_stop()
-        x = 100
-        y = 100
-        if bool(setting):   # ha dict-ből töltünk be meglévő adatokat, tipikusan mentés visszatöltésekor
-            model_setting = setting["model"]
-            x, y = setting["coords"]
-            command_obj = com.Command(command, self.frm_used_command_setting, self.can_main, setting=model_setting)
-        else:   # új létrehozása
-            command_obj = com.Command(command, self.frm_used_command_setting, self.can_main)
-
-        # hozzáadás a végrehajtási listához
-        self.command_container.append(command_obj.command_name, command_obj)
-
-        self.can_main.widget_create(command_obj.command_name, x, y)
-
-
-    def sort_commands(self):
-        self.can_main.canvas_disable()
-        ok = True
-        image_list = {}
-        command_queue = []
-        ##
-        # Parancsok lefuttatása helyes sorrendben
-        ##
-        def find_parent_output(checked, command_name, input_name):
-            # megkeressük, hogy az input_name melyik parancs outputja
-            parent_command_object = self.command_container.get_object(input_name[0:input_name.rfind('.')])
-            if bool(parent_command_object):
-                if parent_command_object.command_name in checked[command_name]:
-                    print("Az inputja ugyanaz, mint az outputja:", command_name)
-                    return False
-                else:
-                    checked[command_name].append(parent_command_object.command_name)
-                    for parent_command_input in parent_command_object.command_model.input.values():
-                        ret = find_parent_output(checked, command_name, parent_command_input)
-                        if not ret:
-                            return False
-            return True
-
-        # 0. Hibák felderítése
-        # 0.1 Megkeresünk minden olyan parancsot, amelyiknek nincs bemenete, de kéne, hogy legyen.
-        for command_name_1, command_object_1 in self.command_container.items():
-            if None in command_object_1.command_model.input.values():
-                print("Error - command has empty input:", command_name_1, "-", command_object_1.command_model.input)
-                ok = False
-        # 0.2 Megkeresünk minden olyan parancsot, amelyiknek az inputja a saját outputja, akár más parancsokon keresztűl is.
-        if ok:
-            checked = {}
-            for command_name_2, command_object_2 in self.command_container.items():
-                for command_input_2 in command_object_2.command_model.input.values():
-                    checked.clear()
-                    checked.update({command_name_2: [command_name_2]})
-                    ret = find_parent_output(checked, command_name_2, command_input_2)
-                    if not ret:
-                        ok = False
-        if ok:
-            #
-            # 1. Input parancsok megkeresése, végrehejtása
-            # Input parancsok megkeresése, végrehejtása.
-            # Az outputjaikat használó parancsok kigyűjtése.
-            command_queue_tmp = []
-            for command_name_3, command_object_3 in self.command_container.items():
-                if not bool(command_object_3.command_model.input):
-                    for output_3 in command_object_3.command_model.output.values():
-                        inputs_3 = self.command_container.find_input_keys(output_3)
-                        for input_3 in inputs_3:
-                            command_queue_tmp.append(input_3[:input_3.rfind('.')])
-                            if not command_name_3 in command_queue:
-                                command_queue.append(command_name_3)
-                    command_object_3.update()
-                    command_object_3.run(image_list)
-
-            # 2. Ha ennek a parancsnak egyéb inputja is van, ami még nem futott le, akkor várakozási sorba marad.
-            # Ha minden inputja megvan, végrehajtjuk.
-            # 3. A 2. pont iterálása, amíg minden parancs le nem futott.
-            while len(command_queue_tmp) > 0:
-                for command_name_4 in command_queue_tmp:
-                    command_object_4 = self.command_container.get_object(command_name_4)
-                    command_object_4_inputs = command_object_4.command_model.input.values()
-                    command_object_4_outputs = command_object_4.command_model.output.values()
-
-                    for output_4 in command_object_4_outputs:
-                        inputs_4 = None
-                        inputs_4 = self.command_container.find_input_keys(output_4)
-                        for input_4 in inputs_4:
-                            cn_4 = input_4[:input_4.rfind('.')]
-                            if not cn_4 in command_queue_tmp:
-                                command_queue_tmp.append(cn_4)
-
-                    if all(input_4_1 in image_list.keys() for input_4_1 in command_object_4_inputs): # ha a parancs összes inputja benne van a már létező parancskimenetek listájában
-                        command_object_4.update()
-                        ret = command_object_4.run(image_list)
-                        if ret:
-                            command_queue_tmp.remove(command_name_4)
-                            if not command_name_4 in command_queue:
-                                command_queue.append(command_name_4)
-
-            self.command_queue = command_queue
-        else:
-            self.command_queue.clear()
-
-        self.can_main.canvas_enable()
-        return ok
-
-
-    def next_image(self):
-        self.process_counter += 1
-        self.lbl_counter.configure(text=self.process_counter)
-
-        self.image_list.clear()
-
-        if bool(self.command_queue):
-            for command in self.command_queue:
-                try:
-                    command_obj = self.command_container.get_object(command)
-                except KeyError: # Futás közben törölve lett az objektum
-                    self.continous_run_stop()
-                    return False
-                command_obj.update()
-                command_obj.run(self.image_list)
-        else:
-            self.continous_run_stop()
-            return False
-
-        self.preview_set()
-
-        if self.run_contimous:
-            self.after(100, self.next_image)
+        self.notebook.add(frm_can_main, text=filepath)
+        self.projects.update({filepath: proj_obj})
