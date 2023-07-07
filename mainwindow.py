@@ -87,6 +87,8 @@ class Mainwindow(tk.Tk):
         self.rowconfigure(0, weight=1)
         self.columnconfigure(1, weight=1)
 
+        self.notebook.bind("<<NotebookTabChanged>>", self.tab_changed)
+
         # elérhető parancsok gui frame feltöltése
         for available_command in self.available_commands:
             def add(available_command):
@@ -147,6 +149,15 @@ class Mainwindow(tk.Tk):
         else:
             name = self.can_main.preview_command
         self.lbl_preview_name.configure(text=name)
+
+
+    def tab_changed(self, *args):
+        tab_obj = self.notebook.select()
+        tab_id = self.notebook.index(tab_obj)
+        tab_text = self.notebook.tab(tab_obj, "text")
+        print(tab_obj)
+        print(tab_id)
+        print(tab_text)
 
 
     def setting_save(self, setting_name="setting.json"):

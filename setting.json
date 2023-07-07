@@ -9,6 +9,9 @@
     "projects": [
         {
             "filepath": "./projects/project_default.json"
+        },
+        {
+            "filepath": "./projects/project_default.json"
         }
     ]
 }
