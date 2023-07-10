@@ -35,7 +35,7 @@ class Mainwindow(tk.Tk):
 
         filemenu = tk.Menu(menubar, tearoff=0)
         filemenu.add_command(label="New project", command=self.project_add)
-        filemenu.add_command(label="Open project", command=())
+        filemenu.add_command(label="Open project", command=self.project_open)
         filemenu.add_command(label="Save project", command=())
         filemenu.add_command(label="Save project as...", command=())
         filemenu.add_command(label="Close project", command=())
@@ -157,7 +157,7 @@ class Mainwindow(tk.Tk):
         tab_id = self.notebook.index(tab_name)
         tab_text = self.notebook.tab(tab_name, "text")
         self.project_actual = tab_text
-        print(self.project_actual)
+        # print(self.project_actual)
 
 
     def setting_save(self, setting_name="setting.json"):

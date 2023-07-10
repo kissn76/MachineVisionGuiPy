@@ -1,5 +1,6 @@
 import json
 from tkinter import ttk
+import uuid
 import commandcontainer as cc
 import command as com
 import maincanvas as mc
@@ -15,6 +16,7 @@ class Project():
         self.command_queue = []
         self.image_list = {}
         self.filepath = filepath
+        self.project_uuid = uuid.uuid4()
         self.can_main = mc.MainCanvas(master, command_container=self.command_container, bg='blue', can_main_width=self.can_main_width, can_main_height=self.can_main_height, can_main_region_width=self.can_main_region_width, can_main_region_height=self.can_main_region_height)
         self.frm_used_command_setting = ttk.LabelFrame(master, text="Command setting")
 
@@ -38,7 +40,12 @@ class Project():
             #     widget.pack_forget()
             # cm.command_counter = 0
 
-            for command_name, command_setting in project.items():
+            try:
+                self.project_uuid = project["uuid"]
+            except:
+                pass
+
+            for command_name, command_setting in project["commands"].items():
                 self.used_command_add(command_name, command_setting)
 
             for command_name in self.command_container.keys():
@@ -47,13 +54,14 @@ class Project():
 
     def project_save(self):
         project = {}
+        project_commands = {}
         # model setting
         for command_name, command_obj in self.command_container.items():
             model_input = command_obj.command_model.input
             model_output = command_obj.command_model.output
             model_properties = command_obj.command_model.properties
             model = {"input": model_input, "output": model_output, "properties": model_properties}
-            project.update({command_name: {"model": model}})
+            project_commands.update({command_name: {"model": model}})
 
         # position of canvas elements
         for id in self.can_main.find_all():
@@ -64,9 +72,12 @@ class Project():
                 widget_func = tag[tag.rfind('.') + 1:]
                 if widget_func == "move":
                     try:
-                        project[command_name].update({"coords": self.can_main.coords(id)})
+                        project_commands[command_name].update({"coords": self.can_main.coords(id)})
                     except:
                         pass
+
+        project.update({"uuid": self.project_uuid})
+        project.update({"commands": project_commands})
 
         with open(self.filepath, "w") as fp:
             json.dump(project, fp, indent=4)
