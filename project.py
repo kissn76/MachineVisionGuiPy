@@ -1,6 +1,7 @@
 import json
 from tkinter import ttk
 import uuid
+import os
 import commandcontainer as cc
 import command as com
 import maincanvas as mc
@@ -16,12 +17,18 @@ class Project():
         self.command_queue = []
         self.image_list = {}
         self.filepath = filepath
-        self.project_uuid = uuid.uuid4()
+        self.project_uuid = None
+        self.uuid_generate()
         self.can_main = mc.MainCanvas(master, command_container=self.command_container, bg='blue', can_main_width=self.can_main_width, can_main_height=self.can_main_height, can_main_region_width=self.can_main_region_width, can_main_region_height=self.can_main_region_height)
         self.frm_used_command_setting = ttk.LabelFrame(master, text="Command setting")
 
         if bool(self.filepath):
+            self.filepath = os.path.abspath(self.filepath)
             self.project_load(self.filepath)
+
+
+    def uuid_generate(self):
+        self.project_uuid = uuid.uuid4().hex
 
 
     def project_load(self, project_name):

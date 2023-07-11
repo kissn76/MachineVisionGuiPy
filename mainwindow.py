@@ -3,6 +3,7 @@ from pathlib import Path
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
+from tkinter import messagebox
 from PIL import Image, ImageTk
 import json
 import commandmodel as cm
@@ -36,9 +37,11 @@ class Mainwindow(tk.Tk):
         filemenu = tk.Menu(menubar, tearoff=0)
         filemenu.add_command(label="New project", command=self.project_add)
         filemenu.add_command(label="Open project", command=self.project_open)
-        filemenu.add_command(label="Save project", command=())
-        filemenu.add_command(label="Save project as...", command=())
-        filemenu.add_command(label="Close project", command=())
+        filemenu.add_command(label="Save project", command=self.project_save)
+        filemenu.add_command(label="Save project as...", command=self.project_save_as)
+        filemenu.add_command(label="Close project", command=self.project_close)
+        filemenu.add_separator()
+        filemenu.add_command(label="Settings", command=self.setting_set)
         filemenu.add_separator()
         filemenu.add_command(label="Exit", command=self.quit)
         menubar.add_cascade(label="File", menu=filemenu)
@@ -154,10 +157,11 @@ class Mainwindow(tk.Tk):
 
     def tab_changed(self, *args):
         tab_name = self.notebook.select()
-        tab_id = self.notebook.index(tab_name)
-        tab_text = self.notebook.tab(tab_name, "text")
-        self.project_actual = tab_text
-        # print(self.project_actual)
+        try:
+            tab_text = self.notebook.tab(tab_name, "text")
+            self.project_actual = tab_text
+        except:
+            self.project_actual = None
 
 
     def setting_save(self, setting_name="setting.json"):
@@ -221,16 +225,83 @@ class Mainwindow(tk.Tk):
             pass
 
 
+    def setting_set(self):
+
+        def send():
+            ret = self.ent_can_width.get()
+            top.destroy()
+            return ret
+
+        top = tk.Toplevel(self)
+        top.wm_attributes("-topmost", True)
+        top.lift()
+        top.grab_set()
+
+        self.lbl_can_width = tk.Label(top, text="Canvas width")
+        self.ent_can_width = ttk.Entry(top)
+        self.ent_can_width.insert(0, self.can_main_width)
+
+        self.btn_submit = tk.Button(top, text="Submit", command=send)
+
+        self.lbl_can_width.grid(row=0, column=0)
+        self.ent_can_width.grid(row=0, column=1)
+        self.btn_submit.grid(row=1, column=0, columnspan=2)
+
+
     def project_open(self):
-        project_name = filedialog.askopenfilename(initialdir=self.project_directory, filetypes=[("Json files", "*.json")])
-        self.project_add(project_name)
+        filepath = filedialog.askopenfilename(initialdir=self.project_directory, filetypes=[("Json files", "*.json")])
+        self.project_add(filepath)
 
 
-    def project_add(self, filepath="New"):
-        if not filepath in self.projects.keys():
-            frm_can_main = ttk.Frame(self.notebook)
-            proj_obj = project.Project(master=frm_can_main, filepath=filepath)
-            can_main = proj_obj.can_main
+    def project_close(self):
+        self.projects.pop(self.project_actual)
+        self.project_actual = None
+        self.notebook.forget(self.notebook.select())
+
+
+    def project_save(self):
+        proj_obj = self.projects[self.project_actual]
+        if bool(proj_obj.filepath):
+            proj_obj.project_save()
+        else:
+            new_filepath = filedialog.asksaveasfilename(initialdir=self.project_directory, title="Please select a file name for saving:", filetypes=[("Json files", "*.json")])
+            if bool(new_filepath):
+                proj_obj.filepath = new_filepath
+                proj_obj.project_save()
+
+
+    def project_save_as(self):
+        proj_obj = self.projects[self.project_actual]
+        new_filepath = filedialog.asksaveasfilename(initialdir=self.project_directory, title="Please select a file name for saving:", filetypes=[("Json files", "*.json")])
+        if bool(new_filepath):
+            proj_obj.filepath = new_filepath
+            proj_obj.uuid_generate()
+            proj_obj.project_save()
+            self.notebook.tab(self.notebook.select(), text=proj_obj.project_uuid)
+
+
+    def project_add(self, filepath=None):
+        frm_can_main = ttk.Frame(self.notebook)
+        proj_obj = project.Project(master=frm_can_main, filepath=filepath)
+        can_main = proj_obj.can_main
+
+        ok = False
+
+        if not proj_obj.project_uuid in self.projects.keys():
+            ok = True
+        else:
+            answer = messagebox.askokcancel("Question", "This project has already opened in another tab. Do you want to open it as new project (Ok), or Cancel?")
+            if bool(answer):
+                proj_obj.uuid_generate()
+                proj_obj.filepath = None
+                # új fájlnév létrehozása
+                proj_obj.filepath = filedialog.asksaveasfilename(initialdir=self.project_directory, title="Please select a file name for saving:", filetypes=[("Json files", "*.json")])
+                proj_obj.project_save()
+                ok = True
+            else:
+                ok = False
+
+        if bool(ok):
             can_main.grid(row=0, column=0, sticky="n, s, w, e")
-            self.notebook.add(frm_can_main, text=filepath)
-            self.projects.update({filepath: proj_obj})
+            self.notebook.add(frm_can_main, text=proj_obj.project_uuid)
+            self.projects.update({proj_obj.project_uuid: proj_obj})
