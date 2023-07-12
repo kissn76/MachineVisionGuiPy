@@ -11,23 +11,23 @@ import command as com
 import maincanvas as mc
 import widgets as wg
 import project
+import settings
 
 
 class Mainwindow(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.projects_opened = []
         self.projects = {}
         self.project_directory = "projects"
         self.project_actual = None
 
-        self.backup_language = "en"
-        self.system_language = self.backup_language
-        self.can_main_width = 1000
-        self.can_main_height = 800
-        self.can_main_region_width = 4000
-        self.can_main_region_height = 4000
-        self.setting_load("setting.json")
+        self.setting = settings.Settings()
+        self.can_main_width = self.setting.can_main_width
+        self.can_main_height = self.setting.can_main_height
+        self.can_main_region_width = self.setting.can_main_region_width
+        self.can_main_region_height = self.setting.can_main_region_height
+        self.projects_opened = self.setting.projects_opened
+        self.system_language = self.setting.system_language
 
         self.available_commands = ["opencv_videocapture", "opencv_imread", "opencv_threshold", "opencv_gaussianblur", "opencv_resize", "opencv_canny", "tk_display"]
         self.run_contimous = False
@@ -164,88 +164,8 @@ class Mainwindow(tk.Tk):
             self.project_actual = None
 
 
-    def setting_save(self, setting_name="setting.json"):
-        setting = {}
-        setting.update({"system_language": self.system_language})
-
-        canvas = {}
-        canvas.update({"main_width": self.can_main_width})
-        canvas.update({"main_height": self.can_main_height})
-        canvas.update({"region_width": self.can_main_region_width})
-        canvas.update({"region_height": self.can_main_region_height})
-        setting.update({"canvas": canvas})
-
-        projects = []
-        for proj_name in self.projects_opened:
-            proj = {}
-            proj.update({"filepath": proj_name})
-            projects.append(proj)
-        setting.update({"projects": projects})
-
-        with open(setting_name, "w") as fp:
-            json.dump(setting, fp, indent=4)
-
-
-    def setting_load(self, setting_name="setting.json"):
-        setting = {}
-        try:
-            with open(setting_name, "r") as fp:
-                setting = json.load(fp)
-        except:
-            pass
-
-        try:
-            self.system_language = setting["system_language"]
-        except:
-            pass
-
-        try:
-            self.can_main_width = setting["canvas"]["main_width"]
-        except:
-            pass
-
-        try:
-            self.can_main_height = setting["canvas"]["main_height"]
-        except:
-            pass
-
-        try:
-            self.can_main_region_width = setting["canvas"]["region_width"]
-        except:
-            pass
-
-        try:
-            self.can_main_region_height = setting["canvas"]["region_height"]
-        except:
-            pass
-
-        try:
-            self.projects_opened = setting["projects"]
-        except:
-            pass
-
-
     def setting_set(self):
-
-        def send():
-            ret = self.ent_can_width.get()
-            top.destroy()
-            return ret
-
-        top = tk.Toplevel(self)
-        top.wm_attributes("-topmost", True)
-        top.lift()
-        top.grab_set()
-
-        self.lbl_can_width = tk.Label(top, text="Canvas width")
-        self.ent_can_width = ttk.Entry(top)
-        self.ent_can_width.insert(0, self.can_main_width)
-
-        self.btn_submit = tk.Button(top, text="Submit", command=send)
-
-        self.lbl_can_width.grid(row=0, column=0)
-        self.ent_can_width.grid(row=0, column=1)
-        self.btn_submit.grid(row=1, column=0, columnspan=2)
+        self.setting.setting_set(self)
 
 
     def project_open(self):
