@@ -8,7 +8,7 @@
     },
     "projects": [
         {
-            "filepath": "./projects/project_default.json"
+            "filepath": "/home/nn/Development/Python/MachineVisionGuiPy/projects/project_default.json"
         }
     ]
 }

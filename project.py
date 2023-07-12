@@ -8,36 +8,57 @@ import maincanvas as mc
 
 
 class Project():
-    def __init__(self, master, filepath=None):
-        self.can_main_width = 1000
-        self.can_main_height = 800
-        self.can_main_region_width = 4000
-        self.can_main_region_height = 4000
+    def __init__(self, master, setting, filepath=None):
+        self.setting = setting
         self.command_container = cc.CommandContainer()
         self.command_queue = []
         self.image_list = {}
         self.filepath = filepath
         self.project_uuid = None
         self.uuid_generate()
-        self.can_main = mc.MainCanvas(master, command_container=self.command_container, bg='blue', can_main_width=self.can_main_width, can_main_height=self.can_main_height, can_main_region_width=self.can_main_region_width, can_main_region_height=self.can_main_region_height)
+        self.can_main = mc.MainCanvas(master, command_container=self.command_container, bg='blue', can_main_width=self.setting.can_main_width, can_main_height=self.setting.can_main_height, can_main_region_width=self.setting.can_main_region_width, can_main_region_height=self.setting.can_main_region_height)
         self.frm_used_command_setting = ttk.LabelFrame(master, text="Command setting")
 
         if bool(self.filepath):
             self.filepath = os.path.abspath(self.filepath)
-            self.project_load(self.filepath)
+            self.project_load()
+
+
+    def __repr__(self):
+         return self.command_container.__repr__()
+
+
+    def __str__(self):
+         return self.command_container.__str__()
 
 
     def uuid_generate(self):
         self.project_uuid = uuid.uuid4().hex
 
 
-    def project_load(self, project_name):
+    def is_modified(self):
+        orig = json.dumps(self.project_file_to_dict())
+        new = json.dumps(self.project_to_dict())
+
+        print(orig)
+        print(new)
+
+        return not orig == new
+
+
+    def project_file_to_dict(self):
         project = {}
         try:
-            with open(project_name, "r") as fp:
+            with open(self.filepath, "r") as fp:
                 project = json.load(fp)
         except:
             pass
+
+        return project
+
+
+    def project_load(self):
+        project = self.project_file_to_dict()
 
         if bool(project):
             # reset project, delete canvas elements
@@ -59,7 +80,7 @@ class Project():
                 self.can_main.io_widgets_connect(command_name)
 
 
-    def project_save(self):
+    def project_to_dict(self):
         project = {}
         project_commands = {}
         # model setting
@@ -86,8 +107,12 @@ class Project():
         project.update({"uuid": self.project_uuid})
         project.update({"commands": project_commands})
 
+        return project
+
+
+    def project_save(self):
         with open(self.filepath, "w") as fp:
-            json.dump(project, fp, indent=4)
+            fp.write(json.dumps(self.project_to_dict(), indent=4))
 
 
     def used_command_add(self, command, setting=None):

@@ -1,13 +1,13 @@
 import json
+import os
 import tkinter as tk
 from tkinter import ttk
-from tkinter import filedialog
-from tkinter import messagebox
 
 
 class Settings():
-    def __init__(self, filepath = "setting.json"):
+    def __init__(self, projects, filepath = "setting.json"):
         self.filepath = filepath
+        self.projects = projects
         self.can_main_width = 1000
         self.can_main_height = 800
         self.can_main_region_width = 4000
@@ -53,10 +53,16 @@ class Settings():
         setting.update({"canvas": canvas})
 
         projects = []
-        for proj_name in self.projects_opened:
-            proj = {}
-            proj.update({"filepath": proj_name})
-            projects.append(proj)
+        for project in self.projects.values():
+            try:
+                filepath = os.path.abspath(project.filepath)
+                check_file = os.path.isfile(filepath)
+                if bool(check_file):
+                    proj = {}
+                    proj.update({"filepath": project.filepath})
+                    projects.append(proj)
+            except:
+                pass
         setting.update({"projects": projects})
 
         with open(self.filepath, "w") as fp:

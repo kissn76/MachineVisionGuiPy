@@ -6,6 +6,7 @@ from tkinter import filedialog
 from tkinter import messagebox
 from PIL import Image, ImageTk
 import json
+import os
 import commandmodel as cm
 import command as com
 import maincanvas as mc
@@ -21,21 +22,16 @@ class Mainwindow(tk.Tk):
         self.project_directory = "projects"
         self.project_actual = None
 
-        self.setting = settings.Settings()
-        self.can_main_width = self.setting.can_main_width
-        self.can_main_height = self.setting.can_main_height
-        self.can_main_region_width = self.setting.can_main_region_width
-        self.can_main_region_height = self.setting.can_main_region_height
-        self.projects_opened = self.setting.projects_opened
-        self.system_language = self.setting.system_language
+        self.setting = settings.Settings(self.projects)
 
         self.available_commands = ["opencv_videocapture", "opencv_imread", "opencv_threshold", "opencv_gaussianblur", "opencv_resize", "opencv_canny", "tk_display"]
         self.run_contimous = False
 
+        self.protocol("WM_DELETE_WINDOW", self.quit)
         menubar = tk.Menu(self)
 
         filemenu = tk.Menu(menubar, tearoff=0)
-        filemenu.add_command(label="New project", command=self.project_add)
+        filemenu.add_command(label="New project", command=self.project_new)
         filemenu.add_command(label="Open project", command=self.project_open)
         filemenu.add_command(label="Save project", command=self.project_save)
         filemenu.add_command(label="Save project as...", command=self.project_save_as)
@@ -102,8 +98,8 @@ class Mainwindow(tk.Tk):
                 with open("lang/commands_en.json", "r") as fp:
                     text_json = json.load(fp)
                 try:
-                    label_text = text_json[available_command]["name"][self.system_language]
-                    command_description = text_json[available_command]["description"][self.system_language]
+                    label_text = text_json[available_command]["name"][self.setting.system_language]
+                    command_description = text_json[available_command]["description"][self.setting.system_language]
                 except:
                     label_text = available_command
                 frm_row = ttk.Frame(self.frm_available_commands)
@@ -121,8 +117,29 @@ class Mainwindow(tk.Tk):
         # előzőleg elmentett munka betöltése
         # self.project_load()
 
-        for proj in self.projects_opened:
-            self.project_add(proj["filepath"])
+        for proj in self.setting.projects_opened:
+            try:
+                filepath = os.path.abspath(proj["filepath"])
+                check_file = os.path.isfile(filepath)
+                if bool(check_file):
+                    self.project_add(filepath)
+            except:
+                pass
+
+        self.setting.setting_save()
+
+
+    def quit(self):
+        ok = True
+        for uuid, project in self.projects.items():
+            modified = project.is_modified()
+            print(modified)
+            if bool(modified):
+                ok = False
+                print(uuid, "modified")
+
+        if bool(ok):
+            super().quit()
 
 
     def preview_set(self):
@@ -168,15 +185,22 @@ class Mainwindow(tk.Tk):
         self.setting.setting_set(self)
 
 
+    def project_new(self):
+        self.project_add()
+        self.setting.setting_save()
+
+
     def project_open(self):
         filepath = filedialog.askopenfilename(initialdir=self.project_directory, filetypes=[("Json files", "*.json")])
         self.project_add(filepath)
+        self.setting.setting_save()
 
 
     def project_close(self):
         self.projects.pop(self.project_actual)
         self.project_actual = None
         self.notebook.forget(self.notebook.select())
+        self.setting.setting_save()
 
 
     def project_save(self):
@@ -189,6 +213,8 @@ class Mainwindow(tk.Tk):
                 proj_obj.filepath = new_filepath
                 proj_obj.project_save()
 
+        self.setting.setting_save()
+
 
     def project_save_as(self):
         proj_obj = self.projects[self.project_actual]
@@ -199,10 +225,12 @@ class Mainwindow(tk.Tk):
             proj_obj.project_save()
             self.notebook.tab(self.notebook.select(), text=proj_obj.project_uuid)
 
+        self.setting.setting_save()
+
 
     def project_add(self, filepath=None):
         frm_can_main = ttk.Frame(self.notebook)
-        proj_obj = project.Project(master=frm_can_main, filepath=filepath)
+        proj_obj = project.Project(master=frm_can_main, setting=self.setting, filepath=filepath)
         can_main = proj_obj.can_main
 
         ok = False
