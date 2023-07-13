@@ -33,11 +33,15 @@ class Command():
 
 
     def __repr__(self):
-        return {"model": self.command_model}.__repr__()
+        return {self.command_name: {"model": self.command_model}}.__repr__()
 
 
     def __str__(self):
-        return {"model": self.command_model}.__str__()
+        return {self.command_name: {"model": self.command_model}}.__str__()
+
+
+    def __dict__(self):
+        return {self.command_name: {"model": vars(self.command_model)}}
 
 
     def update(self):

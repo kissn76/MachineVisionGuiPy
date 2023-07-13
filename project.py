@@ -82,7 +82,9 @@ class Project():
 
     def project_to_dict(self):
         project = {}
-        project_commands = self.command_container.__repr__()
+        project_commands = vars(self.command_container)
+        print(type(project_commands))
+        print(project_commands)
 
         # position of canvas elements
         for id in self.can_main.find_all():
@@ -92,10 +94,11 @@ class Project():
                 command_name = tag[:tag.rfind('.')]
                 widget_func = tag[tag.rfind('.') + 1:]
                 if widget_func == "move":
-                    try:
-                        project_commands[command_name].update({"coords": self.can_main.coords(id)})
-                    except:
-                        pass
+                    project_commands[command_name].update({"coords": self.can_main.coords(id)})
+                    # try:
+                    #     project_commands[command_name].update({"coords": self.can_main.coords(id)})
+                    # except:
+                    #     pass
 
         project.update({"uuid": self.project_uuid})
         project.update({"commands": project_commands})

@@ -24,13 +24,15 @@ class CommandModel():
 
 
     def __repr__(self):
-         model = {"input": self.input, "output": self.output, "properties": self.properties}
-         return model.__repr__()
+         return {"input": self.input, "output": self.output, "properties": self.properties}.__repr__()
 
 
     def __str__(self):
-         model = {"input": self.input, "output": self.output, "properties": self.properties}
-         return model.__str__()
+         return {"input": self.input, "output": self.output, "properties": self.properties}.__str__()
+
+
+    def __dict__(self):
+         return {"input": self.input, "output": self.output, "properties": self.properties}
 
 
     def set(self, setting):
