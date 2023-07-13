@@ -133,7 +133,6 @@ class Mainwindow(tk.Tk):
         ok = True
         for uuid, project in self.projects.items():
             modified = project.is_modified()
-            print(modified)
             if bool(modified):
                 ok = False
                 print(uuid, "modified")

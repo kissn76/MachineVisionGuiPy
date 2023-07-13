@@ -23,6 +23,16 @@ class CommandModel():
         self.command_name = command
 
 
+    def __repr__(self):
+         model = {"input": self.input, "output": self.output, "properties": self.properties}
+         return model.__repr__()
+
+
+    def __str__(self):
+         model = {"input": self.input, "output": self.output, "properties": self.properties}
+         return model.__str__()
+
+
     def set(self, setting):
         self.set_input(setting["input"])
         self.set_output(setting["output"])

@@ -32,6 +32,14 @@ class Command():
             self.run = self.command_object.run
 
 
+    def __repr__(self):
+        return {"model": self.command_model}.__repr__()
+
+
+    def __str__(self):
+        return {"model": self.command_model}.__str__()
+
+
     def update(self):
         for key, widget in self.frm_setting_main.widget_elements["properties"].items():
             if bool(widget):

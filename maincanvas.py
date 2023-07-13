@@ -27,7 +27,7 @@ class MainCanvas(tk.Canvas):
         self.can_main_region_width = can_main_region_width
         self.can_main_region_height = can_main_region_height
 
-        self.canvas_grid_size = 12
+        self.canvas_grid_size = 0
         self.padding = 4
         self.icon_size = 16
         self.image_move = ImageTk.PhotoImage(Image.open(f"./resources/icons/move_{self.icon_size}.png"))
@@ -87,8 +87,9 @@ class MainCanvas(tk.Canvas):
         if y < 1:
             self.yview_scroll(-1, 'units')
 
-        canvas_x = int(int(canvas_x / self.canvas_grid_size) * self.canvas_grid_size)
-        canvas_y = int(int(canvas_y / self.canvas_grid_size) * self.canvas_grid_size)
+        if self.canvas_grid_size > 0:
+            canvas_x = int(int(canvas_x / self.canvas_grid_size) * self.canvas_grid_size)
+            canvas_y = int(int(canvas_y / self.canvas_grid_size) * self.canvas_grid_size)
         if canvas_x > self.can_main_region_width:
             canvas_x = self.can_main_region_width - int(self.icon_size / 2)
         if canvas_x <= int(self.icon_size / 2) + self.padding:
@@ -98,7 +99,7 @@ class MainCanvas(tk.Canvas):
         if canvas_y <= int(self.icon_size / 2) + self.padding:
             canvas_y = int(self.icon_size / 2) + self.padding
 
-        self.coords(f"{command_name}.move", canvas_x - int(self.icon_size / 2), canvas_y - int(self.icon_size / 2))
+        self.coords(f"{command_name}.move", canvas_x, canvas_y)
         move_box = self.bbox(f"{command_name}.move")
 
         if bool(move_box):

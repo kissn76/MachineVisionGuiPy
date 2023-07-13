@@ -1,5 +1,5 @@
 {
-    "uuid": "5a025e4452c848cfa1ffd43d006ab75e",
+    "uuid": "5e4b995c6f73483db58d6bfc2dfe8486",
     "commands": {
         "opencv_imread.0": {
             "model": {
@@ -14,7 +14,7 @@
             },
             "coords": [
                 352.0,
-                4.0
+                12.0
             ]
         },
         "opencv_threshold.1": {
@@ -110,7 +110,7 @@
             },
             "coords": [
                 544.0,
-                4.0
+                12.0
             ]
         },
         "tk_display.6": {

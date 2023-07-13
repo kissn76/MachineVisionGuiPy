@@ -23,6 +23,9 @@ class Project():
             self.filepath = os.path.abspath(self.filepath)
             self.project_load()
 
+        print(self.project_to_dict())
+        print(self.command_container)
+
 
     def __repr__(self):
          return self.command_container.__repr__()
@@ -39,9 +42,6 @@ class Project():
     def is_modified(self):
         orig = json.dumps(self.project_file_to_dict())
         new = json.dumps(self.project_to_dict())
-
-        print(orig)
-        print(new)
 
         return not orig == new
 
@@ -82,14 +82,7 @@ class Project():
 
     def project_to_dict(self):
         project = {}
-        project_commands = {}
-        # model setting
-        for command_name, command_obj in self.command_container.items():
-            model_input = command_obj.command_model.input
-            model_output = command_obj.command_model.output
-            model_properties = command_obj.command_model.properties
-            model = {"input": model_input, "output": model_output, "properties": model_properties}
-            project_commands.update({command_name: {"model": model}})
+        project_commands = self.command_container.__repr__()
 
         # position of canvas elements
         for id in self.can_main.find_all():

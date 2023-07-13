@@ -44,7 +44,6 @@ class BaseCommand():
                 widget.pack()
 
 
-
     def setting_widget_get(self):
         return self.setting_widget
 
