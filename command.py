@@ -40,8 +40,8 @@ class Command():
         return {self.command_name: {"model": self.command_model}}.__str__()
 
 
-    def __dict__(self):
-        return {self.command_name: {"model": vars(self.command_model)}}
+    def to_dict(self):
+        return {self.command_name: {"model": self.command_model.to_dict()}}
 
 
     def update(self):

@@ -23,9 +23,6 @@ class Project():
             self.filepath = os.path.abspath(self.filepath)
             self.project_load()
 
-        print(self.project_to_dict())
-        print(self.command_container)
-
 
     def __repr__(self):
          return self.command_container.__repr__()
@@ -41,7 +38,7 @@ class Project():
 
     def is_modified(self):
         orig = json.dumps(self.project_file_to_dict())
-        new = json.dumps(self.project_to_dict())
+        new = json.dumps(self.to_dict())
 
         return not orig == new
 
@@ -80,11 +77,9 @@ class Project():
                 self.can_main.io_widgets_connect(command_name)
 
 
-    def project_to_dict(self):
+    def to_dict(self):
         project = {}
-        project_commands = vars(self.command_container)
-        print(type(project_commands))
-        print(project_commands)
+        project_commands = self.command_container.to_dict()
 
         # position of canvas elements
         for id in self.can_main.find_all():
@@ -94,11 +89,10 @@ class Project():
                 command_name = tag[:tag.rfind('.')]
                 widget_func = tag[tag.rfind('.') + 1:]
                 if widget_func == "move":
-                    project_commands[command_name].update({"coords": self.can_main.coords(id)})
-                    # try:
-                    #     project_commands[command_name].update({"coords": self.can_main.coords(id)})
-                    # except:
-                    #     pass
+                    try:
+                        project_commands[command_name].update({"coords": self.can_main.coords(id)})
+                    except:
+                        pass
 
         project.update({"uuid": self.project_uuid})
         project.update({"commands": project_commands})
@@ -108,7 +102,7 @@ class Project():
 
     def project_save(self):
         with open(self.filepath, "w") as fp:
-            fp.write(json.dumps(self.project_to_dict(), indent=4))
+            fp.write(json.dumps(self.to_dict(), indent=4))
 
 
     def used_command_add(self, command, setting=None):

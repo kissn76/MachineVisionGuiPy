@@ -11,8 +11,12 @@ class CommandContainer(dict):
         return super().__str__()
 
 
-    def __dict__(self):
-        return super()
+    def to_dict(self):
+        dic = {}
+        for key, value in super().items():
+            dic.update(value.to_dict())
+
+        return dic
 
 
     def append(self, command_name, command_object):

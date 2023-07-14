@@ -31,7 +31,7 @@ class CommandModel():
          return {"input": self.input, "output": self.output, "properties": self.properties}.__str__()
 
 
-    def __dict__(self):
+    def to_dict(self):
          return {"input": self.input, "output": self.output, "properties": self.properties}
 
 

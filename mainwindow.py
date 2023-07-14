@@ -134,8 +134,14 @@ class Mainwindow(tk.Tk):
         for uuid, project in self.projects.items():
             modified = project.is_modified()
             if bool(modified):
-                ok = False
-                print(uuid, "modified")
+                answer = messagebox.askyesnocancel("Modified project","This project is modified and is'nt saved.\nDo you want to save changes?") # Yes: True, No: False, Cancel: None
+
+                if answer is True:
+                    project.project_save()
+                elif answer is False:
+                    pass
+                elif answer is None:
+                    ok = False
 
         if bool(ok):
             super().quit()

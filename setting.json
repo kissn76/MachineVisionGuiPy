@@ -6,5 +6,12 @@
         "region_width": 4000,
         "region_height": 4000
     },
-    "projects": []
+    "projects": [
+        {
+            "filepath": "/home/nn/Development/Python/MachineVisionGuiPy/projects/project_default.json"
+        },
+        {
+            "filepath": "/home/nn/Development/Python/MachineVisionGuiPy/projects/project_default_2.json"
+        }
+    ]
 }
