@@ -131,7 +131,10 @@ class Mainwindow(tk.Tk):
 
     def quit(self):
         ok = True
+        tab_id = 0
         for uuid, project in self.projects.items():
+            self.notebook.select(tab_id)
+            tab_id += 1
             modified = project.is_modified()
             if bool(modified):
                 answer = messagebox.askyesnocancel("Modified project","This project is modified and is'nt saved.\nDo you want to save changes?") # Yes: True, No: False, Cancel: None
@@ -258,3 +261,5 @@ class Mainwindow(tk.Tk):
             can_main.grid(row=0, column=0, sticky="n, s, w, e")
             self.notebook.add(frm_can_main, text=proj_obj.project_uuid)
             self.projects.update({proj_obj.project_uuid: proj_obj})
+            tab_name = self.notebook.tabs()[-1]
+            self.projects[proj_obj.project_uuid].tab_name = tab_name

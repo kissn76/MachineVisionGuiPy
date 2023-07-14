@@ -17,6 +17,7 @@ class Project():
         self.project_uuid = None
         self.uuid_generate()
         self.can_main = mc.MainCanvas(master, command_container=self.command_container, bg='blue', can_main_width=self.setting.can_main_width, can_main_height=self.setting.can_main_height, can_main_region_width=self.setting.can_main_region_width, can_main_region_height=self.setting.can_main_region_height)
+        self.tab_name = None
         self.frm_used_command_setting = ttk.LabelFrame(master, text="Command setting")
 
         if bool(self.filepath):
