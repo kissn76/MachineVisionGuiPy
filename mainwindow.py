@@ -131,12 +131,10 @@ class Mainwindow(tk.Tk):
 
     def quit(self):
         ok = True
-        tab_id = 0
         for uuid, project in self.projects.items():
-            self.notebook.select(tab_id)
-            tab_id += 1
             modified = project.is_modified()
             if bool(modified):
+                self.notebook.select(project.tab_name)
                 answer = messagebox.askyesnocancel("Modified project","This project is modified and is'nt saved.\nDo you want to save changes?") # Yes: True, No: False, Cancel: None
 
                 if answer is True:
